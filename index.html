@@ -1,234 +1,527 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Study Timer</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f6f8;
-        text-align: center;
-        padding: 20px;
-    }
-    h1 {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 2em;
-        margin-bottom: 20px;
-    }
-    h1::before {
-        content: "⏱️";
-        margin-right: 10px;
-    }
-    .input-container {
-        margin: 20px 0;
-    }
-    textarea {
-        padding: 10px;
-        width: 90%;
-        max-width: 600px;
-        height: 150px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 1em;
-        margin-bottom: 10px;
-        resize: vertical;
-    }
-    input[type="number"] {
-        padding: 10px;
-        width: 100px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 1em;
-        margin-bottom: 10px;
-    }
-    .btn {
-        background-color: #28a745;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        margin: 5px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 1em;
-    }
-    .btn:disabled {
-        background-color: #888;
-        cursor: not-allowed;
-    }
-    .info {
-        margin-top: 15px;
-        font-size: 1.1em;
-    }
-    .timeline {
-        position: relative;
-        height: 20px;
-        background-color: #ddd;
-        border-radius: 10px;
-        margin: 30px auto;
-        width: 90%;
-        max-width: 600px;
-        overflow: hidden;
-    }
-    .progress {
-        height: 100%;
-        background-color: #28a745;
-        border-radius: 10px;
-        width: 0%;
-        transition: width 0.5s;
-    }
-    .marker {
-        position: absolute;
-        top: -8px;
-        width: 4px;
-        height: 36px;
-        background-color: #555;
-    }
-    .intro, .outro {
-        position: absolute;
-        top: 0;
-        height: 100%;
-        background-color: #007bff;
-        opacity: 0.3;
-    }
-    .clock {
-        font-size: 1.5em;
-        margin-top: 10px;
-    }
-    .clock.over {
-        color: red;
-        font-weight: bold;
-    }
+  :root{
+    --green:#28a745;
+    --blue:#0d6efd;
+    --orange:#ff8800;
+    --elapsed-fill: rgba(220, 20, 20, 0.35);
+    --elapsed-line: #cc0000;
+    --msg-border:#28a745;
+    --msg-shadow: rgba(40,167,69,.25);
+    --stop-red:#d21f3c;
+    --muted:#9aa3ab;
+  }
+  body{ font-family: Arial, sans-serif; background:#f4f6f8; margin:0; padding:24px; display:flex; flex-direction:column; align-items:center; }
+  h1{ display:flex; align-items:center; gap:10px; font-size:2rem; margin:0 0 10px; }
+  h1::before{ content:"⏱️"; }
+  .container{ width:min(960px,94vw); }
+
+  label{ color:#333; font-size:.95rem; }
+  textarea{
+    width:100%; height:180px; resize:vertical; padding:12px; font-size:1rem;
+    border:1px solid #cfd4da; border-radius:10px; background:#fff; transition: all .25s ease;
+  }
+  textarea.collapsed{ height:72px !important; color:var(--muted) !important; background:#fafafa !important; }
+
+  .btn{ background:var(--green); color:#fff; border:0; padding:12px 18px; border-radius:10px; cursor:pointer; font-size:1rem; margin:10px 10px 0 0; }
+  .btn:disabled{ background:#9aa3ab; cursor:not-allowed; }
+
+  .info-line{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:10px; }
+  .inline-edit{ display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #cfd4da; border-radius:10px; padding:8px 10px; }
+  .inline-edit input{ width:90px; padding:6px 8px; font-size:1rem; border:1px solid #cfd4da; border-radius:8px; background:#fff; }
+  .inline-edit input.ghost{ color:var(--muted) !important; }
+
+  .title{ font-size:1.25rem; font-weight:700; margin-top:14px; }
+  .message-box{ margin-top:12px; padding:14px 18px; background:#fff; border:2px solid var(--msg-border); border-radius:12px; font-size:1.1rem; color:#0c2915; box-shadow:0 4px 16px var(--msg-shadow); min-height:1.2em; }
+
+  .timeline-wrap{ width:100%; margin-top:28px; }
+  .timeline{ position:relative; height:48px; border-radius:12px; background:#eaf6ec; border:2px solid var(--green); overflow:visible; }
+  .slot{ position:absolute; top:0; height:100%; opacity:.20; }
+  .elapsed{ position:absolute; top:0; left:0; height:100%; background:var(--elapsed-fill); width:0%; transition: width .25s linear; }
+  .cursor{ position:absolute; top:-10px; width:3px; height:68px; background:var(--elapsed-line); left:0%; }
+  .tick{ position:absolute; top:50%; transform:translate(-50%,-50%); width:10px; height:10px; border-radius:50%; background:#1f7a33; border:1px solid #0f3d1a; }
+  .tick-label{ position:absolute; left:50%; transform:translateX(-50%); font-size:.74rem; color:#0c2915; }
+  .tick-label.odd{ top:-20px; } .tick-label.even{ bottom:-20px; }
+
+  .clock{ margin-top:12px; font-size:1.6rem; font-weight:700; color:#28a745; }
+  .clock.over{ color:#e11900; }
+
+  .footer{ margin-top:22px; width:100%; display:flex; justify-content:flex-start; align-items:center; gap:14px; }
+  .round-btn{ display:inline-flex; align-items:center; justify-content:center; width:50px; height:50px; border-radius:50%; border:0; cursor:pointer;
+              box-shadow:0 4px 12px rgba(0,0,0,.25), inset 0 -3px 0 rgba(0,0,0,.08); transition: transform .04s ease; }
+  .round-btn:active{ transform:translateY(1px) scale(0.97); }
+  .play-btn{ background:var(--green); }
+  .play-btn::before{ content:"▶"; color:#fff; font-size:1.5rem; margin-left:3px; }
+  .stop-btn{ background:var(--stop-red); }
+  .stop-btn::before{ content:""; display:block; width:16px; height:16px; background:#fff; border-radius:2px; }
+  .play-btn:disabled, .stop-btn:disabled{ background:#aaa; cursor:not-allowed; box-shadow:none; }
+
+  /* Notatfelt og footer */
+  .notes-section{ margin-top:32px; }
+  .notes-section label{ font-weight:600; display:block; margin-bottom:6px; }
+  .notes-section textarea{ height:120px; }
+  .copyright{ margin-top:24px; font-size:.9rem; color:#777; text-align:center; }
 </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Study Timer</h1>
 
-<h1>Study Timer</h1>
+    <!-- Instruks -->
+    <label for="articleText">Gå til wol.jw.org og finn ukens vakttårnstudieartikkel. Kopier all tekst derfra.</label>
+    <textarea id="articleText" placeholder="Lim inn hele teksten her."></textarea>
+    <button id="analyzeBtn" class="btn">Analyser</button>
 
-<div class="input-container">
-    <label for="articleText">Lim inn teksten fra artikkelen her</label><br>
-    <textarea id="articleText" placeholder="Lim inn HELE artikkelteksten her..."></textarea><br>
-    <button class="btn" id="analyzeBtn">Analyser</button>
-</div>
+    <!-- Redigerbar info + juster -->
+    <div class="info-line">
+      <div class="inline-edit">
+        <label for="editParagraphs">Avsnitt</label>
+        <input id="editParagraphs" type="number" min="1" value="0" class="ghost">
+      </div>
+      <div class="inline-edit">
+        <label for="editQuestions">Spørsmål</label>
+        <input id="editQuestions" type="number" min="0" value="0" class="ghost">
+      </div>
+      <div class="inline-edit">
+        <label for="editScriptures">Les-skriftsteder</label>
+        <input id="editScriptures" type="number" min="0" value="0" class="ghost">
+      </div>
+      <button id="adjustBtn" class="btn" disabled>Juster</button>
+    </div>
 
-<div class="input-container">
-    <label for="adjustParagraphs">Juster antall avsnitt:</label><br>
-    <input type="number" id="adjustParagraphs" min="1">
-    <button class="btn" id="adjustBtn">Juster</button>
-</div>
+    <!-- Tittel + meldinger -->
+    <div id="articleTitle" class="title"></div>
+    <div id="message" class="message-box">Begynn med å lime inn artikkelserien og analysere den.</div>
 
-<div class="info" id="info">Avsnitt: 0 | Spørsmål: 0 | Les-skriftsteder: 0</div>
+    <!-- Tidslinje -->
+    <div class="timeline-wrap">
+      <div id="timeline" class="timeline">
+        <div id="introSlot"  class="slot" style="background:var(--blue)"></div>
+        <div id="reviewSlot" class="slot" style="background:var(--orange)"></div>
+        <div id="outroSlot"  class="slot" style="background:var(--blue)"></div>
+        <div id="elapsed" class="elapsed"></div>
+        <div id="cursor"  class="cursor"></div>
+      </div>
+      <div id="clock" class="clock">00:00</div>
+    </div>
 
-<div class="timeline" id="timeline">
-    <div class="progress" id="progress"></div>
-</div>
+    <!-- Kontrollpanel -->
+    <div class="footer">
+      <button id="playBtn" class="round-btn play-btn" disabled title="Start studiet"></button>
+      <button id="stopBtn" class="round-btn stop-btn" disabled title="Ferdig"></button>
+    </div>
 
-<div class="clock" id="clock">00:00</div>
+    <!-- Notater -->
+    <div class="notes-section">
+      <label for="notes">Notater</label>
+      <textarea id="notes" placeholder="Skriv notater her..."></textarea>
+    </div>
 
-<button class="btn" id="startBtn">Start studiet</button>
+    <!-- Copyright -->
+    <div class="copyright"> © Study Timer 2025</div>
+  </div>
 
 <script>
-let totalParagraphs = 0;
-let questions = 0;
-let scriptures = 0;
-let startTime;
-let timerInterval;
+  // --- Konstanter ---
+  const TOTAL_SEC   = 3600; // 60:00
+  const INTRO_SEC   = 90;   // 1:30
+  const REVIEW_SEC  = 120;  // 2:00 repetisjonsspørsmål
+  const OUTRO_SEC   = 90;   // 1:30
+  const CONTENT_SEC = TOTAL_SEC - INTRO_SEC - REVIEW_SEC - OUTRO_SEC; // 3300
 
-document.getElementById("analyzeBtn").addEventListener("click", () => {
-    const text = document.getElementById("articleText").value.trim();
-    if (!text) return alert("Lim inn teksten først!");
-    analyzeText(text);
-});
+  // Smart-modus (alltid på)
+  const WPM         = 150;  // ord/min
+  const SEC_PER_Q   = 10;   // +sek per spørsmål
+  const SEC_PER_LES = 30;   // +sek per "Les …"
+  const AB_BONUS    = 60;   // +1 min ved (a) & (b)
 
-document.getElementById("startBtn").addEventListener("click", function() {
-    if (this.disabled) return;
-    this.textContent = "Studiet er i gang";
-    this.disabled = true;
+  const pct = (sec) => (sec / TOTAL_SEC) * 100;
+  const $ = (id) => document.getElementById(id);
+
+  // --- Tilstand ---
+  let paras = [];        // {num, text, words, q, les, hasAB}
+  let totalParagraphs = 0;
+  let questions = 0;
+  let scriptures = 0;
+  let perParagraph = []; // sek pr avsnitt
+  let cumulative = [];   // startsek pr avsnitt (etter intro)
+
+  let started = false;
+  let startTs = null;
+  let tickHandle = null;
+  let lastMilestone = "";
+
+  // --- Lyttere ---
+  $('analyzeBtn').addEventListener('click', onAnalyze);
+  $('playBtn').addEventListener('click', onPlay);
+  $('stopBtn').addEventListener('click', onStop);
+  ['editParagraphs','editQuestions','editScriptures'].forEach(id=>{
+    $(id).addEventListener('input', e => e.target.classList.remove('ghost'));
+    $(id).addEventListener('change', e => e.target.classList.remove('ghost'));
+  });
+  $('adjustBtn').addEventListener('click', onAdjust);
+
+  // --- Handlers ---
+  function onAnalyze(){
+    const raw = $('articleText').value.trim();
+    if(!raw){ alert('Lim inn teksten først.'); return; }
+
+    analyzeText(raw);
+
+    // UI etter analyse – Safari-proof
+    const ta = $('articleText');
+    ta.classList.add('collapsed');
+    ta.style.height = '72px';
+    ta.style.color = '#9aa3ab';
+    ta.style.background = '#fafafa';
+    ta.blur();
+
+    if (totalParagraphs > 0){
+      setMessage('Alt er klart. Trykk Play for å starte studiet.');
+      $('playBtn').disabled = false;
+      $('stopBtn').disabled = true;
+    } else {
+      setMessage('Fant ingen avsnitt. Sjekk at avsnittene starter med tall (f.eks. «1.» eller «6, 7.») og prøv igjen.');
+      $('playBtn').disabled = true;
+      $('stopBtn').disabled = true;
+    }
+  }
+
+  function onPlay(){
+    if (started) return;
+    started = true;
+    $('playBtn').disabled = true;
+    $('stopBtn').disabled = false;
+    setMessage('Introduksjon');
     startClock();
-});
+  }
 
-document.getElementById("adjustBtn").addEventListener("click", () => {
-    const val = parseInt(document.getElementById("adjustParagraphs").value);
-    if (!isNaN(val) && val > 0) {
-        totalParagraphs = val;
-        updateInfo();
-        buildTimelineMarkers();
-    }
-});
+  function onStop(){
+    if (!started) return;
+    const elapsed = Math.floor((Date.now() - startTs)/1000);
+    stopClock();
+    const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    setMessage(`Studiet ferdig — tid brukt: ${m}:${s}`);
+    started = false;
+    $('playBtn').disabled = true;
+    $('stopBtn').disabled = true;
+  }
 
-function analyzeText(text) {
-    let paragraphs = text.split(/\s\d+\.\s/).slice(1); // hopper over første intro
-    totalParagraphs = paragraphs.length;
+  function onAdjust(){
+    const pVal = parseInt($('editParagraphs').value, 10);
+    const qVal = parseInt($('editQuestions').value, 10);
+    const sVal = parseInt($('editScriptures').value, 10);
 
-    questions = (text.match(/\?\s/g) || []).length;
-    scriptures = (text.match(/Les\s+[A-ZÆØÅ][a-zæøå]+\s*\d+:\d+/g) || []).length;
-
-    updateInfo();
-    buildTimelineMarkers();
-}
-
-function updateInfo() {
-    document.getElementById("info").textContent =
-        `Avsnitt: ${totalParagraphs} | Spørsmål: ${questions} | Les-skriftsteder: ${scriptures}`;
-}
-
-function buildTimelineMarkers() {
-    const timeline = document.getElementById("timeline");
-    timeline.innerHTML = '<div class="progress" id="progress"></div>';
-
-    if (totalParagraphs <= 0) return;
-
-    const totalTime = totalParagraphs * 60 + 90 + 90; // 1,5 min intro + avsnitt + 1,5 min outro
-
-    // Legg inn blå intro
-    const intro = document.createElement("div");
-    intro.classList.add("intro");
-    intro.style.width = `${(90 / totalTime) * 100}%`;
-    intro.style.left = "0%";
-    timeline.appendChild(intro);
-
-    // Legg inn blå outro
-    const outro = document.createElement("div");
-    outro.classList.add("outro");
-    outro.style.width = `${(90 / totalTime) * 100}%`;
-    outro.style.right = "0%";
-    timeline.appendChild(outro);
-
-    // Markører for oddetallsavsnitt
-    for (let i = 1; i <= totalParagraphs; i++) {
-        if (i % 2 === 1) {
-            let pos = ( (90 + (i-1)*60) / totalTime ) * 100;
-            const marker = document.createElement("div");
-            marker.classList.add("marker");
-            marker.style.left = `calc(${pos}% - 2px)`;
-            timeline.appendChild(marker);
+    if(!isNaN(pVal) && pVal > 0 && pVal !== totalParagraphs){
+      totalParagraphs = pVal;
+      if (paras.length > totalParagraphs) {
+        paras = paras.slice(0, totalParagraphs);
+      } else {
+        while (paras.length < totalParagraphs) {
+          paras.push({num: paras.length+1, text:'', words:0, q:0, les:0, hasAB:false});
         }
+      }
+      computeAllocation();
+      drawTimeline();
     }
-}
+    if(!isNaN(qVal) && qVal >= 0) questions = qVal;
+    if(!isNaN(sVal) && sVal >= 0) scriptures = sVal;
 
-function startClock() {
-    startTime = Date.now();
-    timerInterval = setInterval(() => {
-        let elapsed = Math.floor((Date.now() - startTime) / 1000);
-        let minutes = String(Math.floor(elapsed / 60)).padStart(2, "0");
-        let seconds = String(elapsed % 60).padStart(2, "0");
-        const clock = document.getElementById("clock");
-        clock.textContent = `${minutes}:${seconds}`;
+    updateInfoLine(false);
+  }
 
-        let totalTime = totalParagraphs * 60 + 180; // intro+outro
-        if (elapsed > totalTime) {
-            clock.classList.add("over");
+  // --- Analyse & parsing ---
+  function analyzeText(text){
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // Tittel: første "ordentlige" linje (ikke teknisk/nummerert)
+    const skipTitle = /^(STUDIEARTIKKEL\b|SANG\s*\d+|w\d{2}\b|Audio Player|Underoverskrifter|Lignende stoff|FOKUS\b|Norsk\b|Del\b|Innstillinger|Logg inn|HVA SVARER DU|Copyright|JW\.ORG)/i;
+    const isNumStart = /^\d+([,\s]\d+)*[.\s]/;
+    let title = '';
+    for(const l of lines){
+      if(skipTitle.test(l)) continue;
+      if(isNumStart.test(l)) continue;
+      if(l.length >= 8){ title = l; break; }
+    }
+    $('articleTitle').textContent = title || 'Ukens studieartikkel';
+
+    // Bygg avsnitt med (a)(b)-deteksjon + ord/spm/Les
+    paras = extractParagraphs(lines);
+    totalParagraphs = paras.length;
+    questions = paras.reduce((s,p)=> s + p.q, 0);
+    scriptures = paras.reduce((s,p)=> s + p.les, 0);
+
+    computeAllocation();
+    drawTimeline();
+    updateInfoLine(true);
+    resetClockUI();
+  }
+
+  function extractParagraphs(lines){
+    const out = [];
+    let pendingNums = [];
+    let pendingAB  = false;
+    let currentNum = null;
+    let currentAB  = false;
+    let buf = [];
+
+    const headerRe    = /^(\d+(?:\s*,\s*\d+)*)\.\s*(.*)?$/; // "6, 7. (a) ... (b) ..."
+    const bodyStartRe = /^(\d+)[\.\s]+(.*)$/;               // "2 Jesus kom ..." eller "3. Tekst"
+    const skipLineRe  = /^(HVA SVARER DU|Svaret ditt)$/i;
+
+    const pushPara = ()=>{
+      if(currentNum!==null){
+        const text = buf.join(' ').trim();
+        const words = (text.match(/\S+/g) || []).length;
+        const q = (text.match(/\?/g) || []).length;
+        const lesMatches = text.match(/\bLes\s+[^.\n]*?\d+\s*:\s*\d+(?:\s*[–-]\s*\d+)?/gi) || [];
+        out.push({num: currentNum, text, words, q, les: lesMatches.length, hasAB: currentAB});
+      }
+      buf = [];
+    };
+
+    for (let raw of lines){
+      const l = raw.trim();
+      if(!l) continue;
+      if(skipLineRe.test(l)) continue;
+
+      const h = l.match(headerRe);
+      if(h){
+        pushPara();
+        pendingNums = h[1].split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+        const headText = (h[2]||'');
+        const hasA = /\(a\)/i.test(headText);
+        const hasB = /\(b\)/i.test(headText);
+        pendingAB = (hasA && hasB);
+
+        if(pendingNums.length){
+          currentNum = pendingNums.shift();
+          currentAB = pendingAB;
         } else {
-            clock.classList.remove("over");
+          currentNum = null;
+          currentAB = false;
+        }
+        if(headText) buf.push(headText);
+        continue;
+      }
+
+      const b = l.match(bodyStartRe);
+      if(b){
+        const n = parseInt(b[1],10);
+        const rest = (b[2]||'').trim();
+
+        if(pendingNums.length && n === pendingNums[0]){
+          pushPara();
+          currentNum = pendingNums.shift();
+          currentAB = pendingAB;
+          if(rest) buf.push(rest);
+          continue;
         }
 
-        document.getElementById("progress").style.width = 
-            `${Math.min((elapsed / totalTime) * 100, 100)}%`;
-    }, 1000);
-}
-</script>
+        if(currentNum===null || n !== currentNum){
+          pushPara();
+          currentNum = n;
+          currentAB = false;
+          if(rest) buf.push(rest);
+          continue;
+        }
 
+        if(rest) buf.push(rest);
+        continue;
+      }
+
+      buf.push(l);
+    }
+    pushPara();
+
+    // Sortér/merge på nummer
+    const seen = new Set();
+    const cleaned = [];
+    for (const p of out.sort((a,b)=>a.num-b.num)){
+      if(!seen.has(p.num)){ cleaned.push(p); seen.add(p.num); }
+      else {
+        const last = cleaned[cleaned.length-1];
+        last.text += ' ' + p.text;
+        last.words = (last.text.match(/\S+/g) || []).length;
+        last.q += p.q;
+        last.les += p.les;
+        last.hasAB = last.hasAB || p.hasAB;
+      }
+    }
+
+    // fallback hvis vi fortsatt ikke fant noe
+    if (cleaned.length === 0){
+      const joined = lines.join('\n');
+      const rough = joined.split(/\n(?=\d+[.]\s)/).filter(s => /^\d+[.]\s/.test(s));
+      rough.forEach((block, i)=> {
+        const text = block.replace(/^\d+[.]\s*/, '');
+        const words = (text.match(/\S+/g) || []).length;
+        const q = (text.match(/\?/g) || []).length;
+        const lesMatches = text.match(/\bLes\s+[^.\n]*?\d+\s*:\s*\d+(?:\s*[–-]\s*\d+)?/gi) || [];
+        cleaned.push({num:i+1, text, words, q, les: lesMatches.length, hasAB:false});
+      });
+    }
+
+    return cleaned;
+  }
+
+  // --- Fordeling & timeline ---
+  function computeAllocation(){
+    if(totalParagraphs === 0){ perParagraph=[]; cumulative=[]; return; }
+
+    let list = paras.slice(0, totalParagraphs);
+    if (list.length < totalParagraphs){
+      while(list.length < totalParagraphs) list.push({num:list.length+1, text:'', words:0, q:0, les:0, hasAB:false});
+    }
+
+    const wps = WPM / 60;
+    const raw = list.map(p => {
+      let sec = 0;
+      sec += (p.words || 0) / wps;
+      sec += (p.q || 0) * SEC_PER_Q;
+      sec += (p.les || 0) * SEC_PER_LES;
+      if (p.hasAB) sec += AB_BONUS;
+      if (sec < 5) sec = 5;
+      return sec;
+    });
+
+    const sumRaw = raw.reduce((a,b)=>a+b,0) || 1;
+    const scale  = CONTENT_SEC / sumRaw;
+    perParagraph = raw.map(x => x*scale);
+
+    cumulative = [];
+    let acc = INTRO_SEC;
+    for (let i=0;i<totalParagraphs;i++){
+      cumulative.push(acc);
+      acc += perParagraph[i];
+    }
+  }
+
+  function drawTimeline(){
+    const t = $('timeline');
+    Array.from(t.querySelectorAll('.tick,.tick-label')).forEach(n => n.remove());
+
+    // Plasser blokker
+    $('introSlot').style.left  = '0%';
+    $('introSlot').style.width = pct(INTRO_SEC).toFixed(5) + '%';
+
+    $('outroSlot').style.right = '0%';
+    $('outroSlot').style.width = pct(OUTRO_SEC).toFixed(5) + '%';
+
+    $('reviewSlot').style.right = pct(OUTRO_SEC).toFixed(5) + '%';
+    $('reviewSlot').style.width = pct(REVIEW_SEC).toFixed(5) + '%';
+
+    if(totalParagraphs <= 0){
+      $('elapsed').style.width = '0%';
+      $('cursor').style.left = '0%';
+      return;
+    }
+
+    // Markører for alle avsnitt
+    for(let i=1;i<=totalParagraphs;i++){
+      const startSec = cumulative[i-1];
+      const leftP = pct(startSec);
+
+      const tick = document.createElement('div');
+      tick.className = 'tick';
+      tick.style.left = leftP + '%';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'tick-label ' + (i % 2 === 1 ? 'odd' : 'even');
+      lbl.textContent = i;
+      lbl.style.left = leftP + '%';
+
+      t.appendChild(tick);
+      t.appendChild(lbl);
+    }
+
+    $('elapsed').style.width = '0%';
+    $('cursor').style.left = '0%';
+  }
+
+  // --- Klokke / meldinger ---
+  function resetClockUI(){
+    if (tickHandle) clearInterval(tickHandle);
+    started = false;
+    $('clock').textContent = '00:00';
+    $('clock').classList.remove('over');
+  }
+
+  function startClock(){
+    startTs = Date.now();
+    if (tickHandle) clearInterval(tickHandle);
+    tickHandle = setInterval(tick, 250);
+  }
+  function stopClock(){
+    if (tickHandle) clearInterval(tickHandle);
+    tickHandle = null;
+  }
+
+  function setMessage(msg){
+    if (msg !== lastMilestone){
+      $('message').textContent = msg;
+      lastMilestone = msg;
+    }
+  }
+
+  function tick(){
+    const elapsed = Math.floor((Date.now() - startTs)/1000);
+    const clock = $('clock');
+
+    const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    clock.textContent = `${m}:${s}`;
+    if(elapsed >= TOTAL_SEC) clock.classList.add('over'); else clock.classList.remove('over');
+
+    const p = Math.min((elapsed / TOTAL_SEC) * 100, 100);
+    $('elapsed').style.width = p + '%';
+    $('cursor').style.left = `calc(${p}% - 1.5px)`;
+
+    if (elapsed < INTRO_SEC){
+      setMessage('Introduksjon');
+    } else if (elapsed >= TOTAL_SEC){
+      setMessage('Du er over tiden');
+    } else if (elapsed >= TOTAL_SEC - OUTRO_SEC){
+      setMessage('Avslutning');
+    } else if (elapsed >= TOTAL_SEC - OUTRO_SEC - REVIEW_SEC){
+      setMessage('Repetisjonsspørsmål');
+    } else {
+      // Innholdsdel – finn hvilket avsnitt
+      let idx = 0;
+      for (let i=0;i<totalParagraphs;i++){
+        const start = cumulative[i];
+        const end = (i === totalParagraphs-1) ? (TOTAL_SEC - OUTRO_SEC - REVIEW_SEC) : cumulative[i+1];
+        if (elapsed >= start && elapsed < end){ idx = i; break; }
+      }
+      let msg = `Avsnitt ${idx+1}`;
+      if (elapsed >= 1800 && elapsed < 1860){ msg += ' — Halvveis i studiet!'; }
+      setMessage(msg);
+    }
+  }
+
+  function updateInfoLine(resetGhost){
+    $('editParagraphs').value = Math.max(1, totalParagraphs|0);
+    $('editQuestions').value  = Math.max(0, questions|0);
+    $('editScriptures').value = Math.max(0, scriptures|0);
+
+    if (resetGhost){
+      $('editParagraphs').classList.add('ghost');
+      $('editQuestions').classList.add('ghost');
+      $('editScriptures').classList.add('ghost');
+    }
+
+    const hasData = totalParagraphs > 0;
+    $('adjustBtn').disabled = !hasData;
+  }
+
+  // Init-tekst i meldingsfelt (før analyse)
+  setMessage('Begynn med å lime inn artikkelserien og analysere den.');
+</script>
 </body>
 </html>
