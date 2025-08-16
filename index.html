@@ -25,10 +25,20 @@
     .input-container {
         margin: 20px 0;
     }
-    input[type="text"], input[type="number"] {
+    textarea {
         padding: 10px;
-        width: 80%;
-        max-width: 400px;
+        width: 90%;
+        max-width: 600px;
+        height: 150px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1em;
+        margin-bottom: 10px;
+        resize: vertical;
+    }
+    input[type="number"] {
+        padding: 10px;
+        width: 100px;
         border: 1px solid #ccc;
         border-radius: 8px;
         font-size: 1em;
@@ -60,6 +70,7 @@
         margin: 30px auto;
         width: 90%;
         max-width: 600px;
+        overflow: hidden;
     }
     .progress {
         height: 100%;
@@ -74,6 +85,13 @@
         width: 4px;
         height: 36px;
         background-color: #555;
+    }
+    .intro, .outro {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        background-color: #007bff;
+        opacity: 0.3;
     }
     .clock {
         font-size: 1.5em;
@@ -90,10 +108,9 @@
 <h1>Study Timer</h1>
 
 <div class="input-container">
-    <label for="url">Lim inn nettadressen til ukens artikkel</label><br>
-    <input type="text" id="url" placeholder="Finn fram artikkelen på jw.org eller wol.jw.org. Kopier nettadressen og lim den inn her.">
-    <br>
-    <button class="btn" id="fetchBtn">Hent</button>
+    <label for="articleText">Lim inn teksten fra artikkelen her</label><br>
+    <textarea id="articleText" placeholder="Lim inn HELE artikkelteksten her..."></textarea><br>
+    <button class="btn" id="analyzeBtn">Analyser</button>
 </div>
 
 <div class="input-container">
@@ -118,12 +135,11 @@ let questions = 0;
 let scriptures = 0;
 let startTime;
 let timerInterval;
-let currentParagraph = 0;
 
-document.getElementById("fetchBtn").addEventListener("click", () => {
-    const url = document.getElementById("url").value.trim();
-    if (!url) return alert("Lim inn en URL først!");
-    fetchArticleText(url);
+document.getElementById("analyzeBtn").addEventListener("click", () => {
+    const text = document.getElementById("articleText").value.trim();
+    if (!text) return alert("Lim inn teksten først!");
+    analyzeText(text);
 });
 
 document.getElementById("startBtn").addEventListener("click", function() {
@@ -142,22 +158,8 @@ document.getElementById("adjustBtn").addEventListener("click", () => {
     }
 });
 
-function fetchArticleText(url) {
-    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`)
-        .then(res => res.json())
-        .then(data => {
-            const text = stripHTML(data.contents);
-            analyzeText(text);
-        })
-        .catch(() => alert("Klarte ikke å hente artikkelen."));
-}
-
-function stripHTML(html) {
-    return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-
 function analyzeText(text) {
-    let paragraphs = text.split(/\s\d+\.\s/).slice(1); // hopper over første introavsnitt
+    let paragraphs = text.split(/\s\d+\.\s/).slice(1); // hopper over første intro
     totalParagraphs = paragraphs.length;
 
     questions = (text.match(/\?\s/g) || []).length;
@@ -175,16 +177,34 @@ function updateInfo() {
 function buildTimelineMarkers() {
     const timeline = document.getElementById("timeline");
     timeline.innerHTML = '<div class="progress" id="progress"></div>';
+
     if (totalParagraphs <= 0) return;
 
-    let points = 5;
-    let step = totalParagraphs / (points - 1);
-    for (let i = 0; i < points; i++) {
-        let pos = (i * step) / totalParagraphs * 100;
-        const marker = document.createElement("div");
-        marker.classList.add("marker");
-        marker.style.left = `calc(${pos}% - 2px)`;
-        timeline.appendChild(marker);
+    const totalTime = totalParagraphs * 60 + 90 + 90; // 1,5 min intro + avsnitt + 1,5 min outro
+
+    // Legg inn blå intro
+    const intro = document.createElement("div");
+    intro.classList.add("intro");
+    intro.style.width = `${(90 / totalTime) * 100}%`;
+    intro.style.left = "0%";
+    timeline.appendChild(intro);
+
+    // Legg inn blå outro
+    const outro = document.createElement("div");
+    outro.classList.add("outro");
+    outro.style.width = `${(90 / totalTime) * 100}%`;
+    outro.style.right = "0%";
+    timeline.appendChild(outro);
+
+    // Markører for oddetallsavsnitt
+    for (let i = 1; i <= totalParagraphs; i++) {
+        if (i % 2 === 1) {
+            let pos = ( (90 + (i-1)*60) / totalTime ) * 100;
+            const marker = document.createElement("div");
+            marker.classList.add("marker");
+            marker.style.left = `calc(${pos}% - 2px)`;
+            timeline.appendChild(marker);
+        }
     }
 }
 
@@ -197,11 +217,15 @@ function startClock() {
         const clock = document.getElementById("clock");
         clock.textContent = `${minutes}:${seconds}`;
 
-        if (elapsed > totalParagraphs * 60) {
+        let totalTime = totalParagraphs * 60 + 180; // intro+outro
+        if (elapsed > totalTime) {
             clock.classList.add("over");
         } else {
             clock.classList.remove("over");
         }
+
+        document.getElementById("progress").style.width = 
+            `${Math.min((elapsed / totalTime) * 100, 100)}%`;
     }, 1000);
 }
 </script>
