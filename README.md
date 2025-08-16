@@ -1,26 +1,45 @@
-# Study Timer
+# ⏱️ Study Timer
 
-Dette prosjektet lar deg generere og vise ukentlige Vakttårnartikler via GitHub Pages.
+**Study Timer** er et enkelt verktøy laget for å hjelpe møteledere under **vakttårnstudiet**.  
+Nettsiden analyserer teksten i ukens artikkel og fordeler tiden på best mulig måte.
 
-## Bruk
+## ✨ Funksjoner
+- **Automatisk analyse av artikkeltekst**  
+  Lim inn hele teksten fra [wol.jw.org](https://wol.jw.org). Når du trykker "Analyser", beregnes antall avsnitt, spørsmål og «Les»-skriftsteder automatisk.
+- **Smart tidsfordeling**  
+  Hvert avsnitt får tid basert på antall ord, spørsmål og skriftsteder.  
+  Spørsmål med (a) og (b) gir ekstra tid.
+- **Visuell tidslinje**  
+  En grønn tidslinje viser progresjonen. Markører for avsnitt, introduksjon, repetisjonsspørsmål og avslutning hjelper deg å holde oversikt.
+- **Live klokke**  
+  Start når studiet begynner – klokken blir rød dersom du går over tiden.
+- **Meldingsfelt**  
+  Viser automatisk hvor du bør være i studiet («Avsnitt 9», «Halvveis i studiet», «Avslutning»).
+- **Notatfelt**  
+  Mulighet til å skrive egne notater underveis.
+- **Redigerbar analyse**  
+  Om analysen teller feil antall avsnitt, spørsmål eller skriftsteder, kan du manuelt justere og oppdatere tidslinjen.
 
-1. **Generer ukens artikkel**
-   - Kjør `generate_article.py`
-   - Finn fram en vakttårnstudieartikkel på jw.org eller wol.jw.org.
-   - Kopier all tekst fra siden og lim den inn i scriptet og deretter nettadressen til siden du kopierte også.
-   - Filen lagres som `ÅÅÅÅ-UU.html` (f.eks. `2025-05.html`)
+## 🚀 Bruk
+1. Gå til [wol.jw.org](https://wol.jw.org) og åpne ukens Vakttårnstudie-artikkel.  
+2. Kopiér **hele teksten** fra artikkelsiden.  
+3. Lim teksten inn i feltet på Study Timer.  
+4. Klikk **Analyser**.  
+5. Når analysen er ferdig, trykk **Play** (grønn knapp) for å starte studiet.  
+6. Følg med på klokke, tidslinje og meldinger underveis.  
+7. Når studiet er ferdig, trykk på **Stopp** (rød knapp) for å se brukt tid.
 
-2. **Last opp til GitHub**
-   - Legg alle HTML-filer og `index.html` i et offentlig repo
-   - Husk å legge til `Image_2.png` manuelt
-   - Aktiver GitHub Pages under repoets Settings → Pages
+## 🛠️ Teknologi
+- **HTML, CSS og JavaScript** – ingen rammeverk, helt enkelt.  
+- Designet for å være lett å hoste på GitHub Pages.
 
-3. **Visning**
-   - `index.html` viser automatisk ukens artikkel basert på dato
-   - Logoen vises øverst
+## 🌍 Live-versjon
+Når repoet er satt opp med GitHub Pages, finner du det her:  
+👉 [https://skybertolini.github.io/Study-Timer](https://skybertolini.github.io/Study-Timer)
 
-## Filbeskrivelse
+## 📜 Lisens
+Study Timer © 2025  
+Dette prosjektet er laget for personlig bruk og er ikke tilknyttet eller godkjent av Jehovas vitner eller Watch Tower Bible and Tract Society.
 
-- `index.html`: Hovedside med knapp for å hente ukens artikkel
-- `generate_article.py`: Python-skript for å lage ukentlige artikler
-- `Image_2.png`: Logo som vises på hovedsiden
+---
+💡 Tips: Bruk **notatfeltet** til å skrive stikkord om hvor du ønsker ekstra fokus under studiet!
