@@ -1,49 +1,208 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Study Timer</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    button {
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Timer</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+        text-align: center;
+        padding: 20px;
     }
-    button:hover { background-color: #45a049; }
-    #articleContainer { margin-top: 20px; }
-    img.logo { max-width: 200px; margin-bottom: 20px; }
-  </style>
+    h1 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+    h1::before {
+        content: "⏱️";
+        margin-right: 10px;
+    }
+    .input-container {
+        margin: 20px 0;
+    }
+    input[type="text"], input[type="number"] {
+        padding: 10px;
+        width: 80%;
+        max-width: 400px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1em;
+        margin-bottom: 10px;
+    }
+    .btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        margin: 5px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+    }
+    .btn:disabled {
+        background-color: #888;
+        cursor: not-allowed;
+    }
+    .info {
+        margin-top: 15px;
+        font-size: 1.1em;
+    }
+    .timeline {
+        position: relative;
+        height: 20px;
+        background-color: #ddd;
+        border-radius: 10px;
+        margin: 30px auto;
+        width: 90%;
+        max-width: 600px;
+    }
+    .progress {
+        height: 100%;
+        background-color: #28a745;
+        border-radius: 10px;
+        width: 0%;
+        transition: width 0.5s;
+    }
+    .marker {
+        position: absolute;
+        top: -8px;
+        width: 4px;
+        height: 36px;
+        background-color: #555;
+    }
+    .clock {
+        font-size: 1.5em;
+        margin-top: 10px;
+    }
+    .clock.over {
+        color: red;
+        font-weight: bold;
+    }
+</style>
 </head>
 <body>
 
-<img src="Image_2.png" alt="Logo" class="logo">
 <h1>Study Timer</h1>
-<button onclick="hentArtikkel()">Hent artikkel</button>
 
-<div id="articleContainer"></div>
+<div class="input-container">
+    <label for="url">Lim inn nettadressen til ukens artikkel</label><br>
+    <input type="text" id="url" placeholder="Finn fram artikkelen på jw.org eller wol.jw.org. Kopier nettadressen og lim den inn her.">
+    <br>
+    <button class="btn" id="fetchBtn">Hent</button>
+</div>
+
+<div class="input-container">
+    <label for="adjustParagraphs">Juster antall avsnitt:</label><br>
+    <input type="number" id="adjustParagraphs" min="1">
+    <button class="btn" id="adjustBtn">Juster</button>
+</div>
+
+<div class="info" id="info">Avsnitt: 0 | Spørsmål: 0 | Les-skriftsteder: 0</div>
+
+<div class="timeline" id="timeline">
+    <div class="progress" id="progress"></div>
+</div>
+
+<div class="clock" id="clock">00:00</div>
+
+<button class="btn" id="startBtn">Start studiet</button>
 
 <script>
-function hentArtikkel() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const week = Math.ceil((today - new Date(year, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-  const weekStr = String(week).padStart(2, '0');
-  const filename = `${year}-${weekStr}.html`;
+let totalParagraphs = 0;
+let questions = 0;
+let scriptures = 0;
+let startTime;
+let timerInterval;
+let currentParagraph = 0;
 
-  fetch(filename)
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById('articleContainer').innerHTML = html;
-    })
-    .catch(err => {
-      document.getElementById('articleContainer').innerHTML = '<p>Fant ikke ukens artikkel.</p>';
-    });
+document.getElementById("fetchBtn").addEventListener("click", () => {
+    const url = document.getElementById("url").value.trim();
+    if (!url) return alert("Lim inn en URL først!");
+    fetchArticleText(url);
+});
+
+document.getElementById("startBtn").addEventListener("click", function() {
+    if (this.disabled) return;
+    this.textContent = "Studiet er i gang";
+    this.disabled = true;
+    startClock();
+});
+
+document.getElementById("adjustBtn").addEventListener("click", () => {
+    const val = parseInt(document.getElementById("adjustParagraphs").value);
+    if (!isNaN(val) && val > 0) {
+        totalParagraphs = val;
+        updateInfo();
+        buildTimelineMarkers();
+    }
+});
+
+function fetchArticleText(url) {
+    fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`)
+        .then(res => res.json())
+        .then(data => {
+            const text = stripHTML(data.contents);
+            analyzeText(text);
+        })
+        .catch(() => alert("Klarte ikke å hente artikkelen."));
+}
+
+function stripHTML(html) {
+    return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function analyzeText(text) {
+    let paragraphs = text.split(/\s\d+\.\s/).slice(1); // hopper over første introavsnitt
+    totalParagraphs = paragraphs.length;
+
+    questions = (text.match(/\?\s/g) || []).length;
+    scriptures = (text.match(/Les\s+[A-ZÆØÅ][a-zæøå]+\s*\d+:\d+/g) || []).length;
+
+    updateInfo();
+    buildTimelineMarkers();
+}
+
+function updateInfo() {
+    document.getElementById("info").textContent =
+        `Avsnitt: ${totalParagraphs} | Spørsmål: ${questions} | Les-skriftsteder: ${scriptures}`;
+}
+
+function buildTimelineMarkers() {
+    const timeline = document.getElementById("timeline");
+    timeline.innerHTML = '<div class="progress" id="progress"></div>';
+    if (totalParagraphs <= 0) return;
+
+    let points = 5;
+    let step = totalParagraphs / (points - 1);
+    for (let i = 0; i < points; i++) {
+        let pos = (i * step) / totalParagraphs * 100;
+        const marker = document.createElement("div");
+        marker.classList.add("marker");
+        marker.style.left = `calc(${pos}% - 2px)`;
+        timeline.appendChild(marker);
+    }
+}
+
+function startClock() {
+    startTime = Date.now();
+    timerInterval = setInterval(() => {
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+        let minutes = String(Math.floor(elapsed / 60)).padStart(2, "0");
+        let seconds = String(elapsed % 60).padStart(2, "0");
+        const clock = document.getElementById("clock");
+        clock.textContent = `${minutes}:${seconds}`;
+
+        if (elapsed > totalParagraphs * 60) {
+            clock.classList.add("over");
+        } else {
+            clock.classList.remove("over");
+        }
+    }, 1000);
 }
 </script>
 
