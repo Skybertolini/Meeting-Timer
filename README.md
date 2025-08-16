@@ -1,12 +1,13 @@
 # Study Timer
 
-Dette prosjektet lar deg generere og vise ukentlige Vakttårn-artikler via GitHub Pages.
+Dette prosjektet lar deg generere og vise ukentlige Vakttårnartikler via GitHub Pages.
 
 ## Bruk
 
 1. **Generer ukens artikkel**
    - Kjør `generate_article.py`
-   - Lim inn artikkeltekst og URL
+   - Finn fram en vakttårnstudieartikkel på jw.org eller wol.jw.org.
+   - Kopier all tekst fra siden og lim den inn i scriptet og deretter nettadressen til siden du kopierte også.
    - Filen lagres som `ÅÅÅÅ-UU.html` (f.eks. `2025-05.html`)
 
 2. **Last opp til GitHub**
