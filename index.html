@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Timer</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background-color: #45a049; }
+    #articleContainer { margin-top: 20px; }
+    img.logo { max-width: 200px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+<img src="Image_2.png" alt="Logo" class="logo">
+<h1>Study Timer</h1>
+<button onclick="hentArtikkel()">Hent artikkel</button>
+
+<div id="articleContainer"></div>
+
+<script>
+function hentArtikkel() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const week = Math.ceil((today - new Date(year, 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+  const weekStr = String(week).padStart(2, '0');
+  const filename = `${year}-${weekStr}.html`;
+
+  fetch(filename)
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('articleContainer').innerHTML = html;
+    })
+    .catch(err => {
+      document.getElementById('articleContainer').innerHTML = '<p>Fant ikke ukens artikkel.</p>';
+    });
+}
+</script>
+
+</body>
+</html>
