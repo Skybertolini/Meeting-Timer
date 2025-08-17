@@ -1,752 +1,275 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<meta charset="UTF-8" />
-<met a name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Study Timer</title>
 <style>
-  :root{
-    --green:#28a745;
-    --blue:#0d6efd;
-    --orange:#ff8800;
-    --elapsed-fill: rgba(220, 20, 20, 0.35);
-    --elapsed-line: #cc0000;
-    --msg-border:#28a745;
-    --msg-shadow: rgba(40,167,69,.25);
-    --stop-red:#d21f3c;
-    --muted:#9aa3ab;
-
-    --radius: 14px;
-    --radius-pill: 999px;
-    --card-bg: rgba(255,255,255,.72);
-    --card-border: rgba(0,0,0,.06);
-    --shadow-soft: 0 8px 30px rgba(0,0,0,.08);
-    --shadow-press: 0 4px 18px rgba(0,0,0,.10);
-  }
-  html, body{
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
-                 Roboto, "Helvetica Neue", Arial, "Apple Color Emoji",
-                 "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-    letter-spacing: .01em;
-    background: linear-gradient(180deg,#f7f8fa 0%, #eef1f4 100%);
-    margin:0; padding:24px;
-    display:flex; flex-direction:column; align-items:center;
-  }
-  .container{ width:min(960px,94vw); max-width:880px; }
-
-  /* Topbar: logo venstre, språkvalg høyre */
-  .topbar {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: -8px 0 12px;
-  }
-  .topbar .logo-box img{
-    max-height:120px; /* dobbelt så stor som før */
-    width:auto;
-    border-radius:0;  /* flat */
-    box-shadow:none;  /* ingen skygge */
-  }
-  .lang-select {
-    appearance: none;
-    border: 1px solid rgba(0,0,0,.12);
-    background: rgba(255,255,255,.85);
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,.06);
-    cursor: pointer;
-  }
-
-  textarea{
-    width:100%; height:180px; resize:vertical; padding:12px; font-size:1rem;
-    border:1px solid rgba(0,0,0,.08); border-radius:var(--radius); background:#fff;
-    transition: box-shadow .18s ease, transform .06s ease, border-color .18s ease;
-    background: var(--card-bg); border:1px solid var(--card-border); box-shadow: var(--shadow-soft);
-  }
-  textarea:focus{
-    outline:none; border-color: rgba(46,170,220,.55);
-    box-shadow: 0 0 0 4px rgba(46,170,220,.18);
-  }
-  textarea.collapsed{ height:64px !important; color:#7b8894 !important; background: rgba(248,249,251,.85) !important; }
-
-  .btn{
-    background:var(--green); color:#fff; border:0; padding:12px 20px; border-radius:var(--radius-pill);
-    cursor:pointer; font-size:1rem; margin:10px 10px 0 0; font-weight:600; letter-spacing:.01em;
-    box-shadow:var(--shadow-soft); transition: transform .06s ease, box-shadow .18s ease, filter .18s ease, opacity .18s ease;
-  }
-  .btn:hover:not(:disabled){ transform: translateY(-1px); box-shadow: var(--shadow-press); filter: saturate(1.05); }
-  .btn:active:not(:disabled){ transform: translateY(0); box-shadow: var(--shadow-soft); }
-  .btn:focus-visible{ outline:none; box-shadow: 0 0 0 4px rgba(46,170,220,.18), var(--shadow-press); }
-  .btn:disabled{ background:#9aa3ab; cursor:not-allowed; }
-  .btn.done{ background:var(--green) !important; cursor:default; padding-left:16px; padding-right:16px; }
-  .btn.done::before{ content:"✓ "; font-weight:700; }
-
-  .info-line{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:10px; }
-  .inline-edit{
-    display:inline-flex; align-items:center; gap:8px; background: rgba(255,255,255,.72);
-    border:1px solid var(--card-border); border-radius:var(--radius-pill); padding:8px 10px;
-    box-shadow: var(--shadow-soft);
-  }
-  .inline-edit label{ color:#333; font-size:.95rem; }
-  .inline-edit input{
-    width:90px; padding:6px 8px; font-size:1rem; border:1px solid #cfd4da; border-radius:8px; background:#fff;
-  }
-  .inline-edit input.ghost{ color:#9aa3ab !important; }
-
-  .title{ font-size:1.25rem; font-weight:700; margin-top:14px; }
-  .container.running .title{
-    font-size: 1.6rem;
-    margin-top: 18px;
-    margin-bottom: 12px;
-  }
-
-  .message-box{
-    margin-top:12px; padding:14px 18px; background:var(--card-bg);
-    border:1px solid var(--card-border); border-radius:var(--radius);
-    font-size:1.1rem; color:#0c2915; box-shadow:var(--shadow-soft);
-    min-height:1.2em;
-  }
-
-  .timeline-wrap{ width:100%; margin-top:28px; }
-  .timeline{
-    position:relative; height:52px; border-radius:var(--radius);
-    background: linear-gradient(180deg,#f3fbf6 0%, #eaf6ec 100%);
-    border:1px solid rgba(0,0,0,.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), var(--shadow-soft);
-    overflow:visible;
-  }
-  .slot{ position:absolute; top:0; height:100%; opacity:.25; }
-  .para-slot{
-    position:absolute; top:0; height:100%;
-    display:flex; align-items:center; justify-content:center;
-    border-left:1px solid rgba(0,0,0,.04);
-    border-right:1px solid rgba(255,255,255,.45);
-    pointer-events:none; z-index:1;
-    font-size:.78rem; font-weight:800; color:#134e2f;
-    text-shadow:0 1px 0 rgba(255,255,255,.55);
-  }
-  .elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(255,77,64,.25); width:0%; transition: width .25s linear; z-index:2; }
-  .cursor{ position:absolute; top:-10px; width:2px; height:72px; background: linear-gradient(#e3262e, #b4141a); left:0%; z-index:3; box-shadow:0 0 0 2px rgba(227,38,46,.12); }
-
-  #clock{ margin-top:20px; font-size:1.9rem; font-weight:800; color:#1e824c; text-shadow:0 1px 0 #fff; letter-spacing:.02em; }
-  #clock.over{ color:#c41111; text-shadow:none; }
-
-  .footer{ margin-top:22px; width:100%; display:flex; justify-content:flex-start; align-items:center; gap:14px; }
-  .round-btn{ display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:999px; border:0; cursor:pointer;
-              box-shadow:var(--shadow-soft); transition: transform .06s ease, box-shadow .18s ease; }
-  .round-btn:hover:not(:disabled){ transform: translateY(-1px); box-shadow: var(--shadow-press); }
-  .round-btn:active:not(:disabled){ transform: translateY(0); box-shadow: var(--shadow-soft); }
-  .play-btn{ background:var(--green); }
-  .play-btn::before{ content:"▶"; color:#fff; font-size:1.5rem; margin-left:3px; }
-  .pause-btn{ background:#f0ad4e; }
-  .pause-btn::before{ content:"❚❚"; color:#fff; font-size:1.2rem; }
-  .stop-btn{ background:var(--stop-red); }
-  .stop-btn::before{ content:""; display:block; width:16px; height:16px; background:#fff; border-radius:2px; }
-  .play-btn:disabled, .pause-btn:disabled, .stop-btn:disabled{ background:#aaa; cursor:not-allowed; box-shadow:none; }
-
-  .notes-section{ margin-top:32px; }
-  .notes-section label{ font-weight:600; display:block; margin-bottom:6px; }
-  .notes-section textarea{ height:120px; }
-
-  .copyright{ margin-top:24px; font-size:.9rem; color:#777; text-align:center; }
-
-  @media (prefers-color-scheme: dark){
-    :root{
-      --card-bg: rgba(20,20,22,.55);
-      --card-border: rgba(255,255,255,.08);
-      --shadow-soft: 0 10px 30px rgba(0,0,0,.5);
-      --shadow-press: 0 6px 24px rgba(0,0,0,.55);
-    }
-    body{ background: linear-gradient(180deg,#0f1114 0%, #13161a 100%); color:#e7eaee; }
-    .inline-edit label{ color:#d4dae1; }
-    .timeline{ background: linear-gradient(180deg,#142018 0%, #101a13 100%); border-color: rgba(255,255,255,.08); }
-    .inline-edit, .message-box, textarea#articleText, .notes-section textarea{
-      color:#e7eaee; background: var(--card-bg); border-color: var(--card-border);
-    }
-    #clock{ color:#8ae6b3; text-shadow:none; }
-    .para-slot{ color:#dff7ea; text-shadow:none; border-left-color: rgba(255,255,255,.06); border-right-color: rgba(255,255,255,.06); }
-    .lang-select { border-color: rgba(255,255,255,.12); background: rgba(20,20,22,.55); color:#e7eaee; }
-  }
-  @media (prefers-reduced-motion: reduce){
-    *{ transition:none !important; animation:none !important; }
-  }
+:root{--green:#28a745;--blue:#0d6efd;--orange:#ff8800;--elapsed-fill:rgba(220,20,20,.35);--elapsed-line:#cc0000;--card-bg:rgba(255,255,255,.72);--card-border:rgba(0,0,0,.06);--muted:#9aa3ab;}
+html,body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:linear-gradient(180deg,#f7f8fa 0%,#eef1f4 100%);margin:0;padding:24px;display:flex;flex-direction:column;align-items:center}
+.container{width:min(960px,94vw);max-width:880px}
+.topbar{width:100%;display:flex;justify-content:space-between;align-items:center;margin:-8px 0 12px}
+.logo-box img{max-height:120px;width:auto;border-radius:0;box-shadow:none}
+.lang-select{appearance:none;border:1px solid rgba(0,0,0,.12);background:rgba(255,255,255,.85);border-radius:999px;padding:8px 14px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.06);cursor:pointer}
+textarea{width:100%;height:180px;resize:vertical;padding:12px;font-size:1rem;border:1px solid rgba(0,0,0,.08);border-radius:14px;background:var(--card-bg);box-shadow:0 8px 30px rgba(0,0,0,.08)}
+textarea:focus{outline:none;border-color:rgba(46,170,220,.55);box-shadow:0 0 0 4px rgba(46,170,220,.18)}
+textarea.collapsed{height:64px!important;color:#7b8894!important;background:rgba(248,249,251,.85)!important}
+.btn{background:var(--green);color:#fff;border:0;padding:12px 20px;border-radius:999px;cursor:pointer;font-size:1rem;margin:10px 10px 0 0;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.btn:disabled{background:#9aa3ab;cursor:not-allowed}
+.btn.done{padding:12px 16px}
+.btn.done::before{content:"✓";font-weight:700}
+.info-line{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:10px}
+.inline-edit{display:inline-flex;align-items:center;gap:8px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:999px;padding:8px 10px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.inline-edit label{font-size:.95rem}
+.inline-edit input{width:90px;padding:6px 8px;font-size:1rem;border:1px solid #cfd4da;border-radius:8px;background:#fff}
+.inline-edit input.ghost{color:var(--muted)!important}
+.title{font-size:1.25rem;font-weight:700;margin-top:14px}
+.container.running .title{font-size:1.6rem;margin:18px 0 12px}
+.message-box{margin-top:12px;padding:14px 18px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;font-size:1.1rem;color:#0c2915;box-shadow:0 8px 30px rgba(0,0,0,.08);min-height:1.2em}
+.timeline-wrap{width:100%;margin-top:28px}
+.timeline{position:relative;height:52px;border-radius:14px;background:linear-gradient(180deg,#f3fbf6 0%,#eaf6ec 100%);border:1px solid rgba(0,0,0,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 8px 30px rgba(0,0,0,.08);overflow:visible}
+.slot{position:absolute;top:0;height:100%;opacity:.25}
+.para-slot{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;border-left:1px solid rgba(0,0,0,.04);border-right:1px solid rgba(255,255,255,.45);pointer-events:none;z-index:1;font-size:.82rem;font-weight:800;color:#134e2f;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(255,77,64,.25);width:0%;transition:width .25s linear;z-index:2}
+.cursor{position:absolute;top:-10px;width:2px;height:72px;background:linear-gradient(#e3262e,#b4141a);left:0%;z-index:3;box-shadow:0 0 0 2px rgba(227,38,46,.12)}
+#clock{margin-top:20px;font-size:2rem;font-weight:800;color:#1e824c;text-shadow:0 1px 0 #fff}
+#clock.over{color:#c41111;text-shadow:none}
+.footer{margin-top:22px;width:100%;display:flex;gap:14px}
+.round-btn{display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:999px;border:0;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.play-btn{background:var(--green)}
+.play-btn::before{content:"▶";color:#fff;font-size:1.5rem;margin-left:3px}
+.pause-btn{background:#f0ad4e}
+.pause-btn::before{content:"❚❚";color:#fff;font-size:1.2rem}
+.stop-btn{background:#d21f3c}
+.stop-btn::before{content:"";display:block;width:16px;height:16px;background:#fff;border-radius:2px}
+.play-btn:disabled,.pause-btn:disabled,.stop-btn:disabled{background:#aaa;cursor:not-allowed;box-shadow:none}
+.notes-section{margin-top:32px}
+.notes-section label{font-weight:600;display:block;margin-bottom:6px}
+.notes-section textarea{height:120px}
+.copyright{margin-top:24px;font-size:.9rem;color:#777;text-align:center}
+@media (prefers-color-scheme:dark){
+:root{--card-bg:rgba(20,20,22,.55);--card-border:rgba(255,255,255,.08)}
+body{background:linear-gradient(180deg,#0f1114 0%,#13161a 100%);color:#e7eaee}
+.inline-edit label{color:#d4dae1}
+.timeline{background:linear-gradient(180deg,#142018 0%,#101a13 100%);border-color:rgba(255,255,255,.08)}
+.inline-edit,.message-box,textarea#articleText,.notes-section textarea{color:#e7eaee;background:var(--card-bg);border-color:var(--card-border)}
+#clock{color:#8ae6b3;text-shadow:none}
+.para-slot{color:#dff7ea;text-shadow:none;border-left-color:rgba(255,255,255,.06);border-right-color:rgba(255,255,255,.06)}
+.lang-select{border-color:rgba(255,255,255,.12);background:rgba(20,20,22,.55);color:#e7eaee}}
 </style>
 </head>
 <body>
-  <div class="container" id="appContainer">
-
-    <!-- Toppmeny: logo venstre, språkvalg høyre -->
-    <div class="topbar">
-      <div class="logo-box">
-        <img src="study-timer-logo.png" alt="Study Timer logo">
-      </div>
-      <select id="langSelect" class="lang-select" aria-label="Language">
-        <option value="no">Norwegian</option>
-        <option value="sv">Swedish</option>
-        <option value="da">Danish</option>
-        <option value="en">English</option>
-        <option value="es">Spanish</option>
-      </select>
-    </div>
-
-    <!-- Tekstfelt med instruks som placeholder -->
-    <textarea id="articleText" placeholder=""></textarea>
-    <button id="analyzeBtn" class="btn">Analyser</button>
-
-    <!-- Redigerbar info + juster -->
-    <div class="info-line" id="infoLine">
-      <div class="inline-edit">
-        <label for="editParagraphs" id="lblParagraphs">Avsnitt</label>
-        <input id="editParagraphs" type="number" min="1" value="0" class="ghost">
-      </div>
-      <div class="inline-edit">
-        <label for="editQuestions" id="lblQuestions">Spørsmål</label>
-        <input id="editQuestions" type="number" min="0" value="0" class="ghost">
-      </div>
-      <div class="inline-edit">
-        <label for="editScriptures" id="lblScriptures">Les-skriftsteder</label>
-        <input id="editScriptures" type="number" min="0" value="0" class="ghost">
-      </div>
-      <button id="adjustBtn" class="btn" disabled>Juster</button>
-    </div>
-
-    <!-- Tittel + meldinger -->
-    <div id="articleTitle" class="title"></div>
-    <div id="message" class="message-box">Begynn med å lime inn artikkelserien og analysere den.</div>
-
-    <!-- Tidslinje -->
-    <div class="timeline-wrap">
-      <div id="timeline" class="timeline">
-        <div id="introSlot"  class="slot" style="background:var(--blue)"></div>
-        <div id="reviewSlot" class="slot" style="background:var(--orange)"></div>
-        <div id="outroSlot"  class="slot" style="background:var(--blue)"></div>
-        <div id="elapsed" class="elapsed"></div>
-        <div id="cursor"  class="cursor"></div>
-      </div>
-      <div id="clock" class="clock">00:00</div>
-    </div>
-
-    <!-- Kontrollpanel -->
-    <div class="footer">
-      <button id="playBtn"  class="round-btn play-btn"  disabled title="Start/Gjenoppta"></button>
-      <button id="pauseBtn" class="round-btn pause-btn" disabled title="Pause"></button>
-      <button id="stopBtn"  class="round-btn stop-btn"  disabled title="Ferdig"></button>
-    </div>
-
-    <!-- Notater -->
-    <div class="notes-section">
-      <label for="notes" id="lblNotes">Notater</label>
-      <textarea id="notes" placeholder=""></textarea>
-    </div>
-
-    <!-- Copyright -->
-    <div class="copyright">Study Timer © 2025</div>
+<div class="container" id="appContainer">
+  <div class="topbar">
+    <div class="logo-box"><img src="study-timer-logo.png" alt="Study Timer logo"></div>
+    <select id="langSelect" class="lang-select" aria-label="Language">
+      <option value="no">Norwegian</option><option value="sv">Swedish</option>
+      <option value="da">Danish</option><option value="en">English</option><option value="es">Spanish</option>
+    </select>
   </div>
 
-  <!-- i18n loader -->
-  <script src="i18n.js"></script>
+  <textarea id="articleText" placeholder=""></textarea>
+  <button id="analyzeBtn" class="btn">Analyser</button>
 
-  <script>
-  // ---- Lang placeholder-tekster ----
-  const LONG_PLACEHOLDER = {
-    no: "Gå til wol.jw.org og finn ukens vakttårnstudieartikkel. Kopier all tekst derfra og lim den inn i dette feltet. Etterpå kan du trykke «Analyser».",
-    en: "Go to wol.jw.org and find this week’s Watchtower study article. Copy all the text from there and paste it into this field. Then press “Analyze”.",
-    es: "Ve a wol.jw.org y busca el artículo de estudio de La Atalaya de esta semana. Copia todo el texto y pégalo en este campo. Luego pulsa «Analizar».",
-    sv: "Gå till wol.jw.org och hitta veckans Vakttornet-studieartikel. Kopiera hela texten och klistra in den här. Tryck sedan ”Analysera”.",
-    da: "Gå til wol.jw.org og find ugens Vagttårns-studieartikel. Kopiér hele teksten og indsæt den her. Tryk derefter ”Analyser”."
-  };
-  function applyLongPlaceholder() {
-    const ta = document.getElementById('articleText');
-    if (!ta) return;
-    const lang = (window.LANG || 'no').toLowerCase();
-    ta.placeholder = LONG_PLACEHOLDER[lang] || LONG_PLACEHOLDER.no;
+  <div class="info-line" id="infoLine">
+    <div class="inline-edit"><label for="editParagraphs">Avsnitt</label><input id="editParagraphs" type="number" min="1" value="0" class="ghost"></div>
+    <div class="inline-edit"><label for="editQuestions">Spørsmål</label><input id="editQuestions" type="number" min="0" value="0" class="ghost"></div>
+    <div class="inline-edit"><label for="editScriptures">Les-skriftsteder</label><input id="editScriptures" type="number" min="0" value="0" class="ghost"></div>
+    <button id="adjustBtn" class="btn" disabled>Juster</button>
+  </div>
+
+  <div id="articleTitle" class="title"></div>
+  <div id="message" class="message-box">Begynn med å lime inn artikkelserien og analysere den.</div>
+
+  <div class="timeline-wrap">
+    <div id="timeline" class="timeline">
+      <div id="introSlot"  class="slot" style="background:var(--blue)"></div>
+      <div id="reviewSlot" class="slot" style="background:var(--orange)"></div>
+      <div id="outroSlot"  class="slot" style="background:var(--blue)"></div>
+      <div id="elapsed" class="elapsed"></div>
+      <div id="cursor"  class="cursor"></div>
+    </div>
+    <div id="clock" class="clock">00:00</div>
+  </div>
+
+  <div class="footer">
+    <button id="playBtn"  class="round-btn play-btn"  disabled title="Start/Gjenoppta"></button>
+    <button id="pauseBtn" class="round-btn pause-btn" disabled title="Pause"></button>
+    <button id="stopBtn"  class="round-btn stop-btn"  disabled title="Ferdig"></button>
+  </div>
+
+  <div class="notes-section"><label for="notes">Notater</label><textarea id="notes" placeholder=""></textarea></div>
+  <div class="copyright">Study Timer © 2025</div>
+</div>
+
+<script>
+/* ====== Konstanter ====== */
+const TOTAL_SEC=3600,INTRO_SEC=90,REVIEW_SEC=120,OUTRO_SEC=90,CONTENT_SEC=TOTAL_SEC-INTRO_SEC-REVIEW_SEC-OUTRO_SEC;
+const WPM=150,SEC_PER_Q=10,SEC_PER_LES=30,AB_BONUS=30;
+const HEADER_RE=/^(\d+(?:[\s\u00A0]*,[\s\u00A0]*\d+)*)\.\s*(.*)?$/; const BODY_START_RE=/^(\d+)[\.\s\u00A0]+(.*)$/;
+const LONG_PLACEHOLDER={no:"Gå til wol.jw.org og finn ukens vakttårnstudieartikkel. Kopier all tekst derfra og lim den inn i dette feltet. Etterpå kan du trykke «Analyser».",en:"Go to wol.jw.org and find this week’s Watchtower study article. Copy all the text from there and paste it into this field. Then press “Analyze”.",es:"Ve a wol.jw.org y busca el artículo de estudio de La Atalaya de esta semana. Copia todo el texto y pégalo en este campo. Luego pulsa «Analizar».",sv:"Gå till wol.jw.org och hitta veckans Vakttornet-studieartikel. Kopiera hela texten och klistra in den här. Tryck sedan ”Analysera”.",da:"Gå til wol.jw.org og find ugens Vagttårns-studieartikel. Kopiér hele teksten og indsæt den her. Tryk derefter ”Analyser”."};
+const $=id=>document.getElementById(id),pct=sec=>sec/TOTAL_SEC*100;
+
+/* ====== Tilstand ====== */
+let paras=[],totalParagraphs=0,questions=0,scriptures=0,perParagraph=[],cumulative=[];
+let started=false,paused=false,startTs=null,accumSec=0,tickHandle=null,lastMilestone="";
+
+/* ====== Init ====== */
+function applyPlaceholder(){ const lang=(document.getElementById('langSelect').value||'no').toLowerCase(); $('articleText').placeholder=LONG_PLACEHOLDER[lang]||LONG_PLACEHOLDER.no; }
+window.addEventListener('DOMContentLoaded',applyPlaceholder);
+$('langSelect').addEventListener('change',applyPlaceholder);
+
+/* ====== UI handlers ====== */
+$('analyzeBtn').addEventListener('click',onAnalyze); $('playBtn').addEventListener('click',onPlay);
+$('pauseBtn').addEventListener('click',onPause); $('stopBtn').addEventListener('click',onStop);
+['editParagraphs','editQuestions','editScriptures'].forEach(id=>{ $(id).addEventListener('input',e=>e.target.classList.remove('ghost')); $(id).addEventListener('change',e=>e.target.classList.remove('ghost'));});
+$('adjustBtn').addEventListener('click',onAdjust);
+
+/* ====== Analyse ====== */
+function onAnalyze(){
+  const raw=$('articleText').value.trim(); if(!raw){alert('Lim inn teksten først.');return;}
+  analyzeText(raw);
+  const ta=$('articleText'); ta.classList.add('collapsed'); ta.style.height='64px'; ta.style.color='#7b8894'; ta.style.background='rgba(248,249,251,.85)'; ta.blur();
+  const ab=$('analyzeBtn'); ab.textContent=''; ab.classList.add('done'); ab.disabled=true;
+  if(totalParagraphs>0){ setMessage('Alt er klart. Trykk Play for å starte studiet.'); $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=true; }
+  else{ setMessage('Fant ingen avsnitt. Sjekk at avsnittene starter med tall (f.eks. «1.» eller «6, 7.») og prøv igjen.'); $('playBtn').disabled=true; $('pauseBtn').disabled=true; $('stopBtn').disabled=true; }
+}
+function analyzeText(text){
+  const norm=text.replace(/\u00A0/g,' '),lines=norm.split('\n').map(l=>l.trim()).filter(Boolean);
+  $('articleTitle').textContent=pickTitle(lines)||"Ukens studieartikkel";
+  paras=extractParagraphs(lines); totalParagraphs=paras.length;
+  questions=paras.reduce((s,p)=>s+p.q,0); scriptures=paras.reduce((s,p)=>s+p.les,0);
+  computeAllocation(); drawTimeline(); updateInfoLine(true); resetClockUI();
+}
+function pickTitle(lines){
+  const blacklist=/^(Publikasjoner|STUDIEARTIKKEL\b|SANG\b|FOKUS\b|Underoverskrifter|Lignende stoff|Audio Player|Norsk\b|Del\b|Innstillinger\b|Logg inn\b|JW\.ORG\b|HVA SVARER DU\b|w\d{2}\b)/i;
+  const looksLikeTheme=/^\s*(«.+»|".+")\s*—\s*[1-3]?\s*[A-ZÆØÅ][a-zæøå. ]*\d/; const tooMany=l=>l.split(/\s+/).length>16;
+  const idxSang=lines.findIndex(l=>/^SANG[\s\u00A0]*\d+/i.test(l));
+  if(idxSang>=0){for(let j=idxSang+1;j<Math.min(lines.length,idxSang+8);j++){const c=(lines[j]||'').trim(); if(!c)continue; if(blacklist.test(c))continue; if(/^\d/.test(c))continue; if(!/[A-Za-zÆØÅæøå]/.test(c))continue; if(!/[a-zæøå]/.test(c))continue; if(looksLikeTheme.test(c))continue; if(tooMany(c))continue; if(c.length<6||c.length>160)continue; return c;}}
+  const firstParaIdx=lines.findIndex(l=>HEADER_RE.test(l)||BODY_START_RE.test(l));
+  const headerZone=firstParaIdx>-1?lines.slice(0,firstParaIdx):lines.slice(0,30);
+  const cands=headerZone.filter(l=>{if(blacklist.test(l))return false; if(/^\d/.test(l))return false; if(!/[A-Za-zÆØÅæøå]/.test(l))return false; if(!/[a-zæøå]/.test(l))return false; if(looksLikeTheme.test(l))return false; if(tooMany(l))return false; if(l.length<6||l.length>160)return false; return true;});
+  if(!cands.length)return '';
+  const score=s=>(/[–—-]/.test(s)?3:0)+(/:/.test(s)?1:0)+Math.max(0,16-s.split(/\s+/).length);
+  cands.sort((a,b)=>score(b)-score(a)); return cands[0];
+}
+function extractParagraphs(lines){
+  const out=[]; let pendingNums=[],pendingAB=false,currentNum=null,currentAB=false,buf=[];
+  const skip=/^(HVA SVARER DU|Svaret ditt)$/i;
+  const push=()=>{ if(currentNum!==null){ const text=buf.join(' ').trim(); const words=(text.match(/\S+/g)||[]).length; const q=1; const les=(text.match(/\bLes\b/gi)||[]).length; out.push({num:currentNum,text,words,q,les,hasAB:currentAB}); } buf=[]; };
+  for(let raw of lines){
+    const l=raw.trim(); if(!l||skip.test(l))continue;
+    const h=l.match(HEADER_RE);
+    if(h){ push(); pendingNums=h[1].split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n)); const head=(h[2]||''); const hasA=/\(a\)/i.test(head),hasB=/\(b\)/i.test(head); pendingAB=(hasA&&hasB);
+      if(pendingNums.length){currentNum=pendingNums.shift(); currentAB=pendingAB;} else {currentNum=null; currentAB=false;}
+      if(head)buf.push(head); continue; }
+    const b=l.match(BODY_START_RE);
+    if(b){ const n=parseInt(b[1],10); const rest=(b[2]||'').trim();
+      if(pendingNums.length&&n===pendingNums[0]){ push(); currentNum=pendingNums.shift(); currentAB=pendingAB; if(rest)buf.push(rest); continue; }
+      if(currentNum===null||n!==currentNum){ push(); currentNum=n; currentAB=false; if(rest)buf.push(rest); continue; }
+      if(rest)buf.push(rest); continue; }
+    buf.push(l);
   }
-
-  // === Regex m/ NBSP-støtte ===
-  const HEADER_RE     = /^(\\d+(?:[\\s\\u00A0]*,[\\s\\u00A0]*\\d+)*)\\.\\s*(.*)?$/;
-  const BODY_START_RE = /^(\\d+)[\\.\\s\\u00A0]+(.*)$/;
-
-  // === Konstanter ===
-  const TOTAL_SEC   = 3600; // 60:00
-  const INTRO_SEC   = 90;   // 1:30
-  const REVIEW_SEC  = 120;  // 2:00 repetisjonsspørsmål
-  const OUTRO_SEC   = 90;   // 1:30
-  const CONTENT_SEC = TOTAL_SEC - INTRO_SEC - REVIEW_SEC - OUTRO_SEC; // 3300
-
-  // Smart-modus (alltid på)
-  const WPM         = 150;  // ord/min
-  const SEC_PER_Q   = 10;   // +sek per spørsmål (1 pr avsnitt)
-  const SEC_PER_LES = 30;   // +sek per "Les …"
-  const AB_BONUS    = 30;   // +30 sek ved (a) & (b)
-
-  const pct = (sec) => (sec / TOTAL_SEC) * 100;
-  const $ = (id) => document.getElementById(id);
-
-  // === Tilstand ===
-  let paras = [];        // {num, text, words, q, les, hasAB}
-  window.paras = paras;  // (slik at i18n kan sjekke)
-  let totalParagraphs = 0;
-  let questions = 0;
-  let scriptures = 0;
-  let perParagraph = []; // sek pr avsnitt
-  let cumulative = [];   // startsek pr avsnitt (etter intro)
-
-  // Timer
-  let started = false;
-  let paused = false;
-  let startTs = null;
-  let accumSec = 0;
-  let tickHandle = null;
-  let lastMilestone = "";
-
-  // === Lyttere ===
-  $('analyzeBtn').addEventListener('click', onAnalyze);
-  $('playBtn').addEventListener('click', onPlay);
-  $('pauseBtn').addEventListener('click', onPause);
-  $('stopBtn').addEventListener('click', onStop);
-  ['editParagraphs','editQuestions','editScriptures'].forEach(id=>{
-    $(id).addEventListener('input', e => e.target.classList.remove('ghost'));
-    $(id).addEventListener('change', e => e.target.classList.remove('ghost'));
-  });
-  $('adjustBtn').addEventListener('click', onAdjust);
-
-  // Språkvelger -> last språk og oppdater placeholder
-  document.getElementById('langSelect')?.addEventListener('change', (e)=>{
-    if (typeof loadLanguage === 'function') {
-      loadLanguage(e.target.value).then(applyLongPlaceholder);
-    } else {
-      applyLongPlaceholder();
-    }
-  });
-
-  window.addEventListener('DOMContentLoaded', ()=>{
-    setTimeout(applyLongPlaceholder, 0);
-  });
-
-  // === Handlers ===
-  function onAnalyze(){
-    const raw = $('articleText').value.trim();
-    if(!raw){ alert('Lim inn teksten først.'); return; }
-
-    analyzeText(raw);
-
-    const ta = $('articleText');
-    ta.classList.add('collapsed'); ta.style.height='64px'; ta.style.color='#7b8894';
-    ta.style.background = 'rgba(248,249,251,.85)'; ta.blur();
-
-    const ab = $('analyzeBtn');
-    ab.textContent = '';
-    ab.classList.add('done');
-    ab.disabled = true;
-
-    if (totalParagraphs > 0){
-      setMessage(typeof msgReady === 'function' ? msgReady() : 'Alt er klart. Trykk Play for å starte studiet.');
-      $('playBtn').disabled = false;
-      $('pauseBtn').disabled = true;
-      $('stopBtn').disabled = true;
-    } else {
-      setMessage('Fant ingen avsnitt. Sjekk at avsnittene starter med tall (f.eks. «1.» eller «6, 7.») og prøv igjen.');
-      $('playBtn').disabled = true;
-      $('pauseBtn').disabled = true;
-      $('stopBtn').disabled = true;
-    }
+  push();
+  const seen=new Set(),clean=[];
+  for(const p of out.sort((a,b)=>a.num-b.num)){
+    if(!seen.has(p.num)){ clean.push(p); seen.add(p.num); }
+    else{ const last=clean[clean.length-1]; last.text+=' '+p.text; last.words=(last.text.match(/\S+/g)||[]).length; last.les+=p.les; last.hasAB=last.hasAB||p.hasAB; }
   }
-
-  function onPlay(){
-    if (started && paused){
-      paused = false; startTs = Date.now(); startClock();
-      $('playBtn').disabled = true; $('pauseBtn').disabled = false; $('stopBtn').disabled = false;
-      return;
-    }
-    if (!started){
-      accumSec = 0; startTs = Date.now(); started = true; paused = false;
-
-      const info = document.getElementById('infoLine'); if (info) info.style.display = 'none';
-      document.getElementById('appContainer').classList.add('running');
-
-      $('clock').textContent = '00:00';
-      $('elapsed').style.width = '0%'; $('cursor').style.left = '0%';
-
-      setMessage(typeof msgIntro === 'function' ? msgIntro() : 'Introduksjon');
-      startClock();
-
-      $('playBtn').disabled = true; $('pauseBtn').disabled = false; $('stopBtn').disabled = false;
-    }
+  if(!clean.length){ const joined=lines.join('\n'); const rough=joined.split(/\n(?=\d+[.]\s)/).filter(s=>/^\d+[.]\s/.test(s));
+    rough.forEach((block,i)=>{ const text=block.replace(/^\d+[.]\s*/,''); const words=(text.match(/\S+/g)||[]).length; const q=1; const les=(text.match(/\bLes\b/gi)||[]).length; clean.push({num:i+1,text,words,q,les,hasAB:false});});
   }
+  return clean;
+}
 
-  function onPause(){
-    if (!started || paused) return;
-    accumSec += Math.floor((Date.now() - startTs)/1000);
-    paused = true; stopClock();
-    setMessage(typeof msgPause === 'function' ? msgPause() : 'Pause');
-    $('playBtn').disabled = false; $('pauseBtn').disabled = true; $('stopBtn').disabled = false;
+/* ====== Fordeling & tidslinje ====== */
+function computeAllocation(){
+  if(totalParagraphs===0){perParagraph=[];cumulative=[];return;}
+  let list=paras.slice(0,totalParagraphs); while(list.length<totalParagraphs) list.push({num:list.length+1,text:'',words:0,q:1,les:0,hasAB:false});
+  const wps=WPM/60,raw=list.map(p=>{let sec=(p.words||0)/wps+(p.q||0)*SEC_PER_Q+(p.les||0)*SEC_PER_LES; if(p.hasAB)sec+=AB_BONUS; return Math.max(5,sec);});
+  const scale=CONTENT_SEC/(raw.reduce((a,b)=>a+b,0)||1); perParagraph=raw.map(x=>x*scale);
+  cumulative=[]; let acc=INTRO_SEC; for(let i=0;i<totalParagraphs;i++){cumulative.push(acc); acc+=perParagraph[i];}
+}
+function hexToRgb(h){const s=h.replace('#','');const n=s.length===3?s.split('').map(x=>x+x).join(''):s;return{r:parseInt(n.slice(0,2),16),g:parseInt(n.slice(2,4),16),b:parseInt(n.slice(4,6),16)}}
+function lerpColor(h1,h2,t){const a=hexToRgb(h1),b=hexToRgb(h2);const r=Math.round(a.r+(b.r-a.r)*t),g=Math.round(a.g+(b.g-a.g)*t),bl=Math.round(a.b+(b.b-a.b)*t);return`rgb(${r}, ${g}, ${bl})`}
+function drawTimeline(){
+  const t=$('timeline'); Array.from(t.querySelectorAll('.para-slot')).forEach(n=>n.remove());
+  $('introSlot').style.left='0%'; $('introSlot').style.width=pct(INTRO_SEC).toFixed(5)+'%';
+  $('outroSlot').style.right='0%'; $('outroSlot').style.width=pct(OUTRO_SEC).toFixed(5)+'%';
+  $('reviewSlot').style.right=pct(OUTRO_SEC).toFixed(5)+'%'; $('reviewSlot').style.width=pct(REVIEW_SEC).toFixed(5)+'%';
+  if(totalParagraphs<=0){$('elapsed').style.width='0%';$('cursor').style.left='0%';return;}
+  const startCol='#e8f6ee',endCol='#bfe3ce',elapsedNode=$('elapsed');
+  for(let i=1;i<=totalParagraphs;i++){
+    const leftP=pct(cumulative[i-1]),widthP=pct(perParagraph[i-1]);
+    const slot=document.createElement('div'); slot.className='para-slot'; slot.style.left=leftP+'%'; slot.style.width=widthP+'%';
+    const tN=(i-1)/Math.max(1,(totalParagraphs-1)); slot.style.background=lerpColor(startCol,endCol,tN);
+    const lbl=document.createElement('div'); lbl.textContent=String(i); slot.appendChild(lbl);
+    t.insertBefore(slot,elapsedNode);
   }
+  $('elapsed').style.width='0%'; $('cursor').style.left='0%';
+}
 
-  function onStop(){
-    if (!started && accumSec === 0) return;
-    const live = (started && !paused) ? Math.floor((Date.now() - startTs)/1000) : 0;
-    const total = accumSec + live;
-
-    stopClock();
-    const donePrefix = (typeof finishedPrefix === 'function') ? finishedPrefix() : 'Studiet ferdig — tid brukt:';
-    setMessage(`${donePrefix} ${fmt(total)}`);
-
-    started = false; paused = false; accumSec = 0;
-    $('playBtn').disabled = false; $('pauseBtn').disabled = true; $('stopBtn').disabled = true;
-
-    const info = document.getElementById('infoLine'); if (info) info.style.display = 'flex';
-    document.getElementById('appContainer').classList.remove('running');
+/* ====== Klokke / meldinger ====== */
+function resetClockUI(){ if(tickHandle)clearInterval(tickHandle); $('clock').textContent='00:00'; $('clock').classList.remove('over'); }
+function startClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=setInterval(tick,250); }
+function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null; }
+function currentElapsed(){ if(!started)return accumSec; if(paused)return accumSec; const live=Math.floor((Date.now()-startTs)/1000); return accumSec+live; }
+function setMessage(m){ if(m!==lastMilestone){$('message').textContent=m; lastMilestone=m;} }
+function tick(){
+  const elapsed=currentElapsed(); $('clock').textContent=String(Math.floor(elapsed/60)).padStart(2,'0')+':'+String(elapsed%60).padStart(2,'0');
+  if(elapsed>=TOTAL_SEC)$('clock').classList.add('over'); else $('clock').classList.remove('over');
+  const p=Math.min(elapsed/TOTAL_SEC*100,100); $('elapsed').style.width=p+'%'; $('cursor').style.left=`calc(${p}% - 1px)`;
+  if(elapsed<INTRO_SEC){ setMessage('Introduksjon'); }
+  else if(elapsed>=TOTAL_SEC){ setMessage('Du er over tiden'); }
+  else if(elapsed>=TOTAL_SEC-OUTRO_SEC){ setMessage('Avslutning'); }
+  else if(elapsed>=TOTAL_SEC-OUTRO_SEC-REVIEW_SEC){ setMessage('Repetisjonsspørsmål'); }
+  else{
+    let idx=0; for(let i=0;i<totalParagraphs;i++){ const start=cumulative[i],end=(i===totalParagraphs-1)?(TOTAL_SEC-OUTRO_SEC-REVIEW_SEC):cumulative[i+1]; if(elapsed>=start&&elapsed<end){idx=i;break;}}
+    let msg=`Avsnitt ${idx+1}`; if(elapsed>=1800&&elapsed<1860) msg+=' — Halvveis i studiet!'; setMessage(msg);
   }
+}
 
-  function onAdjust(){
-    const pVal = parseInt($('editParagraphs').value, 10);
-    const qVal = parseInt($('editQuestions').value, 10);
-    const sVal = parseInt($('editScriptures').value, 10);
-
-    if(!isNaN(pVal) && pVal > 0 && pVal !== totalParagraphs){
-      totalParagraphs = pVal;
-      if (paras.length > totalParagraphs) {
-        paras = paras.slice(0, totalParagraphs);
-      } else {
-        while (paras.length < totalParagraphs) {
-          paras.push({num: paras.length+1, text:'', words:0, q:1, les:0, hasAB:false});
-        }
-      }
-      computeAllocation(); drawTimeline();
-    }
-    if(!isNaN(qVal) && qVal >= 0) questions = qVal;
-    if(!isNaN(sVal) && sVal >= 0) scriptures = sVal;
-
-    updateInfoLine(false);
+/* ====== Controls ====== */
+function onPlay(){
+  if(started&&paused){ paused=false; startTs=Date.now(); startClock(); $('playBtn').disabled=true;$('pauseBtn').disabled=false;$('stopBtn').disabled=false; return;}
+  if(!started){
+    accumSec=0; startTs=Date.now(); started=true; paused=false;
+    const info=$('infoLine'); if(info)info.style.display='none'; $('appContainer').classList.add('running');
+    $('clock').textContent='00:00'; $('elapsed').style.width='0%'; $('cursor').style.left='0%'; setMessage('Introduksjon'); startClock();
+    $('playBtn').disabled=true; $('pauseBtn').disabled=false; $('stopBtn').disabled=false;
   }
-
-  // === Analyse & parsing ===
-  function analyzeText(text){
-    const norm = text.replace(/\\u00A0/g, ' ');
-    const lines = norm.split('\\n').map(l => l.trim()).filter(Boolean);
-
-    const title = pickTitle(lines);
-    $('articleTitle').textContent = title || (document.documentElement.lang === 'en' ? "This week’s study article" : "Ukens studieartikkel");
-
-    paras = extractParagraphs(lines);
-    totalParagraphs = paras.length;
-    questions = paras.reduce((s,p)=> s + p.q, 0);
-    scriptures = paras.reduce((s,p)=> s + p.les, 0);
-
-    computeAllocation(); drawTimeline(); updateInfoLine(true); resetClockUI();
-    window.paras = paras;
+}
+function onPause(){ if(!started||paused)return; accumSec+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setMessage('Pause'); $('playBtn').disabled=false;$('pauseBtn').disabled=true;$('stopBtn').disabled=false; }
+function onStop(){
+  if(!started&&accumSec===0)return;
+  const live=(started&&!paused)?Math.floor((Date.now()-startTs)/1000):0, total=accumSec+live;
+  stopClock(); setMessage(`Studiet ferdig — tid brukt: ${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`);
+  started=false; paused=false; accumSec=0; $('playBtn').disabled=false;$('pauseBtn').disabled=true;$('stopBtn').disabled=true;
+  const info=$('infoLine'); if(info)info.style.display='flex'; $('appContainer').classList.remove('running');
+}
+function onAdjust(){
+  const pVal=parseInt($('editParagraphs').value,10),qVal=parseInt($('editQuestions').value,10),sVal=parseInt($('editScriptures').value,10);
+  if(!isNaN(pVal)&&pVal>0&&pVal!==totalParagraphs){
+    totalParagraphs=pVal;
+    if(paras.length>totalParagraphs) paras=paras.slice(0,totalParagraphs);
+    else while(paras.length<totalParagraphs) paras.push({num:paras.length+1,text:'',words:0,q:1,les:0,hasAB:false});
+    computeAllocation(); drawTimeline();
   }
+  if(!isNaN(qVal)&&qVal>=0) questions=qVal; if(!isNaN(sVal)&&sVal>=0) scriptures=sVal; updateInfoLine(false);
+}
 
-  function pickTitle(lines){
-    const blacklist = /^(Publikasjoner|STUDIEARTIKKEL\\b|SANG\\b|FOKUS\\b|Underoverskrifter|Lignende stoff|Audio Player|Norsk\\b|Del\\b|Innstillinger\\b|Logg inn\\b|JW\\.ORG\\b|HVA SVARER DU\\b|w\\d{2}\\b)/i;
-    const looksLikeThemeText = /^\\s*(«.+»|".+")\\s*—\\s*[1-3]?\\s*[A-ZÆØÅ][a-zæøå. ]*\\d/;
-    const tooManyWords = l => l.split(/\\s+/).length > 16;
+/* ====== Info UI ====== */
+function updateInfoLine(resetGhost){
+  $('editParagraphs').value=Math.max(1,totalParagraphs|0);
+  $('editQuestions').value=Math.max(0,questions|0);
+  $('editScriptures').value=Math.max(0,scriptures|0);
+  if(resetGhost){$('editParagraphs').classList.add('ghost');$('editQuestions').classList.add('ghost');$('editScriptures').classList.add('ghost');}
+  $('adjustBtn').disabled=!(totalParagraphs>0);
+}
+setMessage('Begynn med å lime inn artikkelserien og analysere den.');
+</script>
 
-    const idxSang = lines.findIndex(l => /^SANG[\\s\\u00A0]*\\d+/i.test(l));
-    if (idxSang >= 0){
-      for (let j = idxSang + 1; j < Math.min(lines.length, idxSang + 8); j++){
-        const c = (lines[j] || '').trim();
-        if (!c) continue;
-        if (blacklist.test(c)) continue;
-        if (/^\\d/.test(c)) continue;
-        if (!/[A-Za-zÆØÅæøå]/.test(c)) continue;
-        if (!/[a-zæøå]/.test(c)) continue;
-        if (looksLikeThemeText.test(c)) continue;
-        if (tooManyWords(c)) continue;
-        if (c.length < 6 || c.length > 160) continue;
-        return c;
-      }
-    }
-
-    const firstParaIdx = lines.findIndex(l => HEADER_RE.test(l) || BODY_START_RE.test(l));
-    const headerZone = firstParaIdx > -1 ? lines.slice(0, firstParaIdx) : lines.slice(0, 30);
-
-    const candidates = headerZone.filter(l => {
-      if (blacklist.test(l)) return false;
-      if (/^\\d/.test(l)) return false;
-      if (!/[A-Za-zÆØÅæøå]/.test(l)) return false;
-      if (!/[a-zæøå]/.test(l)) return false;
-      if (looksLikeThemeText.test(l)) return false;
-      if (tooManyWords(l)) return false;
-      if (l.length < 6 || l.length > 160) return false;
-      return true;
-    });
-
-    if (candidates.length === 0) return '';
-    const score = s => (/[–—-]/.test(s) ? 3 : 0) + (/:/.test(s) ? 1 : 0) + Math.max(0, 16 - s.split(/\\s+/).length);
-    candidates.sort((a,b)=> score(b) - score(a));
-    return candidates[0];
-  }
-
-  function extractParagraphs(lines){
-    const out = [];
-    let pendingNums = [];
-    let pendingAB  = false;
-    let currentNum = null;
-    let currentAB  = false;
-    let buf = [];
-
-    const skipLineRe  = /^(HVA SVARER DU|Svaret ditt)$/i;
-
-    const pushPara = ()=>{
-      if(currentNum!==null){
-        const text = buf.join(' ').trim();
-        const words = (text.match(/\\S+/g) || []).length;
-        const q = 1; // 1 spørsmål pr nummerert avsnitt
-        const lesInstr = (text.match(/\\bLes\\b/gi) || []).length;
-        out.push({num: currentNum, text, words, q, les: lesInstr, hasAB: currentAB});
-      }
-      buf = [];
-    };
-
-    for (let raw of lines){
-      const l = raw.trim();
-      if(!l) continue;
-      if(skipLineRe.test(l)) continue;
-
-      const h = l.match(HEADER_RE);
-      if(h){
-        pushPara();
-        pendingNums = h[1].split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
-        const headText = (h[2]||'');
-        const hasA = /\\(a\\)/i.test(headText);
-        const hasB = /\\(b\\)/i.test(headText);
-        pendingAB = (hasA && hasB);
-
-        if(pendingNums.length){
-          currentNum = pendingNums.shift();
-          currentAB = pendingAB;
-        } else {
-          currentNum = null; currentAB = false;
-        }
-        if(headText) buf.push(headText);
-        continue;
-      }
-
-      const b = l.match(BODY_START_RE);
-      if(b){
-        const n = parseInt(b[1],10);
-        const rest = (b[2]||'').trim();
-
-        if(pendingNums.length && n === pendingNums[0]){
-          pushPara();
-          currentNum = pendingAB ? pendingNums.shift() : pendingNums.shift();
-          currentAB = pendingAB;
-          if(rest) buf.push(rest);
-          continue;
-        }
-
-        if(currentNum===null || n !== currentNum){
-          pushPara();
-          currentNum = n;
-          currentAB = false;
-          if(rest) buf.push(rest);
-          continue;
-        }
-
-        if(rest) buf.push(rest);
-        continue;
-      }
-
-      buf.push(l);
-    }
-    pushPara();
-
-    // Slå sammen duplikat-nummer
-    const seen = new Set();
-    const cleaned = [];
-    for (const p of out.sort((a,b)=>a.num-b.num)){
-      if(!seen.has(p.num)){ cleaned.push(p); seen.add(p.num); }
-      else {
-        const last = cleaned[cleaned.length-1];
-        last.text += ' ' + p.text;
-        last.words = (last.text.match(/\\S+/g) || []).length;
-        last.les += p.les;
-        last.hasAB = last.hasAB || p.hasAB;
-      }
-    }
-
-    if (cleaned.length === 0){
-      const joined = lines.join('\\n');
-      const rough = joined.split(/\\n(?=\\d+[.]\\s)/).filter(s => /^\\d+[.]\\s/.test(s));
-      rough.forEach((block, i)=> {
-        const text = block.replace(/^\\d+[.]\\s*/, '');
-        const words = (text.match(/\\S+/g) || []).length;
-        const q = 1;
-        const lesInstr = (text.match(/\\bLes\\b/gi) || []).length;
-        cleaned.push({num:i+1, text, words, q, les: lesInstr, hasAB:false});
-      });
-    }
-    return cleaned;
-  }
-
-  // === Fordeling & timeline ===
-  function computeAllocation(){
-    if(totalParagraphs === 0){ perParagraph=[]; cumulative=[]; return; }
-
-    let list = paras.slice(0, totalParagraphs);
-    if (list.length < totalParagraphs){
-      while(list.length < totalParagraphs) list.push({num:list.length+1, text:'', words:0, q:1, les:0, hasAB:false});
-    }
-
-    const wps = WPM / 60;
-    const raw = list.map(p => {
-      let sec = 0;
-      sec += (p.words || 0) / wps;
-      sec += (p.q || 0) * SEC_PER_Q;
-      sec += (p.les || 0) * SEC_PER_LES;
-      if (p.hasAB) sec += AB_BONUS;
-      if (sec < 5) sec = 5;
-      return sec;
-    });
-
-    const sumRaw = raw.reduce((a,b)=>a+b,0) || 1;
-    const scale  = CONTENT_SEC / sumRaw;
-    perParagraph = raw.map(x => x*scale);
-
-    cumulative = [];
-    let acc = INTRO_SEC;
-    for (let i=0;i<totalParagraphs;i++){
-      cumulative.push(acc);
-      acc += perParagraph[i];
-    }
-  }
-
-  function lerpColor(hex1, hex2, t){
-    const c1 = hexToRgb(hex1), c2 = hexToRgb(hex2);
-    const r = Math.round(c1.r + (c2.r - c1.r)*t);
-    const g = Math.round(c1.g + (c2.g - c1.g)*t);
-    const b = Math.round(c1.b + (c2.b - c1.b)*t);
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-  function hexToRgb(h){
-    const s = h.replace('#','');
-    const n = s.length===3 ? s.split('').map(x=>x+x).join('') : s;
-    return { r:parseInt(n.slice(0,2),16), g:parseInt(n.slice(2,4),16), b:parseInt(n.slice(4,6),16) };
-  }
-
-  function drawTimeline(){
-    const t = $('timeline');
-    Array.from(t.querySelectorAll('.para-slot')).forEach(n => n.remove());
-
-    $('introSlot').style.left  = '0%';
-    $('introSlot').style.width = pct(INTRO_SEC).toFixed(5) + '%';
-
-    $('outroSlot').style.right = '0%';
-    $('outroSlot').style.width = pct(OUTRO_SEC).toFixed(5) + '%';
-
-    $('reviewSlot').style.right = pct(OUTRO_SEC).toFixed(5) + '%';
-    $('reviewSlot').style.width = pct(REVIEW_SEC).toFixed(5) + '%';
-
-    if(totalParagraphs <= 0){
-      $('elapsed').style.width = '0%'; $('cursor').style.left = '0%';
-      return;
-    }
-
-    const startCol = '#e8f6ee';
-    const endCol   = '#bfe3ce';
-    const elapsedNode = $('elapsed');
-
-    for(let i=1;i<=totalParagraphs;i++){
-      const startSec = cumulative[i-1];
-      const widthSec = perParagraph[i-1];
-      const leftP = pct(startSec);
-      const widthP = pct(widthSec);
-
-      const slot = document.createElement('div');
-      slot.className = 'para-slot';
-      slot.style.left  = leftP + '%';
-      slot.style.width = widthP + '%';
-
-      const tNorm = (i-1) / Math.max(1, (totalParagraphs-1));
-      slot.style.background = lerpColor(startCol, endCol, tNorm);
-
-      const lbl = document.createElement('div');
-      lbl.textContent = String(i); // KUN tall på tidslinjen
-      slot.appendChild(lbl);
-
-      t.insertBefore(slot, elapsedNode);
-    }
-
-    $('elapsed').style.width = '0%';
-    $('cursor').style.left = '0%';
-  }
-
-  // === Klokke / meldinger ===
-  function resetClockUI(){
-    if (tickHandle) clearInterval(tickHandle);
-    $('clock').textContent = '00:00';
-    $('clock').classList.remove('over');
-  }
-  function startClock(){
-    if (tickHandle) clearInterval(tickHandle);
-    tickHandle = setInterval(tick, 250);
-  }
-  function stopClock(){
-    if (tickHandle) clearInterval(tickHandle);
-    tickHandle = null;
-  }
-  function currentElapsed(){
-    if (!started) return accumSec;
-    if (paused)   return accumSec;
-    const live = Math.floor((Date.now() - startTs)/1000);
-    return accumSec + live;
-  }
-  function setMessage(msg){
-    if (msg !== lastMilestone){
-      $('message').textContent = msg;
-      lastMilestone = msg;
-    }
-  }
-  function tick(){
-    const elapsed = currentElapsed();
-    $('clock').textContent = fmt(elapsed);
-    if(elapsed >= TOTAL_SEC) $('clock').classList.add('over'); else $('clock').classList.remove('over');
-
-    const p = Math.min((elapsed / TOTAL_SEC) * 100, 100);
-    $('elapsed').style.width = p + '%';
-    $('cursor').style.left = `calc(${p}% - 1px)`;
-
-    if (elapsed < INTRO_SEC){
-      setMessage(typeof msgIntro === 'function' ? msgIntro() : 'Introduksjon');
-    } else if (elapsed >= TOTAL_SEC){
-      setMessage(typeof msgOvertime === 'function' ? msgOvertime() : 'Du er over tiden');
-    } else if (elapsed >= TOTAL_SEC - OUTRO_SEC){
-      setMessage(typeof msgOutro === 'function' ? msgOutro() : 'Avslutning');
-    } else if (elapsed >= TOTAL_SEC - OUTRO_SEC - REVIEW_SEC){
-      setMessage(typeof msgReview === 'function' ? msgReview() : 'Repetisjonsspørsmål');
-    } else {
-      let idx = 0;
-      for (let i=0;i<totalParagraphs;i++){
-        const start = cumulative[i];
-        const end = (i === totalParagraphs-1) ? (TOTAL_SEC - OUTRO_SEC - REVIEW_SEC) : cumulative[i+1];
-        if (elapsed >= start && elapsed < end){ idx = i; break; }
-      }
-      // Meldingen kan fortsatt si "Avsnitt/Paragraph N" via i18n (ikke på tidslinjen)
-      const secPrefix = (typeof sectionPrefix === 'function') ? sectionPrefix() : 'Avsnitt';
-      let msg = `${secPrefix} ${idx+1}`;
-      if (elapsed >= 1800 && elapsed < 1860){ msg += ' ' + (typeof msgHalfway === 'function' ? msgHalfway() : '— Halvveis i studiet!'); }
-      setMessage(msg);
-    }
-  }
-  function fmt(s){ return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
-
-  function updateInfoLine(resetGhost){
-    $('editParagraphs').value = Math.max(1, totalParagraphs|0);
-    $('editQuestions').value  = Math.max(0, questions|0);
-    $('editScriptures').value = Math.max(0, scriptures|0);
-
-    if (resetGhost){
-      $('editParagraphs').classList.add('ghost');
-      $('editQuestions').classList.add('ghost');
-      $('editScriptures').classList.add('ghost');
-    }
-    $('adjustBtn').disabled = !(totalParagraphs > 0);
-  }
-
-  // Init-tekst
-  setMessage('Begynn med å lime inn artikkelserien og analysere den.');
-  </script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"9e80768d4f6c41f69cb40367aebcc56b"}'></script>
+<!-- End Cloudflare Web Analytics -->
 </body>
 </html>
