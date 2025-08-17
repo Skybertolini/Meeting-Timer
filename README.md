@@ -41,7 +41,3 @@ Det gir en tydelig tidslinje, viser avsnitt, spørsmål og les-skriftsteder. Et 
 Dette prosjektet er laget for personlig bruk. 
 Det er ikke på noen måte knyttet til eller støttet av Jehovas vitner.
 Distribueres med Study Timer © 2025.
-
-⸻
-
-Vil du at jeg også lager en kort variant av README (en “GitHub-Pages” intro som vises på selve siden) i tillegg til denne litt lengre dev-README-en?
