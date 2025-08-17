@@ -1,45 +1,47 @@
-# ⏱️ Study Timer
+⏱️ Study Timer
 
-**Study Timer** er et enkelt verktøy laget for å hjelpe møteledere under **vakttårnstudiet**.  
-Nettsiden analyserer teksten i ukens artikkel og fordeler tiden på best mulig måte.
+Study Timer er et nettbasert verktøy laget for å hjelpe vakttårnstudieledere til å porsjonere tiden.
+Det gir en tydelig tidslinje, viser avsnitt, spørsmål og les-skriftsteder. Et meldingsfelt viser deg hvor du bør være underveis og kommer med noen enkle påminnelser.
 
-## ✨ Funksjoner
-- **Automatisk analyse av artikkeltekst**  
-  Lim inn hele teksten fra [wol.jw.org](https://wol.jw.org). Når du trykker "Analyser", beregnes antall avsnitt, spørsmål og «Les»-skriftsteder automatisk.
-- **Smart tidsfordeling**  
-  Hvert avsnitt får tid basert på antall ord, spørsmål og skriftsteder.  
-  Spørsmål med (a) og (b) gir ekstra tid.
-- **Visuell tidslinje**  
-  En grønn tidslinje viser progresjonen. Markører for avsnitt, introduksjon, repetisjonsspørsmål og avslutning hjelper deg å holde oversikt.
-- **Live klokke**  
-  Start når studiet begynner – klokken blir rød dersom du går over tiden.
-- **Meldingsfelt**  
-  Viser automatisk hvor du bør være i studiet («Avsnitt 9», «Halvveis i studiet», «Avslutning»).
-- **Notatfelt**  
-  Mulighet til å skrive egne notater underveis.
-- **Redigerbar analyse**  
-  Om analysen teller feil antall avsnitt, spørsmål eller skriftsteder, kan du manuelt justere og oppdatere tidslinjen.
+⸻
 
-## 🚀 Bruk
-1. Gå til [wol.jw.org](https://wol.jw.org) og åpne ukens Vakttårnstudie-artikkel.  
-2. Kopiér **hele teksten** fra artikkelsiden.  
-3. Lim teksten inn i feltet på Study Timer.  
-4. Klikk **Analyser**.  
-5. Når analysen er ferdig, trykk **Play** (grønn knapp) for å starte studiet.  
-6. Følg med på klokke, tidslinje og meldinger underveis.  
-7. Når studiet er ferdig, trykk på **Stopp** (rød knapp) for å se brukt tid.
+🚀 Funksjoner
+	•	Automatisk analyse av teksten du limer inn fra wol.jw.org.
+	•	Teller avsnitt, spørsmål og les-skriftsteder.
+	•	Viser en tidslinje med markører for alle avsnitt.
+	•	Intelligent fordeling av tid basert på tekstlengde, spørsmål og skriftsteder.
+	•	Marker egne faser: Introduksjon, Avsnitt, Halvveis, Repetisjonsspørsmål, Avslutning.
+	•	Stoppeklokke med Play ⏯️, Pause ⏸️ og Stopp ⏹️.
+	•	Notatfelt for personlige stikkord under studiet.
+	•	Minimalistisk design 🍏.
 
-## 🛠️ Teknologi
-- **HTML, CSS og JavaScript** – ingen rammeverk, helt enkelt.  
-- Designet for å være lett å hoste på GitHub Pages.
+⸻
 
-## 🌍 Live-versjon
-Når repoet er satt opp med GitHub Pages, finner du det her:  
-👉 [https://skybertolini.github.io/Study-Timer](https://skybertolini.github.io/Study-Timer)
+🖥️ Hvordan bruke
+	1.	Gå til wol.jw.org og åpne ukens vakttårnstudieartikkel.
+	2.	Kopier hele teksten fra artikkelsiden.
+	3.	Lim inn teksten i feltet på Study Timer og trykk Analyser. ✅
+	4.	Når analysen er klar: trykk Play for å starte studiet.
+	5.	Følg med på meldingsfeltet, tidslinjen og klokken underveis.
+	6.	Bruk notatfeltet nederst hvis du ønsker egne kommentarer.
+	7.	Trykk Stopp når studiet er ferdig for å se total tid brukt.
 
-## 📜 Lisens
-Study Timer © 2025  
-Dette prosjektet er laget for personlig bruk og er ikke tilknyttet eller godkjent av Jehovas vitner eller Watch Tower Bible and Tract Society.
 
----
-💡 Tips: Bruk **notatfeltet** til å skrive stikkord om hvor du ønsker ekstra fokus under studiet!
+⸻
+
+⚙️ Teknologi
+	•	HTML5 / CSS3 / Vanilla JS
+	•	Ingen eksterne biblioteker → kjører helt lokalt i nettleseren
+	•	Design inspirert av Apple Human Interface Guidelines
+
+⸻
+
+📜 Lisens
+
+Dette prosjektet er laget for personlig bruk. 
+Det er ikke på noen måte knyttet til eller støttet av Jehovas vitner.
+Distribueres med Study Timer © 2025.
+
+⸻
+
+Vil du at jeg også lager en kort variant av README (en “GitHub-Pages” intro som vises på selve siden) i tillegg til denne litt lengre dev-README-en?
