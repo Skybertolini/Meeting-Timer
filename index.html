@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Study Timer</title>
 <style>
@@ -85,10 +84,8 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
 .round-btn{ display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:999px; border:0; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.08) }
 .play-btn{ background:var(--green) } .play-btn::before{ content:"▶"; color:#fff; font-size:1.5rem; margin-left:3px }
 .pause-btn{ background:#f0ad4e } .pause-btn::before{ content:"❚❚"; color:#fff; font-size:1.2rem }
-/* Stop vs Rewind (toggler dynamisk i JS) */
 .stop-btn{ background:#d21f3c } .stop-btn::before{ content:""; display:block; width:16px; height:16px; background:#fff; border-radius:2px }
 .rewind-btn{ background:#6c757d } .rewind-btn::before{ content:"↺"; color:#fff; font-size:1.4rem }
-
 .play-btn:disabled,.pause-btn:disabled,.stop-btn:disabled,.rewind-btn:disabled{ background:#aaa; cursor:not-allowed; box-shadow:none }
 
 /* Notes + footer */
@@ -108,8 +105,7 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
   textarea:focus{ box-shadow:0 0 0 4px rgba(80,170,220,.18) }
   .timeline{ background:linear-gradient(180deg,#3a403c 0%,#333b36 100%); border-color:rgba(255,255,255,.12); box-shadow:none }
   .para-slot{
-    color:#111 !important;      /* mørke tall i dark mode for god kontrast */
-    text-shadow:none;
+    color:#111 !important; text-shadow:none;
     border-left-color:rgba(255,255,255,.06);
     border-right-color:rgba(255,255,255,.06);
   }
@@ -144,7 +140,7 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
   </div>
 
   <div id="articleTitle" class="title" data-i18n="title_default"></div>
-  <div id="message" class="message-box" data-i18n="msg_init">Begynn med å lime inn artikkelen og analysere den.</div>
+  <div id="message" class="message-box" data-i18n="msg_init">Begynn med å lime inn artikkelserien og analysere den.</div>
 
   <div class="timeline-wrap">
     <div id="timeline" class="timeline">
@@ -160,7 +156,7 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
   <div class="footer">
     <button id="playBtn"  class="round-btn play-btn"  disabled data-i18n-title="tooltip_play"  title="Start/Gjenoppta"></button>
     <button id="pauseBtn" class="round-btn pause-btn" disabled data-i18n-title="tooltip_pause" title="Pause"></button>
-    <!-- Denne knappen bytter klasse/ikon i JS mellom stop-btn (■) og rewind-btn (↺) -->
+    <!-- Denne knappen toggler mellom stop-btn (■) og rewind-btn (↺) i JS -->
     <button id="stopBtn"  class="round-btn stop-btn"  disabled title="Ferdig"></button>
   </div>
 
@@ -186,7 +182,16 @@ const $=id=>document.getElementById(id), pct=sec=>sec/TOTAL_SEC*100;
 /* ====== Tilstand ====== */
 let paras=[], totalParagraphs=0, questions=0, scriptures=0, perParagraph=[], cumulative=[];
 let started=false, paused=false, startTs=null, accumSec=0, tickHandle=null, lastMilestone="";
-let stopIsRewind=false; // NY: sporing av stop/rewind-modus
+let stopIsRewind=false;
+
+/* ====== Hjelpere ====== */
+function fmt(s){ const sec=Math.max(0,Math.floor(s)); const m=Math.floor(sec/60), r=sec%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+function setMessage(m){ if(m!==lastMilestone){ $('message').textContent=m; lastMilestone=m; } }
+function i18nT(k){ return (window.i18n && i18n.t) ? i18n.t(k) : k; }
+function getCurrentLang(){ const sel=$('langSelect'); if(sel&&sel.value) return sel.value; const ls=localStorage.getItem('studyTimer.lang'); return ls||'no'; }
+function scriptureKeyword(lang){ switch((lang||'no').toLowerCase()){ case 'sv': return 'Läs'; case 'da': return 'Læs'; case 'es': return 'Lea'; case 'en': return 'Read'; default: return 'Les'; } }
+function hideInputArea(){ const ta=$('articleText'), ab=$('analyzeBtn'); if(ta) ta.style.display='none'; if(ab) ab.style.display='none'; }
+function showInputArea(){ const ta=$('articleText'), ab=$('analyzeBtn'); if(ta) ta.style.display=''; if(ab) ab.style.display=''; }
 
 /* ====== Lyttere ====== */
 $('analyzeBtn').addEventListener('click',onAnalyze);
@@ -199,104 +204,66 @@ $('stopBtn').addEventListener('click',onStopOrRewind);
 });
 $('adjustBtn').addEventListener('click',onAdjust);
 
-/* ====== Utils ====== */
-function fmt(s){
-  const sec = Math.max(0, Math.floor(s)); // alltid mm:ss
-  const m = Math.floor(sec/60), r = sec%60;
-  return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0');
-}
-function setMessage(m){ if(m!==lastMilestone){ $('message').textContent=m; lastMilestone=m; } }
-function i18nT(k){ return (window.i18n && i18n.t) ? i18n.t(k) : k; }
-
-/* ====== Stop/Rewind toggling ====== */
-function setStopAsRewind(isRewind){
-  const btn=$('stopBtn');
-  stopIsRewind = !!isRewind;
-  btn.classList.toggle('stop-btn', !stopIsRewind);
-  btn.classList.toggle('rewind-btn', stopIsRewind);
-  if(stopIsRewind){
-    btn.title = 'Nullstill'; // (kan i18n-iseres ved behov)
-    btn.disabled = false;    // gjør den aktiv etter stopp
-  }else{
-    btn.title = i18nT('tooltip_stop') || 'Ferdig';
-    // aktiv under kjøring, ellers styrer onPlay/onPause
-  }
-}
-
 /* ====== Analyse ====== */
 function onAnalyze(){
   const raw=$('articleText').value.trim(); if(!raw){ alert(i18nT('err_paste_first')); return; }
   analyzeText(raw);
-
-  const ta=$('articleText');
-  ta.classList.add('collapsed'); ta.style.height='64px'; ta.style.color='#7b8894';
-  ta.style.background='rgba(248,249,251,.85)'; ta.blur();
-
+  const ta=$('articleText'); ta.classList.add('collapsed'); ta.style.height='64px'; ta.style.color='#7b8894'; ta.style.background='rgba(248,249,251,.85)'; ta.blur();
   const ab=$('analyzeBtn'); ab.textContent=''; ab.classList.add('done'); ab.disabled=true;
 
   if(totalParagraphs>0){
     setMessage(i18nT('msg_ready'));
-    $('playBtn').disabled=false; $('pauseBtn').disabled=true;
-    $('stopBtn').disabled=true; setStopAsRewind(false);
+    $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=true; setStopAsRewind(false);
   }else{
     setMessage(i18nT('msg_none'));
-    $('playBtn').disabled=true; $('pauseBtn').disabled=true;
-    $('stopBtn').disabled=true; setStopAsRewind(false);
+    $('playBtn').disabled=true; $('pauseBtn').disabled=true; $('stopBtn').disabled=true; setStopAsRewind(false);
   }
 }
 function analyzeText(text){
-  const norm=text.replace(/\u00A0/g,' ');
-  const lines=norm.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  const title=pickTitle(lines) || i18nT('title_default');
-  $('articleTitle').textContent=title;
-
-  paras=extractParagraphs(lines); totalParagraphs=paras.length;
+  const norm=text.replace(/\u00A0/g,' '), lines=norm.split('\n').map(l=>l.trim()).filter(Boolean);
+  const title=pickTitle(lines) || i18nT('title_default'); $('articleTitle').textContent=title;
+  const lang=getCurrentLang();
+  paras=extractParagraphs(lines, lang); totalParagraphs=paras.length;
   questions=paras.reduce((s,p)=>s+p.q,0); scriptures=paras.reduce((s,p)=>s+p.les,0);
-
   computeAllocation(); drawTimeline(); updateInfoLine(true); resetClockUI();
 }
 function pickTitle(lines){
   const blacklist=/^(Publikasjoner|STUDIEARTIKKEL\b|SANG\b|FOKUS\b|Underoverskrifter|Lignende stoff|Audio Player|Norsk\b|Del\b|Innstillinger\b|Logg inn\b|JW\.ORG\b|HVA SVARER DU\b|w\d{2}\b)/i;
-  const looksLikeTheme=/^\s*(«.+»|".+")\s*—\s*[1-3]?\s*[A-ZÆØÅ][a-zæøå. ]*\d/;
-  const tooMany=l=>l.split(/\s+/).length>16;
-
+  const looksLikeTheme=/^\s*(«.+»|".+")\s*—\s*[1-3]?\s*[A-ZÆØÅ][a-zæøå. ]*\d/; const tooMany=l=>l.split(/\s+/).length>16;
   const idxSang=lines.findIndex(l=>/^SANG[\s\u00A0]*\d+/i.test(l));
   if(idxSang>=0){
     for(let j=idxSang+1;j<Math.min(lines.length,idxSang+8);j++){
       const c=(lines[j]||'').trim(); if(!c)continue;
-      if(blacklist.test(c))continue; if(/^\d/.test(c))continue;
-      if(!/[A-Za-zÆØÅæøå]/.test(c))continue; if(!/[a-zæøå]/.test(c))continue;
-      if(looksLikeTheme.test(c))continue; if(tooMany(c))continue;
-      if(c.length<6||c.length>160)continue;
+      if(blacklist.test(c)||/^\d/.test(c)||!/[A-Za-zÆØÅæøå]/.test(c)||!/[a-zæøå]/.test(c)||looksLikeTheme.test(c)||tooMany(c)||c.length<6||c.length>160) continue;
       return c;
     }
   }
   const firstParaIdx=lines.findIndex(l=>HEADER_RE.test(l)||BODY_START_RE.test(l));
   const headerZone=firstParaIdx>-1?lines.slice(0,firstParaIdx):lines.slice(0,30);
   const cands=headerZone.filter(l=>{
-    if(blacklist.test(l))return false; if(/^\d/.test(l))return false;
-    if(!/[A-Za-zÆØÅæøå]/.test(l))return false; if(!/[a-zæøå]/.test(l))return false;
-    if(looksLikeTheme.test(l))return false; if(tooMany(l))return false;
-    if(l.length<6||l.length>160)return false; return true;
+    if(blacklist.test(l)||/^\d/.test(l)||!/[A-Za-zÆØÅæøå]/.test(l)||!/[a-zæøå]/.test(l)||looksLikeTheme.test(l)||l.split(/\s+/).length>16||l.length<6||l.length>160) return false; return true;
   });
-  if(!cands.length)return '';
+  if(!cands.length) return '';
   const score=s=>(/[–—-]/.test(s)?3:0)+(/:/.test(s)?1:0)+Math.max(0,16-s.split(/\s+/).length);
   cands.sort((a,b)=>score(b)-score(a)); return cands[0];
 }
-function extractParagraphs(lines){
+function extractParagraphs(lines, lang){
   const out=[]; let pendingNums=[],pendingAB=false,currentNum=null,currentAB=false,buf=[];
   const skip=/^(HVA SVARER DU|Svaret ditt)$/i;
+  const lesWord = scriptureKeyword(lang);
+  const lesRe = new RegExp(`\\b${lesWord}\\b`, 'giu');
+
   const push=()=>{
     if(currentNum!==null){
       const text=buf.join(' ').trim();
       const words=(text.match(/\S+/g)||[]).length;
       const q=1; // 1 spørsmål per nummerert avsnitt
-      const les=(text.match(/\bLes\b/gi)||[]).length; // Les hvor som helst i avsnitt
+      const les=(text.match(lesRe)||[]).length;
       out.push({num:currentNum,text,words,q,les,hasAB:currentAB});
     }
     buf=[];
   };
+
   for(const raw of lines){
     const l=raw.trim(); if(!l||skip.test(l)) continue;
     const h=l.match(HEADER_RE);
@@ -312,28 +279,14 @@ function extractParagraphs(lines){
     const b=l.match(BODY_START_RE);
     if(b){
       const n=parseInt(b[1],10); const rest=(b[2]||'').trim();
-      if(pendingNums.length && n===pendingNums[0]){
-        push(); currentNum=pendingNums.shift(); currentAB=pendingAB; if(rest) buf.push(rest); continue;
-      }
-      if(currentNum===null || n!==currentNum){
-        push(); currentNum=n; currentAB=false; if(rest) buf.push(rest); continue;
-      }
+      if(pendingNums.length && n===pendingNums[0]){ push(); currentNum=pendingNums.shift(); currentAB=pendingAB; if(rest) buf.push(rest); continue; }
+      if(currentNum===null || n!==currentNum){ push(); currentNum=n; currentAB=false; if(rest) buf.push(rest); continue; }
       if(rest) buf.push(rest); continue;
     }
     buf.push(l);
   }
   push();
 
-  const seen=new Set(), clean=[];
-  for(const p of out.sort((a,b)=>a.num-b.num)){
-    if(!seen.has(p.num)){ clean.push(p); seen.add(p.num); }
-    else{
-      const last=cleaned[cleaned.length-1];
-    }
-  }
-
-  // NB: quick fix for duplikat-merging (korrigert)
-  clean.length=0; // reset og bygg på nytt korrekt
   const grouped=new Map();
   for(const p of out){
     if(!grouped.has(p.num)) grouped.set(p.num,{...p});
@@ -345,14 +298,14 @@ function extractParagraphs(lines){
       g.hasAB = g.hasAB || p.hasAB;
     }
   }
-  [...grouped.keys()].sort((a,b)=>a-b).forEach(k=>clean.push(grouped.get(k)));
+  const clean=[...grouped.keys()].sort((a,b)=>a-b).map(k=>grouped.get(k));
 
   if(!clean.length){
     const joined=lines.join('\n');
     const rough=joined.split(/\n(?=\d+[.]\s)/).filter(s=>/^\d+[.]\s/.test(s));
     rough.forEach((block,i)=>{
       const text=block.replace(/^\d+[.]\s*/,''); const words=(text.match(/\S+/g)||[]).length;
-      const q=1; const les=(text.match(/\bLes\b/gi)||[]).length;
+      const q=1; const les=(text.match(lesRe)||[]).length;
       clean.push({num:i+1,text,words,q,les,hasAB:false});
     });
   }
@@ -398,7 +351,7 @@ function drawTimeline(){
       if(started) return;
       const idx=parseInt(slot.dataset.idx,10); if(isNaN(idx)) return;
       const target=cumulative[idx];
-      accumSec = Math.min(Math.round(target), TOTAL_SEC - OUTRO_SEC - REVIEW_SEC); // heltall mm:ss
+      accumSec = Math.min(Math.round(target), TOTAL_SEC - OUTRO_SEC - REVIEW_SEC);
       const pNow=Math.min(accumSec/TOTAL_SEC*100,100);
       $('elapsed').style.width=pNow+'%';
       $('cursor').style.left=`calc(${pNow}% - 1px)`;
@@ -439,19 +392,28 @@ function tick(){
   }
 }
 
+/* ====== Stop/Rewind toggling ====== */
+function setStopAsRewind(isRewind){
+  const btn=$('stopBtn');
+  stopIsRewind=!!isRewind;
+  btn.classList.toggle('stop-btn', !stopIsRewind);
+  btn.classList.toggle('rewind-btn', stopIsRewind);
+  btn.title = stopIsRewind ? (i18nT('tooltip_reset') || 'Nullstill') : (i18nT('tooltip_stop') || 'Ferdig');
+  btn.disabled = !stopIsRewind && btn.disabled; // la onPlay/onPause styre når nødvendig
+}
+
 /* ====== Controls ====== */
 function onPlay(){
-  if(stopIsRewind){
-    // hvis vi er i rewind-modus og brukeren trykker play: start fra accumSec (kan være 0 etter reset)
-    setStopAsRewind(false);
-  }
-
+  if(stopIsRewind){ setStopAsRewind(false); }
   if(started && paused){
     paused=false; startTs=Date.now(); startClock();
     $('playBtn').disabled=true; $('pauseBtn').disabled=false; $('stopBtn').disabled=false;
     return;
   }
   if(!started){
+    // Skjul input-området ved start
+    hideInputArea();
+
     startTs=Date.now(); started=true; paused=false;
     const info=$('infoLine'); if(info) info.style.display='none';
     $('appContainer').classList.add('running');
@@ -468,20 +430,20 @@ function onPause(){
 }
 function onStopOrRewind(){
   if(stopIsRewind){
-    // Reset (↺)
+    // Reset (↺): nullstill og vis input igjen
     accumSec = 0;
     resetClockUI();
     $('elapsed').style.width='0%'; $('cursor').style.left='0%';
     setMessage(i18nT('msg_ready'));
-    // etter reset: info-linjen synlig, klar for ny start
     const info=$('infoLine'); if(info) info.style.display='flex';
     $('appContainer').classList.remove('running');
     $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=true;
-    setStopAsRewind(false); // gjør den til "stop" igjen til neste kjøring
+    showInputArea();
+    setStopAsRewind(false);
     return;
   }
 
-  // Stopp (■)
+  // Stopp (■): vis input igjen
   if(started && !paused){ accumSec += Math.floor((Date.now()-startTs)/1000); }
   stopClock();
   setMessage(i18nT('msg_finished_prefix') + fmt(accumSec));
@@ -490,7 +452,9 @@ function onStopOrRewind(){
   $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=false;
   const info=$('infoLine'); if(info) info.style.display='flex';
   $('appContainer').classList.remove('running');
-  setStopAsRewind(true); // bytt til rewind-modus etter stopp
+
+  showInputArea();
+  setStopAsRewind(true);
 }
 
 /* ====== Justerfelt ====== */
@@ -519,6 +483,8 @@ function updateInfoLine(resetGhost){
   }
   $('adjustBtn').disabled=!(totalParagraphs>0);
 }
+
+/* ====== Init-melding står i HTML via data-i18n ====== */
 </script>
 
 <!-- Cloudflare Web Analytics -->
