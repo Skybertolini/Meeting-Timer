@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Study Timer</title>
 <style>
 :root{
@@ -9,28 +10,45 @@
   --elapsed-fill:rgba(220,20,20,.35); --elapsed-line:#cc0000;
   --card-bg:rgba(255,255,255,.72); --card-border:rgba(0,0,0,.06);
   --muted:#9aa3ab; --radius:14px;
+  --bg-top:#f7f8fa; --bg-bot:#eef1f4; --text:#0f1b2b;
 }
 html,body{
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  background:linear-gradient(180deg,#f7f8fa 0%,#eef1f4 100%); margin:0; padding:24px;
-  display:flex; flex-direction:column; align-items:center;
+  background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bot) 100%);
+  color:var(--text); margin:0; padding:24px; display:flex; flex-direction:column; align-items:center;
+}
+body.dark{
+  --card-bg:#3a3a3a; --card-border:rgba(255,255,255,.10);
+  --bg-top:#2b2b2b; --bg-bot:#2f3032; --text:#f2f2f2;
+  background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bot) 100%);
+  color:var(--text);
 }
 .container{ width:min(960px,94vw); max-width:880px }
-.topbar{ width:100%; display:flex; justify-content:space-between; align-items:center; margin:-8px 0 12px }
+
+/* Topplinje */
+.topbar{ width:100%; display:flex; justify-content:space-between; align-items:center; margin:-8px 0 12px; gap:12px }
+.left-group{ display:flex; align-items:center; gap:12px }
 .logo-box img{ max-height:120px; width:auto; border-radius:0; box-shadow:none }
+.theme-btn{
+  width:44px; height:44px; border-radius:999px; border:1px solid var(--card-border);
+  background:var(--card-bg); display:flex; align-items:center; justify-content:center;
+  font-size:20px; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.08);
+}
 .lang-select{
   appearance:none; border:1px solid rgba(0,0,0,.12); background:rgba(255,255,255,.85);
-  border-radius:999px; padding:8px 14px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,.06); cursor:pointer;
+  border-radius:999px; padding:8px 14px; font-weight:600; box-shadow:0 8px 30px rgba(0,0,0,.08); cursor:pointer;
 }
+body.dark .lang-select{ border-color:rgba(255,255,255,.15); background:#3a3a3a; color:#f2f2f2; box-shadow:none }
 
 /* Inputs */
 textarea{
   width:100%; height:180px; resize:vertical; padding:12px; font-size:1rem;
   border:1px solid rgba(0,0,0,.08); border-radius:var(--radius);
-  background:var(--card-bg); box-shadow:0 8px 30px rgba(0,0,0,.08);
+  background:var(--card-bg); box-shadow:0 8px 30px rgba(0,0,0,.08); color:inherit;
 }
 textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 0 4px rgba(46,170,220,.18) }
 textarea.collapsed{ height:64px!important; color:#7b8894!important; background:rgba(248,249,251,.85)!important }
+body.dark textarea:focus{ box-shadow:0 0 0 4px rgba(80,170,220,.18) }
 
 .btn{
   background:var(--green); color:#fff; border:0; padding:12px 20px; border-radius:999px;
@@ -40,22 +58,24 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
 .btn.done{ padding:12px 16px }
 .btn.done::before{ content:"✓"; font-weight:700 }
 
+/* Info-linje */
 .info-line{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:10px }
 .inline-edit{
   display:inline-flex; align-items:center; gap:8px; background:var(--card-bg);
   border:1px solid var(--card-border); border-radius:999px; padding:8px 10px; box-shadow:0 8px 30px rgba(0,0,0,.08);
 }
 .inline-edit label{ font-size:.95rem }
-.inline-edit input{ width:90px; padding:6px 8px; font-size:1rem; border:1px solid #cfd4da; border-radius:8px; background:#fff }
+.inline-edit input{ width:90px; padding:6px 8px; font-size:1rem; border:1px solid #cfd4da; border-radius:8px; background:#fff; color:#111 }
 .inline-edit input.ghost{ color:var(--muted)!important }
 
-/* Title + message */
+/* Tittel + melding */
 .title{ font-size:1.25rem; font-weight:700; margin-top:14px }
 .container.running .title{ font-size:1.6rem; margin:18px 0 12px }
 .message-box{
   margin-top:12px; padding:14px 18px; background:var(--card-bg); border:1px solid var(--card-border);
   border-radius:var(--radius); font-size:1.1rem; color:#0c2915; box-shadow:0 8px 30px rgba(0,0,0,.08); min-height:1.2em;
 }
+body.dark .message-box{ color:#dff3e6 }
 
 /* Timeline */
 .timeline-wrap{ width:100%; margin-top:28px }
@@ -64,6 +84,7 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
   background:linear-gradient(180deg,#f3fbf6 0%,#eaf6ec 100%); border:1px solid rgba(0,0,0,.08);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 8px 30px rgba(0,0,0,.08); overflow:visible;
 }
+body.dark .timeline{ background:linear-gradient(180deg,#3a403c 0%,#333b36 100%); border-color:rgba(255,255,255,.12); box-shadow:none }
 .slot{ position:absolute; top:0; height:100%; opacity:.25 }
 .para-slot{
   position:absolute; top:0; height:100%;
@@ -73,13 +94,19 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
   cursor:pointer;
 }
 .para-slot:hover{ filter:saturate(1.1) }
+body.dark .para-slot{
+  color:#111 !important; text-shadow:none;
+  border-left-color:rgba(255,255,255,.06);
+  border-right-color:rgba(255,255,255,.06);
+}
 .elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(255,77,64,.25); width:0%; transition:width .25s linear; z-index:2 }
 .cursor{ position:absolute; top:-10px; width:2px; height:72px; background:linear-gradient(#e3262e,#b4141a); left:0%; z-index:3; box-shadow:0 0 0 2px rgba(227,38,46,.12) }
 
 #clock{ margin-top:24px; font-size:2.1rem; font-weight:800; color:#1e824c; text-shadow:0 1px 0 #fff }
 #clock.over{ color:#c41111; text-shadow:none }
+body.dark #clock{ color:#9af0ba; text-shadow:none }
 
-/* Controls */
+/* Kontroller */
 .footer{ margin-top:22px; width:100%; display:flex; gap:14px }
 .round-btn{ display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:999px; border:0; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.08) }
 .play-btn{ background:var(--green) } .play-btn::before{ content:"▶"; color:#fff; font-size:1.5rem; margin-left:3px }
@@ -88,44 +115,29 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
 .rewind-btn{ background:#6c757d } .rewind-btn::before{ content:"↺"; color:#fff; font-size:1.4rem }
 .play-btn:disabled,.pause-btn:disabled,.stop-btn:disabled,.rewind-btn:disabled{ background:#aaa; cursor:not-allowed; box-shadow:none }
 
-/* Notes + footer */
+/* Notater + footer */
 .notes-section{ margin-top:32px }
 .notes-section label{ font-weight:600; display:block; margin-bottom:6px }
 .notes-section textarea{ height:120px }
 .copyright{ margin-top:24px; font-size:.9rem; color:#777; text-align:center }
-
-/* Mild Dark Mode */
-@media (prefers-color-scheme: dark){
-  :root{ --card-bg:#3a3a3a; --card-border:rgba(255,255,255,.08) }
-  body{ background:linear-gradient(180deg,#2b2b2b 0%,#2f3032 100%); color:#f2f2f2 }
-  .lang-select{ border-color:rgba(255,255,255,.15); background:#3a3a3a; color:#f2f2f2; box-shadow:none }
-  textarea, .inline-edit, .message-box, .notes-section textarea{
-    background:#3a3a3a; color:#f2f2f2; border-color:rgba(255,255,255,.12); box-shadow:none;
-  }
-  textarea:focus{ box-shadow:0 0 0 4px rgba(80,170,220,.18) }
-  .timeline{ background:linear-gradient(180deg,#3a403c 0%,#333b36 100%); border-color:rgba(255,255,255,.12); box-shadow:none }
-  .para-slot{
-    color:#111 !important; text-shadow:none;
-    border-left-color:rgba(255,255,255,.06);
-    border-right-color:rgba(255,255,255,.06);
-  }
-  #clock{ color:#9af0ba; text-shadow:none }
-  .copyright{ color:#c7c7c7 }
-}
+body.dark .copyright{ color:#c7c7c7 }
 </style>
 </head>
 <body>
 <div class="container" id="appContainer">
   <div class="topbar">
-    <div class="logo-box">
-      <picture>
-        <source srcset="study-timer-logo-dark-mode.png" media="(prefers-color-scheme: dark)">
-        <img src="study-timer-logo.png" alt="Study Timer logo">
-      </picture>
+    <div class="left-group">
+      <button id="themeBtn" class="theme-btn" title="Toggle theme" aria-label="Toggle theme">🌞</button>
+      <div class="logo-box">
+        <img id="logoImg" src="study-timer-logo.png" alt="Study Timer logo">
+      </div>
     </div>
     <select id="langSelect" class="lang-select" aria-label="Language">
-      <option value="no">Norwegian</option><option value="sv">Swedish</option>
-      <option value="da">Danish</option><option value="en">English</option><option value="es">Spanish</option>
+      <option value="no">Norwegian</option>
+      <option value="sv">Swedish</option>
+      <option value="da">Danish</option>
+      <option value="en">English</option>
+      <option value="es">Spanish</option>
     </select>
   </div>
 
@@ -156,7 +168,7 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
   <div class="footer">
     <button id="playBtn"  class="round-btn play-btn"  disabled data-i18n-title="tooltip_play"  title="Start/Gjenoppta"></button>
     <button id="pauseBtn" class="round-btn pause-btn" disabled data-i18n-title="tooltip_pause" title="Pause"></button>
-    <!-- Denne knappen toggler mellom stop-btn (■) og rewind-btn (↺) i JS -->
+    <!-- Toggler mellom stop-btn (■) og rewind-btn (↺) i JS -->
     <button id="stopBtn"  class="round-btn stop-btn"  disabled title="Ferdig"></button>
   </div>
 
@@ -170,7 +182,6 @@ textarea.collapsed{ height:64px!important; color:#7b8894!important; background:r
 
 <!-- i18n -->
 <script src="i18n/i18n.js"></script>
-
 <script>
 /* ====== Konstanter ====== */
 const TOTAL_SEC=3600, INTRO_SEC=90, REVIEW_SEC=120, OUTRO_SEC=90, CONTENT_SEC=TOTAL_SEC-INTRO_SEC-REVIEW_SEC-OUTRO_SEC;
@@ -184,12 +195,49 @@ let paras=[], totalParagraphs=0, questions=0, scriptures=0, perParagraph=[], cum
 let started=false, paused=false, startTs=null, accumSec=0, tickHandle=null, lastMilestone="";
 let stopIsRewind=false;
 
-/* ====== Hjelpere ====== */
-function fmt(s){ const sec=Math.max(0,Math.floor(s)); const m=Math.floor(sec/60), r=sec%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
-function setMessage(m){ if(m!==lastMilestone){ $('message').textContent=m; lastMilestone=m; } }
+/* ====== i18n helpers ====== */
 function i18nT(k){ return (window.i18n && i18n.t) ? i18n.t(k) : k; }
 function getCurrentLang(){ const sel=$('langSelect'); if(sel&&sel.value) return sel.value; const ls=localStorage.getItem('studyTimer.lang'); return ls||'no'; }
-function scriptureKeyword(lang){ switch((lang||'no').toLowerCase()){ case 'sv': return 'Läs'; case 'da': return 'Læs'; case 'es': return 'Lea'; case 'en': return 'Read'; default: return 'Les'; } }
+
+/* ====== Theme (sun/moon) ====== */
+function applyTheme(mode){
+  const body=document.body;
+  if(mode==='dark'){ body.classList.add('dark'); $('themeBtn').textContent='🌙'; $('logoImg').src='study-timer-logo-dark-mode.png'; }
+  else { body.classList.remove('dark'); $('themeBtn').textContent='🌞'; $('logoImg').src='study-timer-logo.png'; }
+  localStorage.setItem('studyTimer.theme', mode);
+}
+(function initTheme(){
+  const saved=localStorage.getItem('studyTimer.theme') || 'light';
+  applyTheme(saved);
+  $('themeBtn').addEventListener('click', ()=>{
+    const cur=localStorage.getItem('studyTimer.theme')||'light';
+    applyTheme(cur==='dark'?'light':'dark');
+  });
+})();
+
+/* ====== “Les …” ord pr. språk + regex for skriftsted ====== */
+function scriptureKeyword(lang){
+  switch((lang||'no').toLowerCase()){
+    case 'sv': return 'Läs';
+    case 'da': return 'Læs';
+    case 'es': return 'Lea';
+    case 'en': return 'Read';
+    default:   return 'Les';
+  }
+}
+function scriptureRegex(lang){
+  const word = scriptureKeyword(lang);
+  return new RegExp(
+    String.raw`\\b${word}\\b\\s*\\(?\\s*` +
+    String.raw`(?:[1-3]?\\s*[A-ZÁÉÍÓÚÜÑÆØÅ][\\wÁÉÍÓÚÜÑÆØÅ.\\- ]+)?` +
+    String.raw`\\s*\\d+\\s*:\\s*\\d+(?:\\s*[–-]\\s*\\d+)?`,
+    'giu'
+  );
+}
+
+/* ====== UI helpers ====== */
+function fmt(s){ const sec=Math.max(0,Math.floor(s)); const m=Math.floor(sec/60), r=sec%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+function setMessage(m){ if(m!==lastMilestone){ $('message').textContent=m; lastMilestone=m; } }
 function hideInputArea(){ const ta=$('articleText'), ab=$('analyzeBtn'); if(ta) ta.style.display='none'; if(ab) ab.style.display='none'; }
 function showInputArea(){ const ta=$('articleText'), ab=$('analyzeBtn'); if(ta) ta.style.display=''; if(ab) ab.style.display=''; }
 
@@ -220,7 +268,7 @@ function onAnalyze(){
   }
 }
 function analyzeText(text){
-  const norm=text.replace(/\u00A0/g,' '), lines=norm.split('\n').map(l=>l.trim()).filter(Boolean);
+  const norm=text.replace(/\\u00A0/g,' '), lines=norm.split('\\n').map(l=>l.trim()).filter(Boolean);
   const title=pickTitle(lines) || i18nT('title_default'); $('articleTitle').textContent=title;
   const lang=getCurrentLang();
   paras=extractParagraphs(lines, lang); totalParagraphs=paras.length;
@@ -228,49 +276,49 @@ function analyzeText(text){
   computeAllocation(); drawTimeline(); updateInfoLine(true); resetClockUI();
 }
 function pickTitle(lines){
-  const blacklist=/^(Publikasjoner|STUDIEARTIKKEL\b|SANG\b|FOKUS\b|Underoverskrifter|Lignende stoff|Audio Player|Norsk\b|Del\b|Innstillinger\b|Logg inn\b|JW\.ORG\b|HVA SVARER DU\b|w\d{2}\b)/i;
-  const looksLikeTheme=/^\s*(«.+»|".+")\s*—\s*[1-3]?\s*[A-ZÆØÅ][a-zæøå. ]*\d/; const tooMany=l=>l.split(/\s+/).length>16;
-  const idxSang=lines.findIndex(l=>/^SANG[\s\u00A0]*\d+/i.test(l));
+  const blacklist=/^(Publikasjoner|STUDIEARTIKKEL\\b|SANG\\b|FOKUS\\b|Underoverskrifter|Lignende stoff|Audio Player|Norsk\\b|Del\\b|Innstillinger\\b|Logg inn\\b|JW\\.ORG\\b|HVA SVARER DU\\b|w\\d{2}\\b)/i;
+  const looksLikeTheme=/^\\s*(«.+»|".+")\\s*—\\s*[1-3]?\\s*[A-ZÆØÅ][a-zæøå. ]*\\d/; const tooMany=l=>l.split(/\\s+/).length>16;
+  const idxSang=lines.findIndex(l=>/^SANG[\\s\\u00A0]*\\d+/i.test(l));
   if(idxSang>=0){
     for(let j=idxSang+1;j<Math.min(lines.length,idxSang+8);j++){
       const c=(lines[j]||'').trim(); if(!c)continue;
-      if(blacklist.test(c)||/^\d/.test(c)||!/[A-Za-zÆØÅæøå]/.test(c)||!/[a-zæøå]/.test(c)||looksLikeTheme.test(c)||tooMany(c)||c.length<6||c.length>160) continue;
+      if(blacklist.test(c)||/^\\d/.test(c)||!/[A-Za-zÆØÅæøå]/.test(c)||!/[a-zæøå]/.test(c)||looksLikeTheme.test(c)||tooMany(c)||c.length<6||c.length>160) continue;
       return c;
     }
   }
   const firstParaIdx=lines.findIndex(l=>HEADER_RE.test(l)||BODY_START_RE.test(l));
   const headerZone=firstParaIdx>-1?lines.slice(0,firstParaIdx):lines.slice(0,30);
   const cands=headerZone.filter(l=>{
-    if(blacklist.test(l)||/^\d/.test(l)||!/[A-Za-zÆØÅæøå]/.test(l)||!/[a-zæøå]/.test(l)||looksLikeTheme.test(l)||l.split(/\s+/).length>16||l.length<6||l.length>160) return false; return true;
+    if(blacklist.test(l)||/^\\d/.test(l)||!/[A-Za-zÆØÅæøå]/.test(l)||!/[a-zæøå]/.test(l)||looksLikeTheme.test(l)||l.split(/\\s+/).length>16||l.length<6||l.length>160) return false; return true;
   });
   if(!cands.length) return '';
-  const score=s=>(/[–—-]/.test(s)?3:0)+(/:/.test(s)?1:0)+Math.max(0,16-s.split(/\s+/).length);
+  const score=s=>(/[–—-]/.test(s)?3:0)+(/:/.test(s)?1:0)+Math.max(0,16-s.split(/\\s+/).length);
   cands.sort((a,b)=>score(b)-score(a)); return cands[0];
 }
 function extractParagraphs(lines, lang){
   const out=[]; let pendingNums=[],pendingAB=false,currentNum=null,currentAB=false,buf=[];
   const skip=/^(HVA SVARER DU|Svaret ditt)$/i;
-  const lesWord = scriptureKeyword(lang);
-  const lesRe = new RegExp(`\\b${lesWord}\\b`, 'giu');
+  const lesRe = scriptureRegex(lang);
 
   const push=()=>{
     if(currentNum!==null){
       const text=buf.join(' ').trim();
-      const words=(text.match(/\S+/g)||[]).length;
-      const q=1; // 1 spørsmål per nummerert avsnitt
+      const words=(text.match(/\\S+/g)||[]).length;
+      const q=1; // 1 spørsmål pr. nummerert avsnitt
       const les=(text.match(lesRe)||[]).length;
       out.push({num:currentNum,text,words,q,les,hasAB:currentAB});
     }
     buf=[];
   };
 
+  // Primærpass
   for(const raw of lines){
-    const l=raw.trim(); if(!l||skip.test(l)) continue;
+    const l=raw.replace(/\\u00A0/g,' ').trim(); if(!l||skip.test(l)) continue;
     const h=l.match(HEADER_RE);
     if(h){
       push();
       pendingNums=h[1].split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
-      const head=(h[2]||''); const hasA=/\(a\)/i.test(head), hasB=/\(b\)/i.test(head);
+      const head=(h[2]||''); const hasA=/\\(a\\)/i.test(head), hasB=/\\(b\\)/i.test(head);
       pendingAB=(hasA&&hasB);
       if(pendingNums.length){ currentNum=pendingNums.shift(); currentAB=pendingAB; } else { currentNum=null; currentAB=false; }
       if(head) buf.push(head);
@@ -287,29 +335,35 @@ function extractParagraphs(lines, lang){
   }
   push();
 
-  const grouped=new Map();
-  for(const p of out){
-    if(!grouped.has(p.num)) grouped.set(p.num,{...p});
-    else{
-      const g=grouped.get(p.num);
-      g.text += ' ' + p.text;
-      g.words = (g.text.match(/\S+/g)||[]).length;
-      g.les += p.les;
-      g.hasAB = g.hasAB || p.hasAB;
+  // Fallback hvis vi mistenker at noe ble "spist"
+  if(out.length < 19){
+    const joined = lines.join('\\n').replace(/\\u00A0/g,' ');
+    const blocks = joined.split(/(?:(?:^)|(?:\\n))(?=\\s*\\d+(?:\\s*,\\s*\\d+)*\\.\\s)/g)
+      .map(s=>s.trim()).filter(Boolean);
+
+    const extra=[];
+    for(const block of blocks){
+      const m = block.match(/^(\\d+(?:\\s*,\\s*\\d+)*)\\.\\s*(.*)$/s);
+      if(!m) continue;
+      const nums = m[1].split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+      let body  = (m[2]||'').trim();
+      const bodyStart = body.match(/^(\\d+)[\\.\\s]+(.*)$/s);
+      if(bodyStart && nums.length && parseInt(bodyStart[1],10)===nums[0]){
+        body = (bodyStart[2]||'').trim();
+      }
+      nums.forEach(n=>{
+        const text=body, words=(text.match(/\\S+/g)||[]).length, q=1, les=(text.match(lesRe)||[]).length;
+        extra.push({num:n, text, words, q, les, hasAB:false});
+      });
+    }
+    if(extra.length>out.length){
+      const seen=new Set(); const merged=[...out,...extra]
+        .sort((a,b)=>a.num-b.num)
+        .filter(p=>{ if(seen.has(p.num)) return false; seen.add(p.num); return true; });
+      out.length=0; out.push(...merged);
     }
   }
-  const clean=[...grouped.keys()].sort((a,b)=>a-b).map(k=>grouped.get(k));
-
-  if(!clean.length){
-    const joined=lines.join('\n');
-    const rough=joined.split(/\n(?=\d+[.]\s)/).filter(s=>/^\d+[.]\s/.test(s));
-    rough.forEach((block,i)=>{
-      const text=block.replace(/^\d+[.]\s*/,''); const words=(text.match(/\S+/g)||[]).length;
-      const q=1; const les=(text.match(lesRe)||[]).length;
-      clean.push({num:i+1,text,words,q,les,hasAB:false});
-    });
-  }
-  return clean;
+  return out;
 }
 
 /* ====== Fordeling & tidslinje ====== */
@@ -399,10 +453,10 @@ function setStopAsRewind(isRewind){
   btn.classList.toggle('stop-btn', !stopIsRewind);
   btn.classList.toggle('rewind-btn', stopIsRewind);
   btn.title = stopIsRewind ? (i18nT('tooltip_reset') || 'Nullstill') : (i18nT('tooltip_stop') || 'Ferdig');
-  btn.disabled = !stopIsRewind && btn.disabled; // la onPlay/onPause styre når nødvendig
+  btn.disabled = !stopIsRewind && btn.disabled; // la play/pause styre når aktiv
 }
 
-/* ====== Controls ====== */
+/* ====== Kontroller ====== */
 function onPlay(){
   if(stopIsRewind){ setStopAsRewind(false); }
   if(started && paused){
@@ -411,9 +465,7 @@ function onPlay(){
     return;
   }
   if(!started){
-    // Skjul input-området ved start
-    hideInputArea();
-
+    hideInputArea(); // skjul input ved start
     startTs=Date.now(); started=true; paused=false;
     const info=$('infoLine'); if(info) info.style.display='none';
     $('appContainer').classList.add('running');
@@ -430,7 +482,7 @@ function onPause(){
 }
 function onStopOrRewind(){
   if(stopIsRewind){
-    // Reset (↺): nullstill og vis input igjen
+    // Reset
     accumSec = 0;
     resetClockUI();
     $('elapsed').style.width='0%'; $('cursor').style.left='0%';
@@ -442,17 +494,14 @@ function onStopOrRewind(){
     setStopAsRewind(false);
     return;
   }
-
-  // Stopp (■): vis input igjen
+  // Stopp
   if(started && !paused){ accumSec += Math.floor((Date.now()-startTs)/1000); }
   stopClock();
   setMessage(i18nT('msg_finished_prefix') + fmt(accumSec));
   started=false; paused=false;
-
   $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=false;
   const info=$('infoLine'); if(info) info.style.display='flex';
   $('appContainer').classList.remove('running');
-
   showInputArea();
   setStopAsRewind(true);
 }
@@ -484,7 +533,12 @@ function updateInfoLine(resetGhost){
   $('adjustBtn').disabled=!(totalParagraphs>0);
 }
 
-/* ====== Init-melding står i HTML via data-i18n ====== */
+/* ====== Init: sett i18n placeholders hvis i18n rakk før DOMContentLoaded ====== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Hvis i18n er klar, sett placeholders
+  const ap=$('articleText'); if(ap && window.i18n){ ap.setAttribute('placeholder', i18nT('placeholder_article')); }
+  const nt=$('notes'); if(nt && window.i18n){ nt.setAttribute('placeholder', i18nT('placeholder_notes')); }
+});
 </script>
 
 <!-- Cloudflare Web Analytics -->
