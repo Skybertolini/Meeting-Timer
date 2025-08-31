@@ -7,7 +7,6 @@
 <style>
 :root{
   --green:#28a745; --blue:#0d6efd; --orange:#ff8800;
-  --elapsed-fill:rgba(220,20,20,.35); --elapsed-line:#cc0000;
   --card-bg:rgba(255,255,255,.72); --card-border:rgba(0,0,0,.06);
   --muted:#9aa3ab; --radius:14px;
   --bg-top:#f7f8fa; --bg-bot:#eef1f4; --text:#0f1b2b;
@@ -30,7 +29,7 @@ body.dark{
 .left-group{ display:flex; align-items:center; gap:12px }
 .logo-box img{ max-height:120px; width:auto; border-radius:0; box-shadow:none }
 
-/* Segmented (Cupertino-stil) */
+/* Segmented (Cupertino) */
 .segmented{
   display:inline-flex; border:1px solid var(--card-border); background:var(--card-bg);
   border-radius:999px; padding:4px; gap:4px; box-shadow:0 8px 30px rgba(0,0,0,.08)
@@ -56,15 +55,6 @@ textarea{
 }
 textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 0 4px rgba(46,170,220,.18) }
 textarea.collapsed{ height:64px!important; color:#7b8894!important; background:rgba(248,249,251,.85)!important }
-body.dark textarea:focus{ box-shadow:0 0 0 4px rgba(80,170,220,.18) }
-
-.btn{
-  background:var(--green); color:#fff; border:0; padding:12px 20px; border-radius:999px;
-  cursor:pointer; font-size:1rem; margin:10px 10px 0 0; font-weight:600; box-shadow:0 8px 30px rgba(0,0,0,.08);
-}
-.btn:disabled{ background:#9aa3ab; cursor:not-allowed }
-.btn.done{ padding:12px 16px }
-.btn.done::before{ content:"✓"; font-weight:700 }
 
 /* Info-linje */
 .info-line{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:10px }
@@ -99,9 +89,9 @@ body.dark .timeline{ background:linear-gradient(180deg,#3a403c 0%,#333b36 100%);
   display:flex; align-items:center; justify-content:center;
   border-left:1px solid rgba(0,0,0,.04); border-right:1px solid rgba(255,255,255,.45);
   pointer-events:auto; z-index:1; font-size:.82rem; font-weight:800; color:#134e2f; text-shadow:0 1px 0 rgba(255,255,255,.55);
-  cursor:pointer;
+  cursor:pointer; min-width:28px;
 }
-.para-slot:hover{ filter:saturate(1.1) }
+.para-slot.active{ outline:2px solid rgba(0,0,0,.15); }
 body.dark .para-slot{
   color:#111 !important; text-shadow:none;
   border-left-color:rgba(255,255,255,.06);
@@ -135,18 +125,15 @@ body.dark .copyright{ color:#c7c7c7 }
 .view{ display:none }
 .view.active{ display:block }
 
-/* Annet – tidsvelger */
-.picker{
-  margin-top:16px; display:flex; gap:16px; justify-content:center; align-items:center;
+/* Annet – presets */
+.preset-row{
+  margin-top:8px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
 }
-.stepper{
-  display:flex; flex-direction:column; align-items:center; gap:6px; background:var(--card-bg);
-  border:1px solid var(--card-border); border-radius:12px; padding:10px 12px; min-width:88px; box-shadow:0 8px 30px rgba(0,0,0,.08)
+.preset{
+  border:1px solid var(--card-border); background:var(--card-bg); border-radius:999px; padding:8px 14px; font-weight:700; cursor:pointer;
+  box-shadow:0 8px 30px rgba(0,0,0,.08);
 }
-.stepper button{ border:0; border-radius:8px; padding:6px 10px; cursor:pointer; background:#fff; font-weight:700 }
-body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
-.stepper .value{ font-size:1.8rem; font-weight:800; min-width:64px; text-align:center }
-.sep{ font-size:2rem; font-weight:800; opacity:.6 }
+.preset.active{ background:#fff }
 .center-text{ text-align:center }
 </style>
 </head>
@@ -159,8 +146,7 @@ body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
       </div>
       <div class="segmented" role="tablist" aria-label="Modus">
         <button id="tabWT"   class="active" role="tab" aria-selected="true">Vakttårnstudiet</button>
-        <button id="tabSP"   role="tab" aria-selected="false">Skatter/Perler</button>
-        <button id="tabOther" role="tab" aria-selected="false">Annet</button>
+        <button id="tabSP"   role="tab" aria-selected="false">Annet</button>
       </div>
     </div>
     <select id="langSelect" class="lang-select" aria-label="Language">
@@ -172,7 +158,7 @@ body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
     </select>
   </div>
 
-  <!-- VIEW: Vakttårnstudiet (opprinnelig) -->
+  <!-- VIEW: Vakttårnstudiet -->
   <div id="viewWT" class="view active">
     <textarea id="articleText" data-i18n-placeholder="placeholder_article" placeholder=""></textarea>
     <button id="analyzeBtn" class="btn" data-i18n="analyze">Analyser</button>
@@ -201,7 +187,6 @@ body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
     <div class="footer">
       <button id="playBtn"  class="round-btn play-btn"  disabled data-i18n-title="tooltip_play"  title="Start/Gjenoppta"></button>
       <button id="pauseBtn" class="round-btn pause-btn" disabled data-i18n-title="tooltip_pause" title="Pause"></button>
-      <!-- Toggler mellom stop-btn (■) og rewind-btn (↺) i JS -->
       <button id="stopBtn"  class="round-btn stop-btn"  disabled title="Ferdig"></button>
     </div>
 
@@ -211,9 +196,14 @@ body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
     </div>
   </div>
 
-  <!-- VIEW: Skatter/Perler (10:00) -->
+  <!-- VIEW: Annet (tidl. Skatter/Perler) -->
   <div id="viewSP" class="view">
     <div class="center-text">
+      <div class="preset-row" aria-label="Hurtigvalg">
+        <button class="preset active" data-seconds="600">10:00</button>
+        <button class="preset" data-seconds="480">08:00</button>
+        <button class="preset" data-seconds="300">05:00</button>
+      </div>
       <div id="clockSP" class="big-clock">10:00</div>
       <div id="msgSP" class="message-box" style="margin-inline:auto; max-width:520px">Klar til nedtelling (10:00).</div>
     </div>
@@ -222,38 +212,14 @@ body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
       <button id="pauseSP" class="round-btn pause-btn" title="Pause" disabled></button>
       <button id="stopSP"  class="round-btn stop-btn"  title="Ferdig/Nullstill" disabled></button>
     </div>
-  </div>
-
-  <!-- VIEW: Annet (egendefinert tid) -->
-  <div id="viewOther" class="view">
-    <div class="center-text">
-      <div class="picker">
-        <div class="stepper">
-          <button id="minUp">▲</button>
-          <div id="minVal" class="value">10</div>
-          <button id="minDown">▼</button>
-        </div>
-        <div class="sep">:</div>
-        <div class="stepper">
-          <button id="secUp">▲</button>
-          <div id="secVal" class="value">00</div>
-          <button id="secDown">▼</button>
-        </div>
-      </div>
-      <div id="clockOther" class="big-clock" style="margin-top:12px">10:00</div>
-      <div id="msgOther" class="message-box" style="margin-inline:auto; max-width:520px">Velg tid, så start.</div>
-    </div>
-    <div class="footer-inline">
-      <button id="playOther"  class="round-btn play-btn"  title="Start/Gjenoppta"></button>
-      <button id="pauseOther" class="round-btn pause-btn" title="Pause" disabled></button>
-      <button id="stopOther"  class="round-btn stop-btn"  title="Ferdig/Nullstill" disabled></button>
+    <div class="center-text" style="margin-top:8px">
+      <button id="resetToPreset" class="preset" title="Sett tilbake til valgt preset" disabled>↺ Sett til preset</button>
     </div>
   </div>
 
-  <div class="copyright">Meeting Timer © 2025 · Version 2.0</div>
+  <div class="copyright">Meeting Timer © 2025 · Version 2.1</div>
 </div>
 
-<!-- i18n -->
 <script src="i18n/i18n.js"></script>
 <script>
 /* ====== Konstanter (WT) ====== */
@@ -269,30 +235,30 @@ let started=false, paused=false, startTs=null, accumSec=0, tickHandle=null, last
 let stopIsRewind=false;
 
 /* ====== Faner ====== */
-const views = { WT:$('viewWT'), SP:$('viewSP'), OTHER:$('viewOther') };
-const tabs  = { WT:$('tabWT'), SP:$('tabSP'), OTHER:$('tabOther') };
+const views = { WT:$('viewWT'), SP:$('viewSP') };
+const tabs  = { WT:$('tabWT'), SP:$('tabSP') };
 let activeView = 'WT';
-
 function activateView(key){
   activeView = key;
-  Object.entries(views).forEach(([k,el])=>{
-    el.classList.toggle('active', k===key);
-  });
+  Object.entries(views).forEach(([k,el])=>el.classList.toggle('active', k===key));
   Object.entries(tabs).forEach(([k,btn])=>{
     btn.classList.toggle('active', k===key);
     btn.setAttribute('aria-selected', k===key ? 'true' : 'false');
   });
 }
-
 tabs.WT.addEventListener('click', ()=>activateView('WT'));
 tabs.SP.addEventListener('click', ()=>activateView('SP'));
-tabs.OTHER.addEventListener('click', ()=>activateView('OTHER'));
 
 /* ====== i18n helpers ====== */
 function i18nT(k){ return (window.i18n && i18n.t) ? i18n.t(k) : k; }
 function getCurrentLang(){ const sel=$('langSelect'); if(sel&&sel.value) return sel.value; const ls=localStorage.getItem('studyTimer.lang'); return ls||'no'; }
 
-/* ====== “Les …” ord pr. språk + regex for skriftsted (robust) ====== */
+/* ====== Wake Lock (skjerm våken mens timer går) ====== */
+let wakeLock=null;
+async function lockScreen(){ try{ wakeLock = await navigator.wakeLock?.request('screen'); }catch{} }
+function releaseLock(){ try{ wakeLock?.release?.(); wakeLock=null; }catch{} }
+
+/* ====== “Les …” ord + regex (robust) ====== */
 function scriptureKeyword(lang){
   switch((lang||'no').toLowerCase()){
     case 'sv': return 'Läs';
@@ -305,9 +271,9 @@ function scriptureKeyword(lang){
 function scriptureRegex(lang){
   const word = scriptureKeyword(lang);
   return new RegExp(
-    `\\b${word}\\b\\s*:?\\s*\\(?\\s*` +                     // Les / Läs / Lea / Read + valgfri kolon/(
-    `(?:[1-3]?\\.?\\s*[\\p{L}][[\\p{L}\\p{M}.\\-\\s]*?)?` + // valgfri boknavn (støtter æøå mm.)
-    `\\s*\\d+\\s*:\\s*\\d+(?:\\s*[–-]\\s*\\d+)?`,           // kap:vers(-vers)
+    `\\b${word}\\b\\s*:?\\s*\\(?\\s*` +
+    `(?:[1-3]?\\.?\\s*[\\p{L}][[\\p{L}\\p{M}.\\-\\s]*?)?` +
+    `\\s*\\d+\\s*:\\s*\\d+(?:\\s*[–-]\\s*\\d+)?`,
     'giu'
   );
 }
@@ -318,7 +284,7 @@ function setMessage(m){ if(m!==lastMilestone){ $('message').textContent=m; lastM
 function hideInputArea(){ const ta=$('articleText'), ab=$('analyzeBtn'); if(ta) ta.style.display='none'; if(ab) ab.style.display='none'; }
 function showInputArea(){ const ta=$('articleText'), ab=$('analyzeBtn'); if(ta) ta.style.display=''; if(ab) ab.style.display=''; }
 
-/* ====== Lyttere ====== */
+/* ====== Lyttere (WT) ====== */
 $('analyzeBtn').addEventListener('click',onAnalyze);
 $('playBtn').addEventListener('click',onPlay);
 $('pauseBtn').addEventListener('click',onPause);
@@ -329,17 +295,15 @@ $('stopBtn').addEventListener('click',onStopOrRewind);
 });
 $('adjustBtn').addEventListener('click',onAdjust);
 
-/* ====== Språkvelger: persist + oppdater i18n + re-analysér ====== */
+/* ====== Språkvelger ====== */
 (function initLangSelect(){
   const sel = $('langSelect');
   if (!sel) return;
   const saved = localStorage.getItem('studyTimer.lang');
   if (saved) sel.value = saved;
-
   sel.addEventListener('change', () => {
     const v = sel.value || 'no';
     localStorage.setItem('studyTimer.lang', v);
-
     if (window.i18n) {
       document.querySelectorAll('[data-i18n]').forEach(n => n.textContent = i18nT(n.getAttribute('data-i18n')));
       document.querySelectorAll('[data-i18n-title]').forEach(n => n.title = i18nT(n.getAttribute('data-i18n-title')));
@@ -366,7 +330,6 @@ function onAnalyze(){
   }
 }
 function analyzeText(text){
-  // Normaliser NBSP + smalt NBSP
   const norm=text.replace(/\u00A0/g,' ').replace(/\u202F/g,' ');
   const lines=norm.split('\n').map(l=>l.trim()).filter(Boolean);
 
@@ -406,14 +369,13 @@ function extractParagraphs(lines, lang){
     if(currentNum!==null){
       const text=buf.join(' ').trim();
       const words=(text.match(/\S+/g)||[]).length;
-      const q=1; // 1 spørsmål pr. nummerert avsnitt
+      const q=1;
       const les=(text.match(lesRe)||[]).length;
       out.push({num:currentNum,text,words,q,les,hasAB:currentAB});
     }
     buf=[];
   };
 
-  // Primærpass
   for(const raw of lines){
     const l=raw.replace(/\u00A0/g,' ').trim(); if(!l||skip.test(l)) continue;
     const h=l.match(HEADER_RE);
@@ -437,7 +399,6 @@ function extractParagraphs(lines, lang){
   }
   push();
 
-  // Mer forsiktig fallback
   if (out.length < 10) {
     const joined = lines.join('\n').replace(/\u00A0/g,' ');
     const blocks = joined.split(/(?:(?:^)|(?:\n))(?=\s*\d+(?:\s*,\s*\d+)*\.\s)/g)
@@ -501,8 +462,6 @@ function drawTimeline(){
     const tN=(i-1)/Math.max(1,(totalParagraphs-1));
     slot.style.background=lerpColor(startCol,endCol,tN);
     const lbl=document.createElement('div'); lbl.textContent=String(i); slot.appendChild(lbl);
-
-    // Klikk: tillat før start eller når pauset
     slot.addEventListener('click',()=>{
       if(started && !paused) return;
       const idx=parseInt(slot.dataset.idx,10); if(isNaN(idx)) return;
@@ -515,7 +474,6 @@ function drawTimeline(){
       $('clock').classList.toggle('over', accumSec>=TOTAL_SEC);
       setMessage(i18nT('msg_section_prefix') + (idx+1));
     });
-
     t.insertBefore(slot, elapsedNode);
   }
   $('elapsed').style.width='0%'; $('cursor').style.left='0%';
@@ -553,26 +511,26 @@ function setStopAsRewind(isRewind){
   const btn=$('stopBtn');
   stopIsRewind=!!isRewind;
   btn.classList.toggle('stop-btn', !stopIsRewind);
-  btn.classList.toggle('rewind-btn', stopIsRewind);
-  btn.title = stopIsRewind ? (i18nT('tooltip_reset') || 'Nullstill') : (i18nT('tooltip_stop') || 'Ferdig');
+  btn.classList.toggle('rewind-btn', isRewind);
+  btn.title = isRewind ? (i18nT('tooltip_reset') || 'Nullstill') : (i18nT('tooltip_stop') || 'Ferdig');
 }
 
 /* ====== Kontroller (WT) ====== */
 function onPlay(){
-  if(activeView!=='WT') return; // bare i denne fanen
+  if(activeView!=='WT') return;
   if(stopIsRewind){ setStopAsRewind(false); }
   if(started && paused){
-    paused=false; startTs=Date.now(); startClock();
+    paused=false; startTs=Date.now(); startClock(); lockScreen();
     $('playBtn').disabled=true; $('pauseBtn').disabled=false; $('stopBtn').disabled=false;
     return;
   }
   if(!started){
-    hideInputArea(); // skjul input ved start
+    hideInputArea();
     startTs=Date.now(); started=true; paused=false;
     const info=$('infoLine'); if(info) info.style.display='none';
     $('appContainer').classList.add('running');
     setMessage(i18nT('msg_intro'));
-    startClock();
+    startClock(); lockScreen();
     $('playBtn').disabled=true; $('pauseBtn').disabled=false; $('stopBtn').disabled=false;
     $('timeline')?.scrollIntoView({ behavior:'smooth', block:'center' });
   }
@@ -581,13 +539,12 @@ function onPause(){
   if(activeView!=='WT') return;
   if(!started || paused) return;
   accumSec += Math.floor((Date.now()-startTs)/1000);
-  paused=true; stopClock(); setMessage(i18nT('msg_pause'));
+  paused=true; stopClock(); releaseLock(); setMessage(i18nT('msg_pause'));
   $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=false;
 }
 function onStopOrRewind(){
   if(activeView!=='WT') return;
   if(stopIsRewind){
-    // Reset
     accumSec = 0;
     resetClockUI();
     $('elapsed').style.width='0%'; $('cursor').style.left='0%';
@@ -596,12 +553,11 @@ function onStopOrRewind(){
     $('appContainer').classList.remove('running');
     $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=true;
     showInputArea();
-    setStopAsRewind(false);
+    setStopAsRewind(false); releaseLock();
     return;
   }
-  // Stopp
   if(started && !paused){ accumSec += Math.floor((Date.now()-startTs)/1000); }
-  stopClock();
+  stopClock(); releaseLock();
   setMessage(i18nT('msg_finished_prefix') + fmt(accumSec));
   started=false; paused=false;
   $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=false;
@@ -610,6 +566,7 @@ function onStopOrRewind(){
   showInputArea();
   setStopAsRewind(true);
 }
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && started && !paused) lockScreen(); });
 
 /* ====== Justerfelt (WT) ====== */
 function onAdjust(){
@@ -640,144 +597,112 @@ function updateInfoLine(resetGhost){
 
 /* ====== INIT (WT) ====== */
 document.addEventListener('DOMContentLoaded', ()=>{
-  // Automatisk tema etter system (knapp fjernet)
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.body.classList.toggle('dark', !!prefersDark);
-
   const ap=$('articleText'); if(ap && window.i18n){ ap.setAttribute('placeholder', i18nT('placeholder_article')); }
   const nt=$('notes'); if(nt && window.i18n){ nt.setAttribute('placeholder', i18nT('placeholder_notes')); }
 });
 
 /* ============================================================
-   SKATTER/PERLER – Enkel 10:00 nedtelling med overtid
+   ANNET – Presets, fargetransisjon siste minutt, overtid
    ============================================================ */
 let spRunning=false, spPaused=false, spStartTs=null, spAccum=0, spTick=null;
-const SP_TOTAL = 600; // 10:00 sekunder
+let SP_TOTAL = 600; // default preset
+let chosenPreset = 600;
+
+const presetBtns = Array.from(document.querySelectorAll('.preset-row .preset'));
+presetBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    presetBtns.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    chosenPreset = parseInt(btn.dataset.seconds,10)||600;
+    if(!spRunning){
+      SP_TOTAL = chosenPreset;
+      $('clockSP').textContent = spFmt(SP_TOTAL);
+      $('msgSP').textContent = `Klar til nedtelling (${spFmt(SP_TOTAL)}).`;
+    }
+  });
+});
 
 function spFmt(s){ const a=Math.max(0,Math.floor(s)); const m=Math.floor(a/60), r=a%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
 function spNowElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; const live=Math.floor((Date.now()-spStartTs)/1000); return spAccum+live; }
+
+function interpColor(t){
+  // t: 1 -> 0 over siste minuttet. Grønn (#1e824c) mot oransje (#f0ad4e)
+  const a=[0x1e,0x82,0x4c], b=[0xf0,0xad,0x4e];
+  const mix=(i)=>Math.round(a[i]+(b[i]-a[i])*(1-t));
+  return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`;
+}
+
 function spUpdate(){
   const elapsed = spNowElapsed();
   const remain = SP_TOTAL - elapsed;
   const clock = $('clockSP'), msg=$('msgSP');
+
   if(remain>=0){
+    clock.classList.remove('over');
     clock.textContent = spFmt(remain);
-    clock.classList.toggle('over', false);
-    msg.textContent = remain===SP_TOTAL ? 'Klar til nedtelling (10:00).' : 'Pågår …';
+    if(remain > 60){
+      // normal grønn
+      clock.style.color = '';
+    }else{
+      // siste minutt: grønn -> oransje
+      const t = remain/60; // 1..0
+      clock.style.color = interpColor(t);
+    }
+    msg.textContent = remain===SP_TOTAL ? `Klar til nedtelling (${spFmt(SP_TOTAL)}).` : 'Pågår …';
   }else{
     const over = -remain;
     clock.textContent = spFmt(over);
     clock.classList.add('over');
+    clock.style.color = ''; // bruk rød fra .over
     msg.textContent = 'Du har brukt opp tiden';
   }
 }
+
 function spStart(){
   if(spRunning && spPaused){
     spPaused=false; spStartTs=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(spUpdate,250);
-    $('playSP').disabled=true; $('pauseSP').disabled=false; $('stopSP').disabled=false; return;
+    $('playSP').disabled=true; $('pauseSP').disabled=false; $('stopSP').disabled=false; $('resetToPreset').disabled=true; lockScreen();
+    return;
   }
   if(!spRunning){
-    spRunning=true; spPaused=false; spStartTs=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(spUpdate,250);
-    $('playSP').disabled=true; $('pauseSP').disabled=false; $('stopSP').disabled=false;
+    SP_TOTAL = chosenPreset; // lås valgt preset ved start
+    spRunning=true; spPaused=false; spStartTs=Date.now();
+    spTick && clearInterval(spTick); spTick=setInterval(spUpdate,250);
+    $('playSP').disabled=true; $('pauseSP').disabled=false; $('stopSP').disabled=false; $('resetToPreset').disabled=true; lockScreen();
   }
 }
 function spPause(){
   if(!spRunning || spPaused) return;
   spAccum += Math.floor((Date.now()-spStartTs)/1000);
-  spPaused=true; spTick && clearInterval(spTick); spTick=null;
-  $('playSP').disabled=false; $('pauseSP').disabled=true; $('stopSP').disabled=false;
+  spPaused=true; spTick && clearInterval(spTick); spTick=null; releaseLock();
+  $('playSP').disabled=false; $('pauseSP').disabled=true; $('stopSP').disabled=false; $('resetToPreset').disabled=true;
   spUpdate();
 }
 function spStopReset(){
   if(spRunning && !spPaused){ spAccum += Math.floor((Date.now()-spStartTs)/1000); }
   spRunning=false; spPaused=false; spStartTs=null; spAccum=0;
-  spTick && clearInterval(spTick); spTick=null;
-  $('playSP').disabled=false; $('pauseSP').disabled=true; $('stopSP').disabled=true;
-  $('clockSP').classList.remove('over'); $('clockSP').textContent='10:00';
-  $('msgSP').textContent='Klar til nedtelling (10:00).';
+  spTick && clearInterval(spTick); spTick=null; releaseLock();
+  $('playSP').disabled=false; $('pauseSP').disabled=true; $('stopSP').disabled=true; $('resetToPreset').disabled=false;
+  $('clockSP').classList.remove('over');
+  SP_TOTAL = chosenPreset;
+  $('clockSP').textContent=spFmt(SP_TOTAL);
+  $('msgSP').textContent=`Klar til nedtelling (${spFmt(SP_TOTAL)}).`;
+  $('clockSP').style.color='';
 }
 $('playSP').addEventListener('click', spStart);
 $('pauseSP').addEventListener('click', spPause);
 $('stopSP').addEventListener('click', spStopReset);
-
-/* ============================================================
-   ANNET – Egendefinert nedtelling med steppere og overtid
-   ============================================================ */
-let othRunning=false, othPaused=false, othStartTs=null, othAccum=0, othTick=null, othTotal=600;
-
-function othFmt(s){ const a=Math.max(0,Math.floor(s)); const m=Math.floor(a/60), r=a%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
-function othNowElapsed(){ if(!othRunning) return othAccum; if(othPaused) return othAccum; const live=Math.floor((Date.now()-othStartTs)/1000); return othAccum+live; }
-function othUpdate(){
-  const elapsed = othNowElapsed();
-  const remain = othTotal - elapsed;
-  const clock=$('clockOther'), msg=$('msgOther');
-  if(remain>=0){
-    clock.textContent = othFmt(remain);
-    clock.classList.toggle('over', false);
-    msg.textContent = 'Pågår …';
-  }else{
-    const over = -remain;
-    clock.textContent = othFmt(over);
-    clock.classList.add('over');
-    msg.textContent = 'Du har gått over tiden';
-  }
-}
-function othStart(){
-  if(othRunning && othPaused){
-    othPaused=false; othStartTs=Date.now(); othTick && clearInterval(othTick); othTick=setInterval(othUpdate,250);
-    $('playOther').disabled=true; $('pauseOther').disabled=false; $('stopOther').disabled=false; return;
-  }
-  if(!othRunning){
-    // Lås inn valgt total ved start
-    const m=parseInt($('minVal').textContent,10)||0;
-    const s=parseInt($('secVal').textContent,10)||0;
-    othTotal = Math.max(0, m*60 + s);
-    othRunning=true; othPaused=false; othStartTs=Date.now(); othTick && clearInterval(othTick); othTick=setInterval(othUpdate,250);
-    $('playOther').disabled=true; $('pauseOther').disabled=false; $('stopOther').disabled=false;
-  }
-}
-function othPause(){
-  if(!othRunning || othPaused) return;
-  othAccum += Math.floor((Date.now()-othStartTs)/1000);
-  othPaused=true; othTick && clearInterval(othTick); othTick=null;
-  $('playOther').disabled=false; $('pauseOther').disabled=true; $('stopOther').disabled=false;
-  othUpdate();
-}
-function othStopReset(){
-  if(othRunning && !othPaused){ othAccum += Math.floor((Date.now()-othStartTs)/1000); }
-  othRunning=false; othPaused=false; othStartTs=null; othAccum=0;
-  othTick && clearInterval(othTick); othTick=null;
-  $('playOther').disabled=false; $('pauseOther').disabled=true; $('stopOther').disabled=true;
-  $('clockOther').classList.remove('over');
-  // Reset til gjeldende steppere
-  const m=parseInt($('minVal').textContent,10)||0;
-  const s=parseInt($('secVal').textContent,10)||0;
-  $('clockOther').textContent = othFmt(m*60+s);
-  $('msgOther').textContent='Velg tid, så start.';
-}
-$('playOther').addEventListener('click', othStart);
-$('pauseOther').addEventListener('click', othPause);
-$('stopOther').addEventListener('click', othStopReset);
-
-// Steppere
-function setStep(min, sec){
-  min = Math.max(0, Math.min(999, min|0));
-  sec = Math.max(0, Math.min(59,  sec|0));
-  $('minVal').textContent = String(min);
-  $('secVal').textContent = String(sec).padStart(2,'0');
-  if(!othRunning){ $('clockOther').textContent = othFmt(min*60+sec); }
-}
-$('minUp').addEventListener('click', ()=>{ const m=parseInt($('minVal').textContent,10)||0; setStep(m+1, parseInt($('secVal').textContent,10)||0); });
-$('minDown').addEventListener('click', ()=>{ const m=parseInt($('minVal').textContent,10)||0; setStep(m-1, parseInt($('secVal').textContent,10)||0); });
-$('secUp').addEventListener('click', ()=>{ const s=(parseInt($('secVal').textContent,10)||0)+1; const m=parseInt($('minVal').textContent,10)||0; setStep(m + Math.floor(s/60), s%60); });
-$('secDown').addEventListener('click', ()=>{ let s=(parseInt($('secVal').textContent,10)||0)-1; let m=parseInt($('minVal').textContent,10)||0; if(s<0){ if(m>0){ m--; s=59; } else { s=0; } } setStep(m, s); });
-
-// Init valgtid (10:00)
-setStep(10,0);
+$('resetToPreset').addEventListener('click', ()=>{
+  if(spRunning) return;
+  SP_TOTAL = chosenPreset;
+  $('clockSP').textContent=spFmt(SP_TOTAL);
+  $('msgSP').textContent=`Klar til nedtelling (${spFmt(SP_TOTAL)}).`;
+});
 </script>
 
 <!-- Cloudflare Web Analytics -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"9e80768d4f6c41f69cb40367aebcc56b"}'></script>
-<!-- End Cloudflare Web Analytics -->
 </body>
 </html>
