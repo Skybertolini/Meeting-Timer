@@ -125,7 +125,8 @@ body.dark .copyright{ color:#c7c7c7 }
 .view{ display:none }
 .view.active{ display:block }
 
-/* Annet – presets */
+/* Annet – presets + steppere */
+.center-text{ text-align:center }
 .preset-row{
   margin-top:8px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;
 }
@@ -134,7 +135,18 @@ body.dark .copyright{ color:#c7c7c7 }
   box-shadow:0 8px 30px rgba(0,0,0,.08);
 }
 .preset.active{ background:#fff }
-.center-text{ text-align:center }
+
+.picker{
+  margin-top:12px; display:flex; gap:16px; justify-content:center; align-items:center;
+}
+.stepper{
+  display:flex; flex-direction:column; align-items:center; gap:6px; background:var(--card-bg);
+  border:1px solid var(--card-border); border-radius:12px; padding:10px 12px; min-width:88px; box-shadow:0 8px 30px rgba(0,0,0,.08)
+}
+.stepper button{ border:0; border-radius:8px; padding:6px 10px; cursor:pointer; background:#fff; font-weight:700 }
+body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
+.stepper .value{ font-size:1.8rem; font-weight:800; min-width:64px; text-align:center }
+.sep{ font-size:2rem; font-weight:800; opacity:.6 }
 </style>
 </head>
 <body>
@@ -142,7 +154,7 @@ body.dark .copyright{ color:#c7c7c7 }
   <div class="topbar">
     <div class="left-group">
       <div class="logo-box">
-        <img id="logoImg" src="study-timer-logo.png" alt="Meeting Timer logo">
+        <img id="logoImg" src="assets/meeting-timer-logo.png" alt="Meeting Timer logo">
       </div>
       <div class="segmented" role="tablist" aria-label="Modus">
         <button id="tabWT"   class="active" role="tab" aria-selected="true">Vakttårnstudiet</button>
@@ -196,16 +208,31 @@ body.dark .copyright{ color:#c7c7c7 }
     </div>
   </div>
 
-  <!-- VIEW: Annet (tidl. Skatter/Perler) -->
+  <!-- VIEW: Annet (presets + egendefinert steg) -->
   <div id="viewSP" class="view">
     <div class="center-text">
       <div class="preset-row" aria-label="Hurtigvalg">
-        <button class="preset active" data-seconds="600">10:00</button>
+        <button class="preset" data-seconds="600">10:00</button>
         <button class="preset" data-seconds="480">08:00</button>
         <button class="preset" data-seconds="300">05:00</button>
       </div>
+
+      <div class="picker" aria-label="Egendefinert tid">
+        <div class="stepper">
+          <button id="minUp">▲</button>
+          <div id="minVal" class="value">10</div>
+          <button id="minDown">▼</button>
+        </div>
+        <div class="sep">:</div>
+        <div class="stepper">
+          <button id="secUp">▲</button>
+          <div id="secVal" class="value">00</div>
+          <button id="secDown">▼</button>
+        </div>
+      </div>
+
       <div id="clockSP" class="big-clock">10:00</div>
-      <div id="msgSP" class="message-box" style="margin-inline:auto; max-width:520px">Klar til nedtelling (10:00).</div>
+      <div id="msgSP" class="message-box" style="margin-inline:auto; max-width:520px">Klar til nedtelling.</div>
     </div>
     <div class="footer-inline">
       <button id="playSP"  class="round-btn play-btn"  title="Start/Gjenoppta"></button>
@@ -213,11 +240,11 @@ body.dark .copyright{ color:#c7c7c7 }
       <button id="stopSP"  class="round-btn stop-btn"  title="Ferdig/Nullstill" disabled></button>
     </div>
     <div class="center-text" style="margin-top:8px">
-      <button id="resetToPreset" class="preset" title="Sett tilbake til valgt preset" disabled>↺ Sett til preset</button>
+      <button id="resetToPreset" class="preset" title="Sett tilbake til valgt tid" disabled>↺ Sett til valgt tid</button>
     </div>
   </div>
 
-  <div class="copyright">Meeting Timer © 2025 · Version 2.1</div>
+  <div class="copyright">Meeting Timer © 2025 · Version 2.2</div>
 </div>
 
 <script src="i18n/i18n.js"></script>
@@ -253,12 +280,12 @@ tabs.SP.addEventListener('click', ()=>activateView('SP'));
 function i18nT(k){ return (window.i18n && i18n.t) ? i18n.t(k) : k; }
 function getCurrentLang(){ const sel=$('langSelect'); if(sel&&sel.value) return sel.value; const ls=localStorage.getItem('studyTimer.lang'); return ls||'no'; }
 
-/* ====== Wake Lock (skjerm våken mens timer går) ====== */
+/* ====== Wake Lock ====== */
 let wakeLock=null;
 async function lockScreen(){ try{ wakeLock = await navigator.wakeLock?.request('screen'); }catch{} }
 function releaseLock(){ try{ wakeLock?.release?.(); wakeLock=null; }catch{} }
 
-/* ====== “Les …” ord + regex (robust) ====== */
+/* ====== “Les …” ord + regex ====== */
 function scriptureKeyword(lang){
   switch((lang||'no').toLowerCase()){
     case 'sv': return 'Läs';
@@ -604,62 +631,115 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 
 /* ============================================================
-   ANNET – Presets, fargetransisjon siste minutt, overtid
+   ANNET – Presets + steppere + meldingsregler
    ============================================================ */
-let spRunning=false, spPaused=false, spStartTs=null, spAccum=0, spTick=null;
-let SP_TOTAL = 600; // default preset
-let chosenPreset = 600;
+const PRESET_KEY='meetingTimer.annetSeconds';
+const PRESET_CHOICES=[600,480,300];
 
-const presetBtns = Array.from(document.querySelectorAll('.preset-row .preset'));
-presetBtns.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    presetBtns.forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    chosenPreset = parseInt(btn.dataset.seconds,10)||600;
-    if(!spRunning){
-      SP_TOTAL = chosenPreset;
-      $('clockSP').textContent = spFmt(SP_TOTAL);
-      $('msgSP').textContent = `Klar til nedtelling (${spFmt(SP_TOTAL)}).`;
-    }
-  });
-});
+let spRunning=false, spPaused=false, spStartTs=null, spAccum=0, spTick=null;
+let SP_TOTAL = 600; // gjeldende valgt total
+let chosenSeconds = 600;
+
+// Meldingsflagg (for å vise én gang)
+let spShowStart=false, spShownHalf=false, spShownOneMin=false, spShownOver=false;
+
+function loadStoredSeconds(){
+  const v=parseInt(localStorage.getItem(PRESET_KEY),10);
+  return Number.isFinite(v) && v>=0 && v<=359999 ? v : 600;
+}
+function saveStoredSeconds(v){
+  if(Number.isFinite(v)) localStorage.setItem(PRESET_KEY,String(v));
+}
 
 function spFmt(s){ const a=Math.max(0,Math.floor(s)); const m=Math.floor(a/60), r=a%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
 function spNowElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; const live=Math.floor((Date.now()-spStartTs)/1000); return spAccum+live; }
 
 function interpColor(t){
-  // t: 1 -> 0 over siste minuttet. Grønn (#1e824c) mot oransje (#f0ad4e)
+  // t: 1 -> 0 siste minuttet. Grønn (#1e824c) mot oransje (#f0ad4e)
   const a=[0x1e,0x82,0x4c], b=[0xf0,0xad,0x4e];
   const mix=(i)=>Math.round(a[i]+(b[i]-a[i])*(1-t));
   return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`;
 }
 
+function updateAnnetMessage(remain, elapsed){
+  const msg=$('msgSP');
+  if(spRunning && !spPaused){
+    if(elapsed<=10 && !spShowStart){ msg.textContent='Vi er i gang'; spShowStart=true; }
+    const halfPoint = Math.floor(SP_TOTAL/2);
+    if(elapsed>=halfPoint && !spShownHalf){ msg.textContent='Du er halvveis'; spShownHalf=true; }
+    if(remain===60 && !spShownOneMin){ msg.textContent='1 minutt igjen!'; spShownOneMin=true; }
+    if(remain<0 && !spShownOver){ msg.textContent='Du har gått over tiden!'; spShownOver=true; }
+  } else {
+    msg.textContent='Klar til nedtelling.';
+  }
+}
+
 function spUpdate(){
   const elapsed = spNowElapsed();
   const remain = SP_TOTAL - elapsed;
-  const clock = $('clockSP'), msg=$('msgSP');
+  const clock = $('clockSP');
+
+  updateAnnetMessage(remain, elapsed);
 
   if(remain>=0){
     clock.classList.remove('over');
     clock.textContent = spFmt(remain);
     if(remain > 60){
-      // normal grønn
       clock.style.color = '';
     }else{
-      // siste minutt: grønn -> oransje
-      const t = remain/60; // 1..0
+      const t = Math.max(0, remain)/60; // 1..0
       clock.style.color = interpColor(t);
     }
-    msg.textContent = remain===SP_TOTAL ? `Klar til nedtelling (${spFmt(SP_TOTAL)}).` : 'Pågår …';
   }else{
     const over = -remain;
     clock.textContent = spFmt(over);
     clock.classList.add('over');
     clock.style.color = ''; // bruk rød fra .over
-    msg.textContent = 'Du har brukt opp tiden';
   }
 }
 
+// ----- Presets -----
+const presetBtns = Array.from(document.querySelectorAll('.preset-row .preset'));
+function markActivePreset(sec){
+  presetBtns.forEach(b=>b.classList.toggle('active', parseInt(b.dataset.seconds,10)===sec));
+}
+presetBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(spRunning) return; // ikke endre mens den går
+    const sec=parseInt(btn.dataset.seconds,10)||600;
+    chosenSeconds = sec;
+    SP_TOTAL = sec;
+    saveStoredSeconds(sec);
+    markActivePreset(sec);
+    setStep(Math.floor(sec/60), sec%60);
+    $('clockSP').textContent=spFmt(sec);
+    $('msgSP').textContent='Klar til nedtelling.';
+  });
+});
+
+// ----- Steppere -----
+function setStep(min, sec){
+  min = Math.max(0, Math.min(999, min|0));
+  sec = Math.max(0, Math.min(59,  sec|0));
+  $('minVal').textContent = String(min);
+  $('secVal').textContent = String(sec).padStart(2,'0');
+  if(!spRunning){
+    SP_TOTAL = min*60+sec;
+    chosenSeconds = SP_TOTAL;
+    $('clockSP').textContent = spFmt(SP_TOTAL);
+    markActivePreset(PRESET_CHOICES.includes(SP_TOTAL)?SP_TOTAL:-1);
+    saveStoredSeconds(SP_TOTAL);
+  }
+}
+$('minUp').addEventListener('click', ()=>{ if(spRunning) return; const m=parseInt(minVal.textContent,10)||0; setStep(m+1, parseInt(secVal.textContent,10)||0); });
+$('minDown').addEventListener('click', ()=>{ if(spRunning) return; const m=parseInt(minVal.textContent,10)||0; setStep(m-1, parseInt(secVal.textContent,10)||0); });
+$('secUp').addEventListener('click', ()=>{ if(spRunning) return; let s=(parseInt(secVal.textContent,10)||0)+1; let m=parseInt(minVal.textContent,10)||0; if(s>=60){ m++; s=0; } setStep(m,s); });
+$('secDown').addEventListener('click', ()=>{ if(spRunning) return; let s=(parseInt(secVal.textContent,10)||0)-1; let m=parseInt(minVal.textContent,10)||0; if(s<0){ if(m>0){ m--; s=59; } else { s=0; } } setStep(m,s); });
+
+// ----- Start/Pause/Stop -----
+function resetFlags(){
+  spShowStart=false; spShownHalf=false; spShownOneMin=false; spShownOver=false;
+}
 function spStart(){
   if(spRunning && spPaused){
     spPaused=false; spStartTs=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(spUpdate,250);
@@ -667,10 +747,11 @@ function spStart(){
     return;
   }
   if(!spRunning){
-    SP_TOTAL = chosenPreset; // lås valgt preset ved start
-    spRunning=true; spPaused=false; spStartTs=Date.now();
+    // lås nåværende SP_TOTAL (fra preset eller steppere)
+    spRunning=true; spPaused=false; spStartTs=Date.now(); resetFlags();
     spTick && clearInterval(spTick); spTick=setInterval(spUpdate,250);
     $('playSP').disabled=true; $('pauseSP').disabled=false; $('stopSP').disabled=false; $('resetToPreset').disabled=true; lockScreen();
+    spUpdate(); // umiddelbar oppdatering
   }
 }
 function spPause(){
@@ -685,21 +766,37 @@ function spStopReset(){
   spRunning=false; spPaused=false; spStartTs=null; spAccum=0;
   spTick && clearInterval(spTick); spTick=null; releaseLock();
   $('playSP').disabled=false; $('pauseSP').disabled=true; $('stopSP').disabled=true; $('resetToPreset').disabled=false;
-  $('clockSP').classList.remove('over');
-  SP_TOTAL = chosenPreset;
-  $('clockSP').textContent=spFmt(SP_TOTAL);
-  $('msgSP').textContent=`Klar til nedtelling (${spFmt(SP_TOTAL)}).`;
-  $('clockSP').style.color='';
+  $('clockSP').classList.remove('over'); $('clockSP').style.color='';
+  // Tilbake til valgt lagret tid
+  const sec = loadStoredSeconds();
+  SP_TOTAL = sec; chosenSeconds = sec; markActivePreset(PRESET_CHOICES.includes(sec)?sec:-1);
+  setStep(Math.floor(sec/60), sec%60);
+  $('msgSP').textContent='Klar til nedtelling.';
 }
 $('playSP').addEventListener('click', spStart);
 $('pauseSP').addEventListener('click', spPause);
 $('stopSP').addEventListener('click', spStopReset);
 $('resetToPreset').addEventListener('click', ()=>{
   if(spRunning) return;
-  SP_TOTAL = chosenPreset;
+  const sec = loadStoredSeconds();
+  SP_TOTAL = sec; chosenSeconds = sec; markActivePreset(PRESET_CHOICES.includes(sec)?sec:-1);
+  setStep(Math.floor(sec/60), sec%60);
   $('clockSP').textContent=spFmt(SP_TOTAL);
-  $('msgSP').textContent=`Klar til nedtelling (${spFmt(SP_TOTAL)}).`;
+  $('msgSP').textContent='Klar til nedtelling.';
 });
+
+// ----- Init Annet -----
+(function initAnnet(){
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.body.classList.toggle('dark', !!prefersDark);
+
+  const stored = loadStoredSeconds();
+  SP_TOTAL = stored; chosenSeconds = stored;
+  markActivePreset(PRESET_CHOICES.includes(stored)?stored:-1);
+  setStep(Math.floor(stored/60), stored%60);
+  $('clockSP').textContent=spFmt(stored);
+  $('msgSP').textContent='Klar til nedtelling.';
+})();
 </script>
 
 <!-- Cloudflare Web Analytics -->
