@@ -360,7 +360,9 @@ async function hydrateOptions(){
   sel.selectedIndex=0;
   useItem(JSON.parse(sel.value));
 }
-
+function readsLabelFor(lang){
+  return (lang === 'sv') ? 'Läs-skriftställen' : 'Les-skriftsteder';
+}
 function useItem(item){
   $('#articleTitle').textContent = item.title || '—';
   totalParagraphs = item.paragraphs|0;
