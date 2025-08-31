@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Study Timer</title>
+<title>Meeting Timer</title>
 <style>
 :root{
   --green:#28a745; --blue:#0d6efd; --orange:#ff8800;
@@ -26,14 +26,22 @@ body.dark{
 .container{ width:min(960px,94vw); max-width:880px }
 
 /* Topplinje */
-.topbar{ width:100%; display:flex; justify-content:space-between; align-items:center; margin:-8px 0 12px; gap:12px }
+.topbar{ width:100%; display:flex; justify-content:space-between; align-items:center; margin:-8px 0 12px; gap:12px; flex-wrap:wrap }
 .left-group{ display:flex; align-items:center; gap:12px }
 .logo-box img{ max-height:120px; width:auto; border-radius:0; box-shadow:none }
-.theme-btn{
-  width:44px; height:44px; border-radius:999px; border:1px solid var(--card-border);
-  background:var(--card-bg); display:flex; align-items:center; justify-content:center;
-  font-size:20px; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.08);
+
+/* Segmented (Cupertino-stil) */
+.segmented{
+  display:inline-flex; border:1px solid var(--card-border); background:var(--card-bg);
+  border-radius:999px; padding:4px; gap:4px; box-shadow:0 8px 30px rgba(0,0,0,.08)
 }
+.segmented button{
+  border:0; background:transparent; padding:8px 14px; border-radius:999px; font-weight:700; cursor:pointer;
+}
+.segmented button.active{ background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.08) }
+body.dark .segmented button.active{ background:#2d2d2d }
+
+/* Språkvelger */
 .lang-select{
   appearance:none; border:1px solid rgba(0,0,0,.12); background:rgba(255,255,255,.85);
   border-radius:999px; padding:8px 14px; font-weight:600; box-shadow:0 8px 30px rgba(0,0,0,.08); cursor:pointer;
@@ -102,18 +110,19 @@ body.dark .para-slot{
 .elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(255,77,64,.25); width:0%; transition:width .25s linear; z-index:2 }
 .cursor{ position:absolute; top:-10px; width:2px; height:72px; background:linear-gradient(#e3262e,#b4141a); left:0%; z-index:3; box-shadow:0 0 0 2px rgba(227,38,46,.12) }
 
-#clock{ margin-top:24px; font-size:2.1rem; font-weight:800; color:#1e824c; text-shadow:0 1px 0 #fff }
-#clock.over{ color:#c41111; text-shadow:none }
-body.dark #clock{ color:#9af0ba; text-shadow:none }
+#clock, .big-clock{ margin-top:24px; font-size:2.1rem; font-weight:800; color:#1e824c; text-shadow:0 1px 0 #fff }
+#clock.over, .big-clock.over{ color:#c41111; text-shadow:none }
+body.dark #clock, body.dark .big-clock{ color:#9af0ba; text-shadow:none }
 
 /* Kontroller */
-.footer{ margin-top:22px; width:100%; display:flex; gap:14px }
+.footer, .footer-inline{ margin-top:22px; width:100%; display:flex; gap:14px }
+.footer-inline{ justify-content:center }
 .round-btn{ display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:999px; border:0; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.08) }
 .play-btn{ background:var(--green) } .play-btn::before{ content:"▶"; color:#fff; font-size:1.5rem; margin-left:3px }
 .pause-btn{ background:#f0ad4e } .pause-btn::before{ content:"❚❚"; color:#fff; font-size:1.2rem }
 .stop-btn{ background:#d21f3c } .stop-btn::before{ content:""; display:block; width:16px; height:16px; background:#fff; border-radius:2px }
 .rewind-btn{ background:#6c757d } .rewind-btn::before{ content:"↺"; color:#fff; font-size:1.4rem }
-.play-btn:disabled,.pause-btn:disabled,.stop-btn:disabled,.rewind-btn:disabled{ background:#aaa; cursor:not-allowed; box-shadow:none }
+.round-btn:disabled{ background:#aaa; cursor:not-allowed; box-shadow:none }
 
 /* Notater + footer */
 .notes-section{ margin-top:32px }
@@ -121,15 +130,37 @@ body.dark #clock{ color:#9af0ba; text-shadow:none }
 .notes-section textarea{ height:120px }
 .copyright{ margin-top:24px; font-size:.9rem; color:#777; text-align:center }
 body.dark .copyright{ color:#c7c7c7 }
+
+/* Faner/innhold */
+.view{ display:none }
+.view.active{ display:block }
+
+/* Annet – tidsvelger */
+.picker{
+  margin-top:16px; display:flex; gap:16px; justify-content:center; align-items:center;
+}
+.stepper{
+  display:flex; flex-direction:column; align-items:center; gap:6px; background:var(--card-bg);
+  border:1px solid var(--card-border); border-radius:12px; padding:10px 12px; min-width:88px; box-shadow:0 8px 30px rgba(0,0,0,.08)
+}
+.stepper button{ border:0; border-radius:8px; padding:6px 10px; cursor:pointer; background:#fff; font-weight:700 }
+body.dark .stepper button{ background:#2d2d2d; color:#f2f2f2 }
+.stepper .value{ font-size:1.8rem; font-weight:800; min-width:64px; text-align:center }
+.sep{ font-size:2rem; font-weight:800; opacity:.6 }
+.center-text{ text-align:center }
 </style>
 </head>
 <body>
 <div class="container" id="appContainer">
   <div class="topbar">
     <div class="left-group">
-      <button id="themeBtn" class="theme-btn" title="Toggle theme" aria-label="Toggle theme">🌞</button>
       <div class="logo-box">
-        <img id="logoImg" src="study-timer-logo.png" alt="Study Timer logo">
+        <img id="logoImg" src="study-timer-logo.png" alt="Meeting Timer logo">
+      </div>
+      <div class="segmented" role="tablist" aria-label="Modus">
+        <button id="tabWT"   class="active" role="tab" aria-selected="true">Vakttårnstudiet</button>
+        <button id="tabSP"   role="tab" aria-selected="false">Skatter/Perler</button>
+        <button id="tabOther" role="tab" aria-selected="false">Annet</button>
       </div>
     </div>
     <select id="langSelect" class="lang-select" aria-label="Language">
@@ -141,81 +172,127 @@ body.dark .copyright{ color:#c7c7c7 }
     </select>
   </div>
 
-  <textarea id="articleText" data-i18n-placeholder="placeholder_article" placeholder=""></textarea>
-  <button id="analyzeBtn" class="btn" data-i18n="analyze">Analyser</button>
+  <!-- VIEW: Vakttårnstudiet (opprinnelig) -->
+  <div id="viewWT" class="view active">
+    <textarea id="articleText" data-i18n-placeholder="placeholder_article" placeholder=""></textarea>
+    <button id="analyzeBtn" class="btn" data-i18n="analyze">Analyser</button>
 
-  <div class="info-line" id="infoLine">
-    <div class="inline-edit"><label for="editParagraphs" data-i18n="paragraphs">Avsnitt</label><input id="editParagraphs" type="number" min="1" value="0" class="ghost"></div>
-    <div class="inline-edit"><label for="editQuestions" data-i18n="questions">Spørsmål</label><input id="editQuestions" type="number" min="0" value="0" class="ghost"></div>
-    <div class="inline-edit"><label for="editScriptures" data-i18n="scriptures">Les-skriftsteder</label><input id="editScriptures" type="number" min="0" value="0" class="ghost"></div>
-    <button id="adjustBtn" class="btn" data-i18n="adjust" disabled>Juster</button>
-  </div>
-
-  <div id="articleTitle" class="title" data-i18n="title_default"></div>
-  <div id="message" class="message-box" data-i18n="msg_init">Begynn med å lime inn artikkelserien og analysere den.</div>
-
-  <div class="timeline-wrap">
-    <div id="timeline" class="timeline">
-      <div id="introSlot"  class="slot" style="background:var(--blue)"></div>
-      <div id="reviewSlot" class="slot" style="background:var(--orange)"></div>
-      <div id="outroSlot"  class="slot" style="background:var(--blue)"></div>
-      <div id="elapsed" class="elapsed"></div>
-      <div id="cursor"  class="cursor"></div>
+    <div class="info-line" id="infoLine">
+      <div class="inline-edit"><label for="editParagraphs" data-i18n="paragraphs">Avsnitt</label><input id="editParagraphs" type="number" min="1" value="0" class="ghost"></div>
+      <div class="inline-edit"><label for="editQuestions" data-i18n="questions">Spørsmål</label><input id="editQuestions" type="number" min="0" value="0" class="ghost"></div>
+      <div class="inline-edit"><label for="editScriptures" data-i18n="scriptures">Les-skriftsteder</label><input id="editScriptures" type="number" min="0" value="0" class="ghost"></div>
+      <button id="adjustBtn" class="btn" data-i18n="adjust" disabled>Juster</button>
     </div>
-    <div id="clock" class="clock">00:00</div>
+
+    <div id="articleTitle" class="title" data-i18n="title_default"></div>
+    <div id="message" class="message-box" data-i18n="msg_init" aria-live="polite">Begynn med å lime inn artikkelserien og analysere den.</div>
+
+    <div class="timeline-wrap">
+      <div id="timeline" class="timeline">
+        <div id="introSlot"  class="slot" style="background:var(--blue)"></div>
+        <div id="reviewSlot" class="slot" style="background:var(--orange)"></div>
+        <div id="outroSlot"  class="slot" style="background:var(--blue)"></div>
+        <div id="elapsed" class="elapsed"></div>
+        <div id="cursor"  class="cursor"></div>
+      </div>
+      <div id="clock" class="clock" aria-live="polite">00:00</div>
+    </div>
+
+    <div class="footer">
+      <button id="playBtn"  class="round-btn play-btn"  disabled data-i18n-title="tooltip_play"  title="Start/Gjenoppta"></button>
+      <button id="pauseBtn" class="round-btn pause-btn" disabled data-i18n-title="tooltip_pause" title="Pause"></button>
+      <!-- Toggler mellom stop-btn (■) og rewind-btn (↺) i JS -->
+      <button id="stopBtn"  class="round-btn stop-btn"  disabled title="Ferdig"></button>
+    </div>
+
+    <div class="notes-section">
+      <label for="notes" data-i18n="notes">Notater</label>
+      <textarea id="notes" data-i18n-placeholder="placeholder_notes" placeholder=""></textarea>
+    </div>
   </div>
 
-  <div class="footer">
-    <button id="playBtn"  class="round-btn play-btn"  disabled data-i18n-title="tooltip_play"  title="Start/Gjenoppta"></button>
-    <button id="pauseBtn" class="round-btn pause-btn" disabled data-i18n-title="tooltip_pause" title="Pause"></button>
-    <!-- Toggler mellom stop-btn (■) og rewind-btn (↺) i JS -->
-    <button id="stopBtn"  class="round-btn stop-btn"  disabled title="Ferdig"></button>
+  <!-- VIEW: Skatter/Perler (10:00) -->
+  <div id="viewSP" class="view">
+    <div class="center-text">
+      <div id="clockSP" class="big-clock">10:00</div>
+      <div id="msgSP" class="message-box" style="margin-inline:auto; max-width:520px">Klar til nedtelling (10:00).</div>
+    </div>
+    <div class="footer-inline">
+      <button id="playSP"  class="round-btn play-btn"  title="Start/Gjenoppta"></button>
+      <button id="pauseSP" class="round-btn pause-btn" title="Pause" disabled></button>
+      <button id="stopSP"  class="round-btn stop-btn"  title="Ferdig/Nullstill" disabled></button>
+    </div>
   </div>
 
-  <div class="notes-section">
-    <label for="notes" data-i18n="notes">Notater</label>
-    <textarea id="notes" data-i18n-placeholder="placeholder_notes" placeholder=""></textarea>
+  <!-- VIEW: Annet (egendefinert tid) -->
+  <div id="viewOther" class="view">
+    <div class="center-text">
+      <div class="picker">
+        <div class="stepper">
+          <button id="minUp">▲</button>
+          <div id="minVal" class="value">10</div>
+          <button id="minDown">▼</button>
+        </div>
+        <div class="sep">:</div>
+        <div class="stepper">
+          <button id="secUp">▲</button>
+          <div id="secVal" class="value">00</div>
+          <button id="secDown">▼</button>
+        </div>
+      </div>
+      <div id="clockOther" class="big-clock" style="margin-top:12px">10:00</div>
+      <div id="msgOther" class="message-box" style="margin-inline:auto; max-width:520px">Velg tid, så start.</div>
+    </div>
+    <div class="footer-inline">
+      <button id="playOther"  class="round-btn play-btn"  title="Start/Gjenoppta"></button>
+      <button id="pauseOther" class="round-btn pause-btn" title="Pause" disabled></button>
+      <button id="stopOther"  class="round-btn stop-btn"  title="Ferdig/Nullstill" disabled></button>
+    </div>
   </div>
 
-  <div class="copyright">Study Timer © 2025 · Version 1.18</div>
+  <div class="copyright">Meeting Timer © 2025 · Version 2.0</div>
 </div>
 
 <!-- i18n -->
 <script src="i18n/i18n.js"></script>
 <script>
-/* ====== Konstanter ====== */
+/* ====== Konstanter (WT) ====== */
 const TOTAL_SEC=3600, INTRO_SEC=90, REVIEW_SEC=120, OUTRO_SEC=90, CONTENT_SEC=TOTAL_SEC-INTRO_SEC-REVIEW_SEC-OUTRO_SEC;
 const WPM=150, SEC_PER_Q=10, SEC_PER_LES=30, AB_BONUS=30;
 const HEADER_RE=/^(\d+(?:[\s\u00A0]*,[\s\u00A0]*\d+)*)\.\s*(.*)?$/;
 const BODY_START_RE=/^(\d+)[\.\s\u00A0]+(.*)$/;
 const $=id=>document.getElementById(id), pct=sec=>sec/TOTAL_SEC*100;
 
-/* ====== Tilstand ====== */
+/* ====== Tilstand (WT) ====== */
 let paras=[], totalParagraphs=0, questions=0, scriptures=0, perParagraph=[], cumulative=[];
 let started=false, paused=false, startTs=null, accumSec=0, tickHandle=null, lastMilestone="";
 let stopIsRewind=false;
+
+/* ====== Faner ====== */
+const views = { WT:$('viewWT'), SP:$('viewSP'), OTHER:$('viewOther') };
+const tabs  = { WT:$('tabWT'), SP:$('tabSP'), OTHER:$('tabOther') };
+let activeView = 'WT';
+
+function activateView(key){
+  activeView = key;
+  Object.entries(views).forEach(([k,el])=>{
+    el.classList.toggle('active', k===key);
+  });
+  Object.entries(tabs).forEach(([k,btn])=>{
+    btn.classList.toggle('active', k===key);
+    btn.setAttribute('aria-selected', k===key ? 'true' : 'false');
+  });
+}
+
+tabs.WT.addEventListener('click', ()=>activateView('WT'));
+tabs.SP.addEventListener('click', ()=>activateView('SP'));
+tabs.OTHER.addEventListener('click', ()=>activateView('OTHER'));
 
 /* ====== i18n helpers ====== */
 function i18nT(k){ return (window.i18n && i18n.t) ? i18n.t(k) : k; }
 function getCurrentLang(){ const sel=$('langSelect'); if(sel&&sel.value) return sel.value; const ls=localStorage.getItem('studyTimer.lang'); return ls||'no'; }
 
-/* ====== Theme (sun/moon) ====== */
-function applyTheme(mode){
-  const body=document.body;
-  if(mode==='dark'){ body.classList.add('dark'); $('themeBtn').textContent='🌙'; $('logoImg').src='study-timer-logo-dark-mode.png'; }
-  else { body.classList.remove('dark'); $('themeBtn').textContent='🌞'; $('logoImg').src='study-timer-logo.png'; }
-  localStorage.setItem('studyTimer.theme', mode);
-}
-(function initTheme(){
-  const saved=localStorage.getItem('studyTimer.theme') || 'light';
-  applyTheme(saved);
-  $('themeBtn').addEventListener('click', ()=>{
-    const cur=localStorage.getItem('studyTimer.theme')||'light';
-    applyTheme(cur==='dark'?'light':'dark');
-  });
-})();
-
-/* ====== “Les …” ord pr. språk + regex for skriftsted ====== */
+/* ====== “Les …” ord pr. språk + regex for skriftsted (robust) ====== */
 function scriptureKeyword(lang){
   switch((lang||'no').toLowerCase()){
     case 'sv': return 'Läs';
@@ -227,16 +304,15 @@ function scriptureKeyword(lang){
 }
 function scriptureRegex(lang){
   const word = scriptureKeyword(lang);
-  // NB: ÉN backslash i stringen her betyr faktisk backslash i regexen
   return new RegExp(
-    `\\b${word}\\b\\s*\\(?\\s*` +                           // Les / Läs / ...
-    `(?:[1-3]?\\s*[A-ZÁÉÍÓÚÜÑÆØÅ][\\wÁÉÍÓÚÜÑÆØÅ.\\- ]+)?` + // valgfritt boknavn
-    `\\s*\\d+\\s*:\\s*\\d+(?:\\s*[–-]\\s*\\d+)?`,            // kap:vers(-vers)
+    `\\b${word}\\b\\s*:?\\s*\\(?\\s*` +                     // Les / Läs / Lea / Read + valgfri kolon/(
+    `(?:[1-3]?\\.?\\s*[\\p{L}][[\\p{L}\\p{M}.\\-\\s]*?)?` + // valgfri boknavn (støtter æøå mm.)
+    `\\s*\\d+\\s*:\\s*\\d+(?:\\s*[–-]\\s*\\d+)?`,           // kap:vers(-vers)
     'giu'
   );
 }
 
-/* ====== UI helpers ====== */
+/* ====== UI helpers (WT) ====== */
 function fmt(s){ const sec=Math.max(0,Math.floor(s)); const m=Math.floor(sec/60), r=sec%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
 function setMessage(m){ if(m!==lastMilestone){ $('message').textContent=m; lastMilestone=m; } }
 function hideInputArea(){ const ta=$('articleText'), ab=$('analyzeBtn'); if(ta) ta.style.display='none'; if(ab) ab.style.display='none'; }
@@ -253,12 +329,33 @@ $('stopBtn').addEventListener('click',onStopOrRewind);
 });
 $('adjustBtn').addEventListener('click',onAdjust);
 
-/* ====== Analyse ====== */
+/* ====== Språkvelger: persist + oppdater i18n + re-analysér ====== */
+(function initLangSelect(){
+  const sel = $('langSelect');
+  if (!sel) return;
+  const saved = localStorage.getItem('studyTimer.lang');
+  if (saved) sel.value = saved;
+
+  sel.addEventListener('change', () => {
+    const v = sel.value || 'no';
+    localStorage.setItem('studyTimer.lang', v);
+
+    if (window.i18n) {
+      document.querySelectorAll('[data-i18n]').forEach(n => n.textContent = i18nT(n.getAttribute('data-i18n')));
+      document.querySelectorAll('[data-i18n-title]').forEach(n => n.title = i18nT(n.getAttribute('data-i18n-title')));
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(n => n.setAttribute('placeholder', i18nT(n.getAttribute('data-i18n-placeholder'))));
+    }
+    const raw = $('articleText')?.value?.trim();
+    if (raw) { analyzeText(raw); updateInfoLine(true); }
+  });
+})();
+
+/* ====== Analyse (WT) ====== */
 function onAnalyze(){
   const raw=$('articleText').value.trim(); if(!raw){ alert(i18nT('err_paste_first')); return; }
   analyzeText(raw);
   const ta=$('articleText'); ta.classList.add('collapsed'); ta.style.height='64px'; ta.style.color='#7b8894'; ta.style.background='rgba(248,249,251,.85)'; ta.blur();
-  const ab=$('analyzeBtn'); ab.textContent=''; ab.classList.add('done'); ab.disabled=true;
+  const ab=$('analyzeBtn'); ab.textContent=''; ab.classList.add('done'); ab.disabled=true; ab.setAttribute('aria-disabled','true');
 
   if(totalParagraphs>0){
     setMessage(i18nT('msg_ready'));
@@ -269,8 +366,8 @@ function onAnalyze(){
   }
 }
 function analyzeText(text){
-  // FIX: ekte NBSP og ekte linjeskift
-  const norm=text.replace(/\u00A0/g,' ');
+  // Normaliser NBSP + smalt NBSP
+  const norm=text.replace(/\u00A0/g,' ').replace(/\u202F/g,' ');
   const lines=norm.split('\n').map(l=>l.trim()).filter(Boolean);
 
   const title=pickTitle(lines) || i18nT('title_default'); $('articleTitle').textContent=title;
@@ -340,8 +437,8 @@ function extractParagraphs(lines, lang){
   }
   push();
 
-  // Fallback: del på nummer-headere uansett linjestart
-  if(out.length < 19){
+  // Mer forsiktig fallback
+  if (out.length < 10) {
     const joined = lines.join('\n').replace(/\u00A0/g,' ');
     const blocks = joined.split(/(?:(?:^)|(?:\n))(?=\s*\d+(?:\s*,\s*\d+)*\.\s)/g)
       .map(s=>s.trim()).filter(Boolean);
@@ -361,7 +458,7 @@ function extractParagraphs(lines, lang){
         extra.push({num:n, text, words, q, les, hasAB:false});
       });
     }
-    if(extra.length>out.length){
+    if(extra.length > out.length * 1.5){
       const seen=new Set(); const merged=[...out,...extra]
         .sort((a,b)=>a.num-b.num)
         .filter(p=>{ if(seen.has(p.num)) return false; seen.add(p.num); return true; });
@@ -371,7 +468,7 @@ function extractParagraphs(lines, lang){
   return out;
 }
 
-/* ====== Fordeling & tidslinje ====== */
+/* ====== Fordeling & tidslinje (WT) ====== */
 function computeAllocation(){
   if(totalParagraphs===0){ perParagraph=[]; cumulative=[]; return; }
   let list=paras.slice(0,totalParagraphs);
@@ -405,9 +502,9 @@ function drawTimeline(){
     slot.style.background=lerpColor(startCol,endCol,tN);
     const lbl=document.createElement('div'); lbl.textContent=String(i); slot.appendChild(lbl);
 
-    // Klikk for å hoppe etter Stopp
+    // Klikk: tillat før start eller når pauset
     slot.addEventListener('click',()=>{
-      if(started) return;
+      if(started && !paused) return;
       const idx=parseInt(slot.dataset.idx,10); if(isNaN(idx)) return;
       const target=cumulative[idx];
       accumSec = Math.min(Math.round(target), TOTAL_SEC - OUTRO_SEC - REVIEW_SEC);
@@ -424,7 +521,7 @@ function drawTimeline(){
   $('elapsed').style.width='0%'; $('cursor').style.left='0%';
 }
 
-/* ====== Klokke / meldinger ====== */
+/* ====== Klokke / meldinger (WT) ====== */
 function resetClockUI(){ if(tickHandle)clearInterval(tickHandle); $('clock').textContent='00:00'; $('clock').classList.remove('over'); }
 function startClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=setInterval(tick,250); }
 function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null; }
@@ -446,23 +543,23 @@ function tick(){
       if(elapsed>=start && elapsed<end){ idx=i; break; }
     }
     let msg=i18nT('msg_section_prefix') + (idx+1);
-    if(elapsed>=1800 && elapsed<1860) msg+=i18nT('msg_half');
+    if(elapsed>=1800 && elapsed<1860) msg+= i18nT('msg_half') + ' (30:00)';
     setMessage(msg);
   }
 }
 
-/* ====== Stop/Rewind toggling ====== */
+/* ====== Stop/Rewind toggling (WT) ====== */
 function setStopAsRewind(isRewind){
   const btn=$('stopBtn');
   stopIsRewind=!!isRewind;
   btn.classList.toggle('stop-btn', !stopIsRewind);
   btn.classList.toggle('rewind-btn', stopIsRewind);
   btn.title = stopIsRewind ? (i18nT('tooltip_reset') || 'Nullstill') : (i18nT('tooltip_stop') || 'Ferdig');
-  btn.disabled = !stopIsRewind && btn.disabled; // la play/pause styre når aktiv
 }
 
-/* ====== Kontroller ====== */
+/* ====== Kontroller (WT) ====== */
 function onPlay(){
+  if(activeView!=='WT') return; // bare i denne fanen
   if(stopIsRewind){ setStopAsRewind(false); }
   if(started && paused){
     paused=false; startTs=Date.now(); startClock();
@@ -477,15 +574,18 @@ function onPlay(){
     setMessage(i18nT('msg_intro'));
     startClock();
     $('playBtn').disabled=true; $('pauseBtn').disabled=false; $('stopBtn').disabled=false;
+    $('timeline')?.scrollIntoView({ behavior:'smooth', block:'center' });
   }
 }
 function onPause(){
+  if(activeView!=='WT') return;
   if(!started || paused) return;
   accumSec += Math.floor((Date.now()-startTs)/1000);
   paused=true; stopClock(); setMessage(i18nT('msg_pause'));
   $('playBtn').disabled=false; $('pauseBtn').disabled=true; $('stopBtn').disabled=false;
 }
 function onStopOrRewind(){
+  if(activeView!=='WT') return;
   if(stopIsRewind){
     // Reset
     accumSec = 0;
@@ -511,7 +611,7 @@ function onStopOrRewind(){
   setStopAsRewind(true);
 }
 
-/* ====== Justerfelt ====== */
+/* ====== Justerfelt (WT) ====== */
 function onAdjust(){
   const pVal=parseInt($('editParagraphs').value,10);
   const qVal=parseInt($('editQuestions').value,10);
@@ -538,13 +638,142 @@ function updateInfoLine(resetGhost){
   $('adjustBtn').disabled=!(totalParagraphs>0);
 }
 
-/* ====== Theme init (må etter DOM er klar) ====== */
+/* ====== INIT (WT) ====== */
 document.addEventListener('DOMContentLoaded', ()=>{
-  const savedTheme=localStorage.getItem('studyTimer.theme')||'light';
-  applyTheme(savedTheme);
+  // Automatisk tema etter system (knapp fjernet)
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.body.classList.toggle('dark', !!prefersDark);
+
   const ap=$('articleText'); if(ap && window.i18n){ ap.setAttribute('placeholder', i18nT('placeholder_article')); }
   const nt=$('notes'); if(nt && window.i18n){ nt.setAttribute('placeholder', i18nT('placeholder_notes')); }
 });
+
+/* ============================================================
+   SKATTER/PERLER – Enkel 10:00 nedtelling med overtid
+   ============================================================ */
+let spRunning=false, spPaused=false, spStartTs=null, spAccum=0, spTick=null;
+const SP_TOTAL = 600; // 10:00 sekunder
+
+function spFmt(s){ const a=Math.max(0,Math.floor(s)); const m=Math.floor(a/60), r=a%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+function spNowElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; const live=Math.floor((Date.now()-spStartTs)/1000); return spAccum+live; }
+function spUpdate(){
+  const elapsed = spNowElapsed();
+  const remain = SP_TOTAL - elapsed;
+  const clock = $('clockSP'), msg=$('msgSP');
+  if(remain>=0){
+    clock.textContent = spFmt(remain);
+    clock.classList.toggle('over', false);
+    msg.textContent = remain===SP_TOTAL ? 'Klar til nedtelling (10:00).' : 'Pågår …';
+  }else{
+    const over = -remain;
+    clock.textContent = spFmt(over);
+    clock.classList.add('over');
+    msg.textContent = 'Du har brukt opp tiden';
+  }
+}
+function spStart(){
+  if(spRunning && spPaused){
+    spPaused=false; spStartTs=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(spUpdate,250);
+    $('playSP').disabled=true; $('pauseSP').disabled=false; $('stopSP').disabled=false; return;
+  }
+  if(!spRunning){
+    spRunning=true; spPaused=false; spStartTs=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(spUpdate,250);
+    $('playSP').disabled=true; $('pauseSP').disabled=false; $('stopSP').disabled=false;
+  }
+}
+function spPause(){
+  if(!spRunning || spPaused) return;
+  spAccum += Math.floor((Date.now()-spStartTs)/1000);
+  spPaused=true; spTick && clearInterval(spTick); spTick=null;
+  $('playSP').disabled=false; $('pauseSP').disabled=true; $('stopSP').disabled=false;
+  spUpdate();
+}
+function spStopReset(){
+  if(spRunning && !spPaused){ spAccum += Math.floor((Date.now()-spStartTs)/1000); }
+  spRunning=false; spPaused=false; spStartTs=null; spAccum=0;
+  spTick && clearInterval(spTick); spTick=null;
+  $('playSP').disabled=false; $('pauseSP').disabled=true; $('stopSP').disabled=true;
+  $('clockSP').classList.remove('over'); $('clockSP').textContent='10:00';
+  $('msgSP').textContent='Klar til nedtelling (10:00).';
+}
+$('playSP').addEventListener('click', spStart);
+$('pauseSP').addEventListener('click', spPause);
+$('stopSP').addEventListener('click', spStopReset);
+
+/* ============================================================
+   ANNET – Egendefinert nedtelling med steppere og overtid
+   ============================================================ */
+let othRunning=false, othPaused=false, othStartTs=null, othAccum=0, othTick=null, othTotal=600;
+
+function othFmt(s){ const a=Math.max(0,Math.floor(s)); const m=Math.floor(a/60), r=a%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
+function othNowElapsed(){ if(!othRunning) return othAccum; if(othPaused) return othAccum; const live=Math.floor((Date.now()-othStartTs)/1000); return othAccum+live; }
+function othUpdate(){
+  const elapsed = othNowElapsed();
+  const remain = othTotal - elapsed;
+  const clock=$('clockOther'), msg=$('msgOther');
+  if(remain>=0){
+    clock.textContent = othFmt(remain);
+    clock.classList.toggle('over', false);
+    msg.textContent = 'Pågår …';
+  }else{
+    const over = -remain;
+    clock.textContent = othFmt(over);
+    clock.classList.add('over');
+    msg.textContent = 'Du har gått over tiden';
+  }
+}
+function othStart(){
+  if(othRunning && othPaused){
+    othPaused=false; othStartTs=Date.now(); othTick && clearInterval(othTick); othTick=setInterval(othUpdate,250);
+    $('playOther').disabled=true; $('pauseOther').disabled=false; $('stopOther').disabled=false; return;
+  }
+  if(!othRunning){
+    // Lås inn valgt total ved start
+    const m=parseInt($('minVal').textContent,10)||0;
+    const s=parseInt($('secVal').textContent,10)||0;
+    othTotal = Math.max(0, m*60 + s);
+    othRunning=true; othPaused=false; othStartTs=Date.now(); othTick && clearInterval(othTick); othTick=setInterval(othUpdate,250);
+    $('playOther').disabled=true; $('pauseOther').disabled=false; $('stopOther').disabled=false;
+  }
+}
+function othPause(){
+  if(!othRunning || othPaused) return;
+  othAccum += Math.floor((Date.now()-othStartTs)/1000);
+  othPaused=true; othTick && clearInterval(othTick); othTick=null;
+  $('playOther').disabled=false; $('pauseOther').disabled=true; $('stopOther').disabled=false;
+  othUpdate();
+}
+function othStopReset(){
+  if(othRunning && !othPaused){ othAccum += Math.floor((Date.now()-othStartTs)/1000); }
+  othRunning=false; othPaused=false; othStartTs=null; othAccum=0;
+  othTick && clearInterval(othTick); othTick=null;
+  $('playOther').disabled=false; $('pauseOther').disabled=true; $('stopOther').disabled=true;
+  $('clockOther').classList.remove('over');
+  // Reset til gjeldende steppere
+  const m=parseInt($('minVal').textContent,10)||0;
+  const s=parseInt($('secVal').textContent,10)||0;
+  $('clockOther').textContent = othFmt(m*60+s);
+  $('msgOther').textContent='Velg tid, så start.';
+}
+$('playOther').addEventListener('click', othStart);
+$('pauseOther').addEventListener('click', othPause);
+$('stopOther').addEventListener('click', othStopReset);
+
+// Steppere
+function setStep(min, sec){
+  min = Math.max(0, Math.min(999, min|0));
+  sec = Math.max(0, Math.min(59,  sec|0));
+  $('minVal').textContent = String(min);
+  $('secVal').textContent = String(sec).padStart(2,'0');
+  if(!othRunning){ $('clockOther').textContent = othFmt(min*60+sec); }
+}
+$('minUp').addEventListener('click', ()=>{ const m=parseInt($('minVal').textContent,10)||0; setStep(m+1, parseInt($('secVal').textContent,10)||0); });
+$('minDown').addEventListener('click', ()=>{ const m=parseInt($('minVal').textContent,10)||0; setStep(m-1, parseInt($('secVal').textContent,10)||0); });
+$('secUp').addEventListener('click', ()=>{ const s=(parseInt($('secVal').textContent,10)||0)+1; const m=parseInt($('minVal').textContent,10)||0; setStep(m + Math.floor(s/60), s%60); });
+$('secDown').addEventListener('click', ()=>{ let s=(parseInt($('secVal').textContent,10)||0)-1; let m=parseInt($('minVal').textContent,10)||0; if(s<0){ if(m>0){ m--; s=59; } else { s=0; } } setStep(m, s); });
+
+// Init valgtid (10:00)
+setStep(10,0);
 </script>
 
 <!-- Cloudflare Web Analytics -->
