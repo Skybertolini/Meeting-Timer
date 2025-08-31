@@ -1,4 +1,6 @@
 {
+  "items": [
+    {
   "week_start": "2025-08-25",
   "title": "Vad kan vi lära oss av det Jakob sa till sina söner? (Del 2)",
   "paragraphs": 19,
@@ -205,4 +207,6 @@
   "questions": 0,
   "reads": 0,
   "words": []
+    }
+  ]
 }
