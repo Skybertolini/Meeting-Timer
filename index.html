@@ -44,15 +44,25 @@ html,body{
 .brand{
   display:flex; align-items:center; gap:14px;
 }
+/* — Logo størrelsen — */
 .brand img{
-  height:72px; width:auto; /* ← større logo */
-  filter: drop-shadow(0 8px 24px rgba(0,0,0,.08));
+  height:180px;       /* ~3× større */
+  width:auto;
+  filter: drop-shadow(0 12px 30px rgba(0,0,0,.10));
 }
 @media (min-width: 768px){
-  .brand img{ height:84px; }
+  .brand img{ height:216px; } /* litt større på iPad */
 }
-.brand .title{
-  font-weight:900; letter-spacing:.2px; font-size:1.4rem;
+
+/* — Mer luft under topplinja til info-båndet — */
+.topbar{ padding:8px 0 22px; }
+
+/* — Info-bånd → tittel/melding — */
+.h1{ margin:20px 0 10px; }
+.message{ margin-bottom:14px; }
+
+/* — Ekstra luft ned til tidslinja — */
+.timeline-wrap{ margin-top:26px; }
 }
 
 /* Cupertino segmented control */
