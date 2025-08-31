@@ -548,7 +548,7 @@ let showStart=false, shownHalf=false, shownOneMin=false, shownOver=false;
 function spFmt(s){ s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
 function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; const live=Math.floor((Date.now()-spStart)/1000); return spAccum+live; }
 
-function markPreset(sec){ presets.forEach(b=>b.classList.toggle('active', parseInt(b.dataset.sec,10)===sec)); }
+function markPreset(sec){ spPresets.forEach(b=>b.classList.toggle('active', parseInt(b.dataset.sec,10)===sec)); }
 
 function setStep(min, sec){
   min=Math.max(0,Math.min(999,min|0)); sec=Math.max(0,Math.min(59,sec|0));
@@ -624,8 +624,8 @@ $('#playSP').addEventListener('click', spStart);
 $('#pauseSP').addEventListener('click', spPause);
 $('#stopSP').addEventListener('click', spStop);
 
-const presets = Array.from(document.querySelectorAll('.preset-row .preset'));
-presets.forEach(btn=>{
+const spPresets = Array.from(document.querySelectorAll('.preset-row .preset'));
+spPresets.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     if(spRunning) return;
     const s=parseInt(btn.dataset.sec,10)||600;
