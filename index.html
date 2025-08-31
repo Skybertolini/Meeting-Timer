@@ -58,7 +58,7 @@ html,body{
 }
 .segmented button.active{ background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.08); }
 
-/* On narrow screens, center the segmented under logo */
+/* On narrow screens, center segmented under logo */
 @media (max-width: 640px){
   .topbar{ flex-direction:column; align-items:center; gap:10px; }
 }
@@ -160,6 +160,21 @@ html,body{
 .stepper button{ border:0; border-radius:10px; padding:6px 10px; font-weight:800; background:#fff; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.06) }
 .sep{ font-size:1.8rem; font-weight:900; opacity:.55 }
 
+/* Banner under fanene (Annet) */
+.sp-banner{
+  display:flex; justify-content:center; align-items:center;
+  margin:0 auto 10px; 
+}
+.sp-banner img{
+  max-width: min(740px, 92vw);
+  width:100%;
+  height:auto;
+  border-radius:14px;
+  box-shadow:0 12px 34px rgba(0,0,0,.08);
+  border:1px solid rgba(0,0,0,.06);
+  background:#fff;
+}
+
 /* Footer */
 .footer{ text-align:center; color:#8f96a3; font-size:.9rem; margin-top:18px }
 </style>
@@ -175,6 +190,11 @@ html,body{
       <button id="tabWT" class="active" role="tab" aria-selected="true">Vakttårnstudiet</button>
       <button id="tabSP" role="tab" aria-selected="false">Annet</button>
     </div>
+  </div>
+
+  <!-- Banner-plass (vises på Annet ved 30/10 min) -->
+  <div id="spBanner" class="sp-banner" hidden>
+    <img id="spBannerImg" alt="" />
   </div>
 
   <!-- VIEW: Vakttårnstudiet -->
@@ -221,8 +241,9 @@ html,body{
   <div id="viewSP" class="view">
     <div class="card center">
       <div class="preset-row">
+        <button class="preset" data-sec="1800">30:00</button>
+        <button class="preset" data-sec="900">15:00</button>
         <button class="preset" data-sec="600">10:00</button>
-        <button class="preset" data-sec="480">08:00</button>
         <button class="preset" data-sec="300">05:00</button>
       </div>
 
@@ -414,10 +435,7 @@ function drawTimeline(){
   const timelinePx = t.clientWidth;
   const startCol='#e8f6ee', endCol='#bfe3ce';
 
-  /* Dynamisk label-tetthet:
-     – beregn hvor mange “typiske” 16px-etiketter som får plass
-     – vis minst hver ‘step’-te label
-  */
+  /* Dynamisk label-tetthet */
   const LABEL_W = 16;
   const stepBase = Math.max(1, Math.ceil((totalParagraphs * LABEL_W) / Math.max(1,timelinePx)));
 
@@ -436,8 +454,6 @@ function drawTimeline(){
 
     const lbl=document.createElement('div');
     lbl.className='lbl';
-
-    // Vis alltid hvis cellen er bred nok; ellers hver 'stepBase'-te
     if(widthPx >= LABEL_W || ((i % stepBase)===0 || i===1 || i===totalParagraphs)){
       lbl.textContent = String(i);
     } else {
@@ -540,23 +556,6 @@ $('#tabWT').addEventListener('click', ()=>activateView('WT'));
 $('#tabSP').addEventListener('click', ()=>activateView('SP'));
 
 /* ===========================
-   Språk + uke
-   =========================== */
-$('#langSel').addEventListener('change', async ()=>{
-  lang = $('#langSel').value || 'no';
-  await hydrateOptions();
-  localStorage.setItem('meetingTimer.lang', lang);
-  $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs}`;
-  $('#pillQ').textContent     = `${labelFor('q',lang)}: ${questions}`;
-  $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`;
-});
-$('#weekSel').addEventListener('change', ()=>{
-  const val = $('#weekSel').value;
-  if(!val) return;
-  useItem(JSON.parse(val));
-});
-
-/* ===========================
    ANNET – nedtelling
    =========================== */
 const PRESET_KEY='meetingTimer.annetSeconds';
@@ -579,12 +578,38 @@ function setStep(min, sec){
   if(!spRunning){
     SP_TOTAL = min*60+sec;
     $('#clockSP').textContent=spFmt(SP_TOTAL);
-    markPreset([600,480,300].includes(SP_TOTAL)?SP_TOTAL:-1);
+    markPreset([1800,900,600,300].includes(SP_TOTAL)?SP_TOTAL:-1);
     localStorage.setItem(PRESET_KEY, String(SP_TOTAL));
   }
 }
 
 function resetFlags(){ showStart=false; shownHalf=false; shownOneMin=false; shownOver=false; }
+
+/* — Bannerhjelpere for Annet — */
+function showBannerForSeconds(sec){
+  const box = document.getElementById('spBanner');
+  const img = document.getElementById('spBannerImg');
+  let src = '';
+  if (sec === 1800) src = '30-min.png';
+  else if (sec === 600) src = '10-min.png';
+  if (src){
+    img.src = src;
+    img.alt = (sec===1800?'30':'10') + ' minutter';
+    box.hidden = false;
+  } else {
+    box.hidden = true;
+    img.removeAttribute('src');
+    img.removeAttribute('alt');
+  }
+}
+function hideBanner(){
+  const box = document.getElementById('spBanner');
+  const img = document.getElementById('spBannerImg');
+  box.hidden = true;
+  img.removeAttribute('src');
+  img.removeAttribute('alt');
+}
+
 function interpColor(t){ const a=[0x1e,0x82,0x4c], b=[0xf0,0xad,0x4e]; const mix=i=>Math.round(a[i]+(b[i]-a[i])*(1-t)); return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`; }
 
 function updateSP(){
@@ -615,6 +640,7 @@ function spStartFn(){
   if(spRunning && spPaused){
     spPaused=false; spStart=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
+    showBannerForSeconds(SP_TOTAL);
     return;
   }
   if(!spRunning){
@@ -622,6 +648,7 @@ function spStartFn(){
     spTick && clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
     updateSP();
+    showBannerForSeconds(SP_TOTAL);
   }
 }
 function spPauseFn(){
@@ -641,6 +668,7 @@ function spStopFn(){
   const s = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
+  hideBanner(); /* skjul banner ved stopp */
 }
 $('#playSP').addEventListener('click', spStartFn);
 $('#pauseSP').addEventListener('click', spPauseFn);
@@ -672,7 +700,7 @@ $('#secDown').addEventListener('click', ()=>{ if(spRunning) return; let s=(parse
 
   // Annet – gjenopprett siste preset
   const s = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
-  markPreset([600,480,300].includes(s)?s:-1);
+  markPreset([1800,900,600,300].includes(s)?s:-1);
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
 
