@@ -1,43 +1,42 @@
-⏱️ Study Timer
+⏱️ Meeting Timer
 
-Study Timer er et nettbasert verktøy laget for å hjelpe vakttårnstudieledere til å porsjonere tiden.
-Det gir en tydelig tidslinje, viser avsnitt, spørsmål og les-skriftsteder. Et meldingsfelt viser deg hvor du bør være underveis og kommer med noen enkle påminnelser.
-
-⸻
+Meeting Timer er et nettbasert verktøy laget for å hjelpe eldstebrødre med å holde styr på tiden under Vakttårnstudiet og andre deler av møtet.
+Det gir en tydelig tidslinje med avsnitt og faser, og en enkel nedtelling for andre deler av møtet.
 
 🚀 Funksjoner
-	•	Automatisk analyse av teksten du limer inn fra wol.jw.org.
-	•	Teller avsnitt, spørsmål og les-skriftsteder.
-	•	Viser en tidslinje med markører for alle avsnitt.
-	•	Intelligent fordeling av tid basert på tekstlengde, spørsmål og skriftsteder.
-	•	Marker egne faser: Introduksjon, Avsnitt, Halvveis, Repetisjonsspørsmål, Avslutning.
-	•	Stoppeklokke med Play ⏯️, Pause ⏸️ og Stopp ⏹️.
-	•	Notatfelt for personlige stikkord under studiet.
-	•	Minimalistisk design 🍏.
 
-⸻
+To moduser:
+
+Vakttårnstudiet – viser artikkelens tittel, antall avsnitt/spørsmål/les-skriftsteder og en tidslinje fordelt på innledning, avsnitt, repetisjon og avslutning.
+Annet – nedtelling med forhåndsinnstilte presets (10, 8 eller 5 minutter) og mulighet til å justere tid opp/ned manuelt.
+
+Intelligent fordeling av tid basert på ordantall, spørsmål og skriftsteder (beregnet på forhånd i analysen).
+Tydelige meldinger underveis: «Vi er i gang», «Du er halvveis», «1 minutt igjen!», «Du har gått over tiden!».
+
+Stoppeklokke-kontroller: Play ⏯️, Pause ⏸️ og Stopp ⏹️.
+Minimalistisk design 🍏, optimalisert for nettbrett.
 
 🖥️ Hvordan bruke
-	1.	Gå til wol.jw.org og åpne ukens vakttårnstudieartikkel.
-	2.	Kopier hele teksten fra artikkelsiden.
-	3.	Lim inn teksten i feltet på Study Timer og trykk Analyser. ✅
-	4.	Når analysen er klar: trykk Play for å starte studiet.
-	5.	Følg med på meldingsfeltet, tidslinjen og klokken underveis.
-	6.	Bruk notatfeltet nederst hvis du ønsker egne kommentarer.
-	7.	Trykk Stopp når studiet er ferdig for å se total tid brukt.
 
+Åpne Meeting Timer i nettleseren.
+Velg språk og uke i nedtrekkslisten.
+Inneværende uke vises alltid øverst, samt to uker fremover.
 
-⸻
+Trykk Play for å starte studiet eller nedtellingen.
+Følg med på meldingsfeltet, tidslinjen og klokken underveis.
+Trykk Stopp når tiden er ute – eller la klokken vise hvor mye du går over.
+
 
 ⚙️ Teknologi
-	•	HTML5 / CSS3 / Vanilla JS
-	•	Ingen eksterne biblioteker → kjører helt lokalt i nettleseren
-	•	Design inspirert av Apple Human Interface Guidelines
 
-⸻
+HTML5 / CSS3 / Vanilla JS
+
+Ingen eksterne biblioteker → kjører helt lokalt i nettleseren
+Design inspirert av Apple Human Interface Guidelines
 
 📜 Lisens
 
-Dette prosjektet er laget for personlig bruk. 
+Dette prosjektet er laget for personlig bruk.
 Det er ikke på noen måte knyttet til eller støttet av Jehovas vitner.
-Distribueres med Study Timer © 2025.
+
+Meeting Timer © 2025.
