@@ -18,11 +18,13 @@
   --radius:16px;
 }
 
+/* Apple 2025-ish type stack */
 *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html,body{
   margin:0; padding:0; color:var(--text);
   background:linear-gradient(180deg,var(--bg-top) 0%, var(--bg-bot) 100%);
   font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing:.01em;
 }
 .container{ max-width:980px; margin:0 auto; padding:16px 16px 28px; }
 
@@ -31,11 +33,17 @@ html,body{
   display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 0 12px;
 }
 .brand{
-  display:flex; align-items:center; gap:12px;
+  display:flex; align-items:center; gap:14px;
 }
-.brand img{ height:44px; width:auto; }
+.brand img{
+  height:72px; width:auto; /* ← større logo */
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,.08));
+}
+@media (min-width: 768px){
+  .brand img{ height:84px; }
+}
 .brand .title{
-  font-weight:900; letter-spacing:.2px; font-size:1.25rem;
+  font-weight:900; letter-spacing:.2px; font-size:1.4rem;
 }
 
 /* Cupertino segmented control */
@@ -65,17 +73,17 @@ html,body{
   display:flex; gap:10px; flex-wrap:wrap; align-items:center;
 }
 .pill{
-  background:#fff; border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-weight:700;
+  background:#fff; border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-weight:800;
   box-shadow:0 4px 16px rgba(0,0,0,.05);
 }
 .select{
-  appearance:none; border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:#fff; font-weight:700;
+  appearance:none; border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:#fff; font-weight:800;
   box-shadow:0 4px 16px rgba(0,0,0,.05); min-width:220px;
 }
 
 /* Title + message */
 .h1{
-  font-size:1.25rem; font-weight:900; margin:12px 0 6px;
+  font-size:1.3rem; font-weight:900; margin:12px 0 6px;
 }
 .message{
   background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 14px; min-height:1.2em;
@@ -121,11 +129,6 @@ html,body{
 .rewind{ background:#6c757d }
 .round:disabled{ background:#aab2bd; cursor:not-allowed; box-shadow:none }
 
-.note{
-  margin-top:10px; color:var(--muted); font-size:.95rem;
-}
-
-/* Views */
 .view{ display:none }
 .view.active{ display:block }
 
@@ -205,8 +208,6 @@ html,body{
       <button id="pauseWT" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
       <button id="stopWT"  class="round stop"  title="Stopp" aria-label="Stopp" disabled>■</button>
     </div>
-
-    <div class="note">Tips: Time-linjen viser intro → avsnitt → repetisjon → avslutning. Når tiden er brukt, blir klokken rød og teller oppover.</div>
   </div>
 
   <!-- VIEW: Annet (nedtelling) -->
@@ -240,8 +241,6 @@ html,body{
         <button id="pauseSP" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
         <button id="stopSP"  class="round stop"  title="Stopp/Nullstill" aria-label="Stopp" disabled>■</button>
       </div>
-
-      <div class="note">Meldinger: «Vi er i gang», «Du er halvveis», «1 minutt igjen!», «Du har gått over tiden!»</div>
     </div>
   </div>
 
@@ -253,7 +252,7 @@ html,body{
    Konstanter / helpers
    =========================== */
 const TOTAL = 3600, INTRO=90, REVIEW=120, OUTRO=90, CONTENT=TOTAL-INTRO-REVIEW-OUTRO;
-const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30; // AB_BONUS er reservert dersom du senere vil bruke (a)(b)
+const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
 const $=sel=>document.querySelector(sel);
 const pct = sec => (sec/TOTAL)*100;
 const fmt = s => {s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0');};
@@ -267,58 +266,88 @@ function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days
 /* ===========================
    Tilstand – WT
    =========================== */
-let dataCache=null, lang='no';
+let lang='no';
 let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, questions=0, reads=0;
 let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
 
 /* ===========================
-   Last data (JSON)
+   Last data (JSON) – prøv data/ og Data/
    =========================== */
-async function loadYear(lang, year){
-  // Standard: relative sti til /data
-  const url = `data/${lang}-${year}.json?cacheBust=${Date.now().toString().slice(7)}`;
+async function fetchJSON(url){
   const res = await fetch(url, {cache:'no-store'});
-  if(!res.ok) throw new Error('Kunne ikke hente '+url);
+  if(!res.ok) throw new Error('Fetch feilet: '+url);
   return await res.json();
 }
+async function loadYear(lang, year){
+  const tries = [
+    `data/${lang}-${year}.json`,
+    `Data/${lang}-${year}.json`
+  ];
+  const errors=[];
+  for(const u of tries){
+    try{ return await fetchJSON(`${u}?v=${Date.now().toString().slice(7)}`); }
+    catch(e){ errors.push(String(e)); }
+  }
+  throw new Error(errors.join(' | '));
+}
+
 async function hydrateOptions(){
   const today = new Date();
   const year = today.getFullYear();
-  // last inneværende + ev. neste år (for overganger ved nyttår)
-  const payloads = [];
-  for(const y of [year, year+1]){
-    try{ payloads.push(await loadYear(lang, y)); }catch(e){}
+  let items = [];
+  try{
+    const payloads = [];
+    for(const y of [year, year+1]){
+      try{ payloads.push(await loadYear(lang, y)); }catch(e){}
+    }
+    items = payloads.flatMap(p => p?.items||[]);
+  }catch(e){
+    console.warn('Kunne ikke laste årsfil(er):', e);
   }
-  const items = payloads.flatMap(p => p?.items||[]);
+
+  const sel = $('#weekSel');
+  sel.innerHTML='';
+
+  if(!items.length){
+    const opt=document.createElement('option');
+    opt.textContent='Fant ingen datafiler (sjekk /data eller /Data i repoet).';
+    opt.disabled=true; opt.selected=true;
+    sel.appendChild(opt);
+    $('#message').textContent='Ingen data lastet. Sjekk at filene heter data/no-2025.json eller Data/no-2025.json.';
+    return;
+  }
+
   const start = isoMonday(today);
   const targets = [0,7,14].map(x=>addDaysISO(start,x));
   const options = items.filter(it=>targets.includes(it.week_start))
                        .sort((a,b)=>a.week_start.localeCompare(b.week_start));
-  const sel = $('#weekSel');
-  sel.innerHTML='';
+
   if(options.length===0){
-    const opt=document.createElement('option'); opt.textContent='Ingen data for de neste ukene'; opt.disabled=true; opt.selected=true;
+    const opt=document.createElement('option');
+    const have = [...new Set(items.map(i=>i.week_start))].slice(0,6).join(', ');
+    opt.textContent = `Ingen treff for ${targets.join(', ')}. Tilgjengelige: ${have||'–'}`;
+    opt.disabled=true; opt.selected=true;
     sel.appendChild(opt);
+    $('#message').textContent='Fant ingen ukesobjekter for inneværende uke + 2 fram. Sjekk week_start-datoene.';
     return;
   }
+
   options.forEach(it=>{
     const o=document.createElement('option');
     o.value = JSON.stringify(it);
     o.textContent = `${it.week_start} – ${it.title || '(uten tittel)'}`;
     sel.appendChild(o);
   });
-  // velg første (inneværende)
   sel.selectedIndex=0;
   useItem(JSON.parse(sel.value));
 }
+
 function useItem(item){
   $('#articleTitle').textContent = item.title || '—';
   totalParagraphs = item.paragraphs|0;
   questions = item.questions|0;
   reads = item.reads|0;
-  // bygg paras fra ordliste; Q=1 pr. avsnitt (kan finjusteres senere)
   paras = (item.words||[]).map((w,i)=>({num:i+1, words:w|0, q:1, les:0, hasAB:false}));
-  // hvis words mangler / mismatch: fallback med jevn fordeling
   if(paras.length!==totalParagraphs){
     paras = Array.from({length: totalParagraphs}, (_,i)=>({num:i+1, words:0, q:1, les:0, hasAB:false}));
   }
@@ -328,7 +357,6 @@ function useItem(item){
 
   computeAllocation(); drawTimeline(); resetClockUI();
   $('#message').textContent='Klar til start. Trykk ▶ når du er klar.';
-  // aktiver kontroller
   $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
 }
 
@@ -354,9 +382,8 @@ function lerpColor(h1,h2,t){const a=hexToRgb(h1),b=hexToRgb(h2);const r=Math.rou
 
 function drawTimeline(){
   const t = $('#timeline');
-  // Rens
   Array.from(t.querySelectorAll('.para-slot')).forEach(n=>n.remove());
-  // faste segmenter
+
   $('#introSlot').style.left='0%'; $('#introSlot').style.width=pct(INTRO).toFixed(4)+'%';
   $('#outroSlot').style.right='0%'; $('#outroSlot').style.width=pct(OUTRO).toFixed(4)+'%';
   $('#reviewSlot').style.right=pct(OUTRO).toFixed(4)+'%'; $('#reviewSlot').style.width=pct(REVIEW).toFixed(4)+'%';
@@ -390,7 +417,6 @@ function drawTimeline(){
     }
     slot.appendChild(lbl);
 
-    // Hopp ved klikk (tillat kun når stoppet/pauset)
     slot.addEventListener('click', ()=>{
       if(started && !paused) return;
       const target = cumulative[i-1];
@@ -407,7 +433,6 @@ function drawTimeline(){
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
 }
-// Re-tegn ved endret bredde
 let _rAF=null;
 window.addEventListener('resize', ()=>{ if(_rAF) cancelAnimationFrame(_rAF); _rAF=requestAnimationFrame(()=>{ if(totalParagraphs>0) drawTimeline(); }); });
 
@@ -432,7 +457,6 @@ function tickWT(){
   else if(e >= TOTAL-OUTRO) { $('#message').textContent='Avslutning'; }
   else if(e >= TOTAL-OUTRO-REVIEW) { $('#message').textContent='Repetisjonsspørsmål'; }
   else {
-    // finn aktivt avsnitt
     let idx=0;
     for(let i=0;i<totalParagraphs;i++){
       const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1];
@@ -493,10 +517,12 @@ $('#tabSP').addEventListener('click', ()=>activateView('SP'));
 $('#langSel').addEventListener('change', async ()=>{
   lang = $('#langSel').value || 'no';
   await hydrateOptions();
+  localStorage.setItem('meetingTimer.lang', lang);
 });
 $('#weekSel').addEventListener('change', ()=>{
-  const item = JSON.parse($('#weekSel').value);
-  useItem(item);
+  const val = $('#weekSel').value;
+  if(!val) return;
+  useItem(JSON.parse(val));
 });
 
 /* ===========================
@@ -589,6 +615,7 @@ $('#playSP').addEventListener('click', spStart);
 $('#pauseSP').addEventListener('click', spPause);
 $('#stopSP').addEventListener('click', spStop);
 
+const presets = Array.from(document.querySelectorAll('.preset-row .preset'));
 presets.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     if(spRunning) return;
@@ -609,11 +636,9 @@ $('#secDown').addEventListener('click', ()=>{ if(spRunning) return; let s=(parse
    INIT
    =========================== */
 (async function init(){
-  // Språk fra localStorage?
   const savedLang = localStorage.getItem('meetingTimer.lang');
   if(savedLang) $('#langSel').value = savedLang;
   lang = $('#langSel').value || 'no';
-  $('#langSel').addEventListener('change', ()=>localStorage.setItem('meetingTimer.lang', $('#langSel').value));
 
   // Annet – gjenopprett siste preset
   const s = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
@@ -621,13 +646,7 @@ $('#secDown').addEventListener('click', ()=>{ if(spRunning) return; let s=(parse
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
 
-  try{
-    await hydrateOptions();
-  }catch(e){
-    const sel=$('#weekSel'); sel.innerHTML='';
-    const opt=document.createElement('option'); opt.textContent='Kunne ikke hente data/⟨lang⟩-år.json'; opt.disabled=true; opt.selected=true;
-    sel.appendChild(opt);
-  }
+  await hydrateOptions();
 })();
 </script>
 </body>
