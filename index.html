@@ -12,21 +12,11 @@
   --bg-top:#f7f8fa; --bg-bot:#eef1f4; --text:#0f1b2b;
   --card: rgba(255,255,255,.82);
   --border: rgba(0,0,0,.06);
-  --muted:#8a94a1;
   --accent:#0d6efd;
   --green:#28a745; --orange:#ff9800; --red:#d21f3c; --ink:#0f1b2b;
   --radius:16px;
 }
-html,body{
-  font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  letter-spacing:.01em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-.h1{ font-weight:900; }
-.pill, .select{ font-weight:800; }
-.segmented button{ font-weight:800; }
-  
+
 /* Apple 2025-ish type stack */
 *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html,body{
@@ -34,35 +24,26 @@ html,body{
   background:linear-gradient(180deg,var(--bg-top) 0%, var(--bg-bot) 100%);
   font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   letter-spacing:.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .container{ max-width:980px; margin:0 auto; padding:16px 16px 28px; }
 
 /* Topbar */
 .topbar{
-  display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 0 12px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:8px 0 22px; /* ekstra luft under topplinja */
 }
-.brand{
-  display:flex; align-items:center; gap:14px;
-}
-/* — Logo størrelsen — */
+.brand{ display:flex; align-items:center; gap:14px; }
 .brand img{
-  height:180px;       /* ~3× større */
-  width:auto;
+  height:180px; width:auto; /* ~3× større logo */
   filter: drop-shadow(0 12px 30px rgba(0,0,0,.10));
 }
 @media (min-width: 768px){
   .brand img{ height:216px; } /* litt større på iPad */
 }
-
-/* — Mer luft under topplinja til info-båndet — */
-.topbar{ padding:8px 0 22px; }
-
-/* — Info-bånd → tittel/melding — */
-.h1{ margin:20px 0 10px; }
-.message{ margin-bottom:14px; }
-
-/* — Ekstra luft ned til tidslinja — */
-.timeline-wrap{ margin-top:26px; }
+.brand .title{
+  font-weight:900; letter-spacing:.2px; font-size:1.55rem;
 }
 
 /* Cupertino segmented control */
@@ -88,9 +69,7 @@ html,body{
 }
 
 /* Info band */
-.infoband{
-  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-}
+.infoband{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 .pill{
   background:#fff; border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-weight:800;
   box-shadow:0 4px 16px rgba(0,0,0,.05);
@@ -102,15 +81,15 @@ html,body{
 
 /* Title + message */
 .h1{
-  font-size:1.3rem; font-weight:900; margin:12px 0 6px;
+  font-size:1.3rem; font-weight:900; margin:20px 0 10px;  /* mer luft */
 }
 .message{
   background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 14px; min-height:1.2em;
-  color:#0c2915; box-shadow:0 8px 24px rgba(0,0,0,.06);
+  color:#0c2915; box-shadow:0 8px 24px rgba(0,0,0,.06); margin-bottom:14px;
 }
 
 /* Timeline */
-.timeline-wrap{ margin-top:16px }
+.timeline-wrap{ margin-top:26px } /* ekstra luft før tidslinja */
 .timeline{
   position:relative; height:56px; border-radius:14px; overflow:visible;
   background:linear-gradient(180deg,#f3fbf6 0%, #eaf6ec 100%);
@@ -134,9 +113,7 @@ html,body{
 .over{ color:#c41111 !important; text-shadow:none; }
 
 /* Controls */
-.controls{
-  display:flex; gap:12px; margin-top:14px;
-}
+.controls{ display:flex; gap:12px; margin-top:14px; }
 .round{
   width:58px; height:58px; border-radius:999px; border:0; cursor:pointer;
   display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem;
@@ -145,7 +122,6 @@ html,body{
 .play{ background:var(--green) }
 .pause{ background:#f0ad4e }
 .stop{ background:var(--red) }
-.rewind{ background:#6c757d }
 .round:disabled{ background:#aab2bd; cursor:not-allowed; box-shadow:none }
 
 .view{ display:none }
@@ -160,9 +136,7 @@ html,body{
 }
 .preset.active{ background:#fff }
 
-.picker{
-  margin-top:10px; display:flex; gap:16px; justify-content:center; align-items:center;
-}
+.picker{ margin-top:10px; display:flex; gap:16px; justify-content:center; align-items:center; }
 .stepper{
   display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--card);
   border:1px solid var(--border); border-radius:14px; padding:10px 12px; min-width:92px; box-shadow:0 8px 24px rgba(0,0,0,.06)
@@ -202,9 +176,9 @@ html,body{
         </select>
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap">
-        <div class="pill" id="pillParas">0 avsnitt</div>
-        <div class="pill" id="pillQ">0 spørsmål</div>
-        <div class="pill" id="pillReads">0 Les/Läs</div>
+        <div class="pill" id="pillParas">Avsnitt: 0</div>
+        <div class="pill" id="pillQ">Spørsmål: 0</div>
+        <div class="pill" id="pillReads">Les-skriftsteder: 0</div>
       </div>
     </div>
 
@@ -282,6 +256,20 @@ function isoMonday(d=new Date()){
 }
 function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
 
+/* Språkspesifikke etiketter */
+function labelFor(key, lang){
+  if(lang==='sv'){
+    if(key==='paras') return 'Paragrafer';
+    if(key==='q')     return 'Frågor';
+    if(key==='reads') return 'Läs-skriftställen';
+  }
+  // default NO
+  if(key==='paras') return 'Avsnitt';
+  if(key==='q')     return 'Spørsmål';
+  if(key==='reads') return 'Les-skriftsteder';
+  return key;
+}
+
 /* ===========================
    Tilstand – WT
    =========================== */
@@ -290,7 +278,7 @@ let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, questions=0, re
 let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
 
 /* ===========================
-   Last data (JSON) – prøv data/ og Data/
+   Last data (JSON) – prøv data/ og Data/, med/uten .json
    =========================== */
 async function fetchJSON(url){
   const res = await fetch(url, {cache:'no-store'});
@@ -300,14 +288,15 @@ async function fetchJSON(url){
 async function loadYear(lang, year){
   const tries = [
     `data/${lang}-${year}.json`,
-    `Data/${lang}-${year}.json`
+    `Data/${lang}-${year}.json`,
+    `data/${lang}-${year}`,
+    `Data/${lang}-${year}`
   ];
-  const errors=[];
   for(const u of tries){
     try{ return await fetchJSON(`${u}?v=${Date.now().toString().slice(7)}`); }
-    catch(e){ errors.push(String(e)); }
+    catch(e){ /* prøv neste */ }
   }
-  throw new Error(errors.join(' | '));
+  throw new Error('Fant ingen datafil for ' + lang + ' ' + year);
 }
 
 async function hydrateOptions(){
@@ -320,9 +309,7 @@ async function hydrateOptions(){
       try{ payloads.push(await loadYear(lang, y)); }catch(e){}
     }
     items = payloads.flatMap(p => p?.items||[]);
-  }catch(e){
-    console.warn('Kunne ikke laste årsfil(er):', e);
-  }
+  }catch(e){}
 
   const sel = $('#weekSel');
   sel.innerHTML='';
@@ -360,9 +347,7 @@ async function hydrateOptions(){
   sel.selectedIndex=0;
   useItem(JSON.parse(sel.value));
 }
-function readsLabelFor(lang){
-  return (lang === 'sv') ? 'Läs-skriftställen' : 'Les-skriftsteder';
-}
+
 function useItem(item){
   $('#articleTitle').textContent = item.title || '—';
   totalParagraphs = item.paragraphs|0;
@@ -372,9 +357,10 @@ function useItem(item){
   if(paras.length!==totalParagraphs){
     paras = Array.from({length: totalParagraphs}, (_,i)=>({num:i+1, words:0, q:1, les:0, hasAB:false}));
   }
-  $('#pillParas').textContent = `${totalParagraphs} avsnitt`;
-  $('#pillQ').textContent     = `${questions} spørsmål`;
-  $('#pillReads').textContent = `${reads} ${lang==='sv'?'Läs':'Les'}`;
+
+  $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs}`;
+  $('#pillQ').textContent     = `${labelFor('q',lang)}: ${questions}`;
+  $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`;
 
   computeAllocation(); drawTimeline(); resetClockUI();
   $('#message').textContent='Klar til start. Trykk ▶ når du er klar.';
@@ -447,7 +433,7 @@ function drawTimeline(){
       $('#cursor').style.left=`calc(${pNow}% - 1px)`;
       $('#clockWT').textContent = fmt(accum);
       $('#clockWT').classList.toggle('over', accum>=TOTAL);
-      $('#message').textContent = `Avsnitt ${i}`;
+      $('#message').textContent = `${labelFor('paras',lang)} ${i}`;
     });
 
     t.insertBefore(slot, $('#elapsed'));
@@ -483,7 +469,7 @@ function tickWT(){
       const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1];
       if(e>=s && e<end){ idx=i; break; }
     }
-    let msg=`Avsnitt ${idx+1}`;
+    let msg=`${labelFor('paras',lang)} ${idx+1}`;
     if(e>=1800 && e<1860) msg+=' – du er halvveis';
     $('#message').textContent=msg;
   }
@@ -539,6 +525,10 @@ $('#langSel').addEventListener('change', async ()=>{
   lang = $('#langSel').value || 'no';
   await hydrateOptions();
   localStorage.setItem('meetingTimer.lang', lang);
+  // oppdater etiketter på pillene (verdiene beholdes)
+  $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs}`;
+  $('#pillQ').textContent     = `${labelFor('q',lang)}: ${questions}`;
+  $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`;
 });
 $('#weekSel').addEventListener('change', ()=>{
   const val = $('#weekSel').value;
@@ -550,7 +540,7 @@ $('#weekSel').addEventListener('change', ()=>{
    ANNET – nedtelling
    =========================== */
 const PRESET_KEY='meetingTimer.annetSeconds';
-const presets = Array.from(document.querySelectorAll('.preset-row .preset'));
+const spPresets = Array.from(document.querySelectorAll('.preset-row .preset'));
 let spRunning=false, spPaused=false, spStart=null, spAccum=0, spTick=null;
 let SP_TOTAL = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
 
@@ -601,7 +591,7 @@ function updateSP(){
     clock.textContent = spFmt(-remain);
   }
 }
-function spStart(){
+function spStartFn(){
   if(spRunning && spPaused){
     spPaused=false; spStart=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
@@ -614,14 +604,14 @@ function spStart(){
     updateSP();
   }
 }
-function spPause(){
+function spPauseFn(){
   if(!spRunning || spPaused) return;
   spAccum += Math.floor((Date.now()-spStart)/1000);
   spPaused=true; spTick && clearInterval(spTick); spTick=null;
   $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false;
   updateSP();
 }
-function spStop(){
+function spStopFn(){
   if(spRunning && !spPaused) spAccum += Math.floor((Date.now()-spStart)/1000);
   spRunning=false; spPaused=false; spStart=null; spAccum=0;
   spTick && clearInterval(spTick); spTick=null;
@@ -632,11 +622,10 @@ function spStop(){
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
 }
-$('#playSP').addEventListener('click', spStart);
-$('#pauseSP').addEventListener('click', spPause);
-$('#stopSP').addEventListener('click', spStop);
+$('#playSP').addEventListener('click', spStartFn);
+$('#pauseSP').addEventListener('click', spPauseFn);
+$('#stopSP').addEventListener('click', spStopFn);
 
-const spPresets = Array.from(document.querySelectorAll('.preset-row .preset'));
 spPresets.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     if(spRunning) return;
