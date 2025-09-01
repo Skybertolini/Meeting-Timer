@@ -6,29 +6,36 @@
 <title>Meeting Timer</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f8f7f5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg-top:#f8f7f5; --bg-bot:#f3f2ef; --ink:#2f2a27; --muted:#8b827a;
-  --card:rgba(255,255,252,.98); --border:rgba(60,40,20,.10);
-  --green:#3b7d4f; --orange:#d0893a; --red:#b54a46; --pill:#fffefb;
+  --bg-top:#f8f7f5; --bg-bot:#f3f2ef; --ink:#2b3432; --muted:#8b827a;
+  --card:rgba(255,255,252,.98); --border:rgba(40,30,20,.10);
+  --green:#3a6f52; --orange:#c7843a; --red:#b54a46; --pill:#fffefb;
   --radius:16px;
+
+  --tl-green-1:#e9f3ec;  /* lys grønn papirtone */
+  --tl-green-2:#deefe4;  /* litt mørkere for annenhver */
 }
+
 /* Base */
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{
   margin:0; color:var(--ink);
   background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bot) 100%);
-  font-family:ui-rounded,-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  font-family:"Nunito", ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Text","SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   letter-spacing:.01em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  position:relative;
+  position:relative; min-height:100vh; padding-bottom:56px; /* plass til sticky footer */
 }
 body::before{
   content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
   background:
-    radial-gradient(circle at 10% 20%, rgba(0,0,0,.015) 0 2px, transparent 3px),
-    radial-gradient(circle at 80% 40%, rgba(0,0,0,.012) 0 2px, transparent 3px),
-    radial-gradient(circle at 40% 70%, rgba(0,0,0,.010) 0 2px, transparent 3px);
+    radial-gradient( circle at 10% 20%, rgba(0,0,0,.015) 0 2px, transparent 3px ),
+    radial-gradient( circle at 80% 40%, rgba(0,0,0,.012) 0 2px, transparent 3px ),
+    radial-gradient( circle at 40% 70%, rgba(0,0,0,.010) 0 2px, transparent 3px );
   mix-blend-mode:multiply;
 }
 .container{max-width:980px; margin:0 auto; padding:16px 16px 28px}
@@ -46,34 +53,39 @@ body::before{
 }
 @keyframes inkRipple{0%{width:0;height:0;opacity:.28;transform:translate(-50%,-50%) scale(1)}100%{width:220px;height:220px;opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
 
-/* Segmented control – kompakt */
+/* Segmented – kompakt, byttet rekkefølge (Taler til venstre) */
 .segmented{display:inline-flex; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:4px; gap:4px; box-shadow:0 8px 24px rgba(70,50,30,.06)}
-.segmented button{border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:800; color:var(--ink); cursor:pointer}
-.segmented button.active{background:var(--pill); box-shadow:0 2px 10px rgba(70,50,30,.06)}
-/* Vakttårn-ikonknapp */
-.segmented .wt-btn{padding:6px 10px}
-.segmented .wt-btn img{width:22px; height:22px; display:block}
+.segmented button{border:0; background:transparent; padding:8px 12px; border-radius:999px; font-weight:900; color:var(--ink); cursor:pointer; display:flex; align-items:center; gap:8px}
+.segmented button img{width:20px; height:20px; display:block}
+.segmented button.active{
+  background: #efece6; /* litt mørkere */
+  box-shadow: inset 0 3px 10px rgba(50,40,30,.15), 0 2px 8px rgba(70,50,30,.05);
+  transform: translateY(1px);
+}
 
 /* Kort/pill/select */
 .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 12px 40px rgba(70,50,30,.06); padding:14px; transition:opacity .2s,transform .2s,height .2s,margin .2s}
 .infoband{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-.pill{background:var(--pill); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-weight:800; box-shadow:0 4px 14px rgba(70,50,30,.05)}
-.select{appearance:none; border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:var(--pill); font-weight:800; color:var(--ink); box-shadow:0 4px 14px rgba(70,50,30,.05); min-width:220px}
+.pill{background:var(--pill); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-weight:900; box-shadow:0 4px 14px rgba(70,50,30,.05)}
+.select{appearance:none; border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:var(--pill); font-weight:900; color:var(--ink); box-shadow:0 4px 14px rgba(70,50,30,.05); min-width:220px}
 
 /* Tekst/meldinger */
-.h1{font-size:1.3rem; font-weight:900; margin:18px 0 10px}
+.h1{font-size:1.38rem; font-weight:900; margin:18px 0 10px}
 .message{background:var(--pill); border:1px solid var(--border); border-radius:12px; padding:12px 14px; min-height:1.2em; box-shadow:0 8px 24px rgba(70,50,30,.05); margin-bottom:12px}
 
-/* Tidslinje */
+/* Tidslinje – grønn papirtone */
 .timeline-wrap{margin-top:22px}
-.timeline{position:relative; height:56px; border-radius:14px; overflow:visible; background:linear-gradient(180deg,#faf9f6 0%,#f1efe9 100%); border:1px solid var(--border); box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 12px 36px rgba(70,50,30,.05)}
-.slot{position:absolute; top:0; height:100%; opacity:.20}
-.para-slot{position:absolute; top:0; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid rgba(50,35,25,.06); border-right:1px solid rgba(255,255,255,.55); font-weight:900; color:#3a302b; text-shadow:0 1px 0 rgba(255,255,255,.55); cursor:pointer; box-sizing:border-box; min-width:16px}
+.timeline{position:relative; height:56px; border-radius:14px; overflow:visible; background:linear-gradient(180deg, var(--tl-green-1) 0%, #edf5f0 100%); border:1px solid var(--border); box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 12px 36px rgba(70,50,30,.05)}
+.slot{position:absolute; top:0; height:100%; opacity:.18}
+.para-slot{position:absolute; top:0; height:100%; display:flex; align-items:center; justify-content:center; border-left:1px solid rgba(50,35,25,.06); border-right:1px solid rgba(255,255,255,.55); font-weight:900; color:#2f3b34; text-shadow:0 1px 0 rgba(255,255,255,.55); cursor:pointer; box-sizing:border-box; min-width:16px}
+.para-slot.alt{background:var(--tl-green-2) !important}
 .para-slot::after{content:""; position:absolute; top:8px; bottom:8px; width:1px; left:50%; background:rgba(60,45,35,.18); transform:translateX(-.5px)}
 .para-slot>div{pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:clip; line-height:1}
-.elapsed{position:absolute; top:0; left:0; height:100%; background:rgba(181,74,70,.22); width:0%; transition:width .25s linear; z-index:2}
-.cursor{position:absolute; top:-10px; width:2px; height:76px; background:#b54a46; left:0%; z-index:3; box-shadow:0 0 0 2px rgba(181,74,70,.10)}
-.big-clock,.clock{margin-top:16px; font-size:2.2rem; font-weight:900; color:#3b7d4f; text-shadow:0 1px 0 rgba(255,255,255,.65)}
+.elapsed{position:absolute; top:0; left:0; height:100%; background:rgba(58,111,82,.22); width:0%; transition:width .25s linear; z-index:2}
+.cursor{position:absolute; top:-10px; width:2px; height:76px; background:#3a6f52; left:0%; z-index:3; box-shadow:0 0 0 2px rgba(58,111,82,.10)}
+.big-clock,.clock{margin-top:16px; font-size:2.2rem; font-weight:900; color:#3a6f52; text-shadow:0 1px 0 rgba(255,255,255,.65)}
+/* WT klokken 25% større */
+#clockWT{ font-size:2.75rem; }
 .over{color:#b54a46 !important; text-shadow:none}
 
 /* Kontroller */
@@ -84,21 +96,18 @@ body::before{
 /* Views */
 .view{display:none} .view.active{display:block}
 
-/* Annet (nedtelling) */
+/* Taler */
 .center{text-align:center}
 .preset-row{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
 .preset{border:1px solid var(--border); background:var(--pill); border-radius:999px; padding:10px 14px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(70,50,30,.06)}
-.preset.active{background:#3b7d4f; color:#fff}
+.preset.active{background:#3a6f52; color:#fff}
 .picker{margin-top:10px; display:flex; gap:16px; justify-content:center; align-items:center}
 .stepper{display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--pill); border:1px solid var(--border); border-radius:14px; padding:10px 12px; min-width:92px; box-shadow:0 8px 20px rgba(70,50,30,.06)}
 .stepper .value{font-size:2rem; font-weight:900; min-width:64px}
-.stepper button{border:0; border-radius:10px; padding:6px 10px; font-weight:800; background:#fff; cursor:pointer; box-shadow:0 6px 14px rgba(70,50,30,.05); color:var(--ink)}
+.stepper button{border:0; border-radius:10px; padding:6px 10px; font-weight:900; background:#fff; cursor:pointer; box-shadow:0 6px 14px rgba(70,50,30,.05); color:var(--ink)}
 .sep{font-size:2rem; font-weight:900; opacity:.55}
 
-/* Footer */
-.footer{text-align:center; color:var(--muted); font-size:.9rem; margin-top:20px}
-
-/* Milepæl-bilde */
+/* Milestone-bilde */
 .milestone-img{max-width:40%; height:auto; margin:12px auto; display:block; background:none; padding:0; border:none; box-shadow:none; opacity:0; transform:translateY(4px); transition:opacity .25s,transform .25s}
 .milestone-img.show{opacity:1; transform:translateY(0)}
 
@@ -110,9 +119,16 @@ body::before{
   .timeline{height:52px}
   .cursor{height:72px}
 }
-/* Skjule kort mens det spilles */
+
+/* Skjul-kort mens det spilles */
 .hiddenCard{opacity:0; transform:translateY(-6px); height:0; margin:0; padding-top:0; padding-bottom:0; overflow:hidden}
 .hiddenSoft{opacity:0; height:0; margin:0; padding-top:0; padding-bottom:0; overflow:hidden; transform:translateY(-4px); transition:opacity .2s,transform .2s,height .2s,margin .2s}
+
+/* Sticky footer litt over bunn */
+.footer{
+  position:fixed; left:0; right:0; bottom: max(8px, env(safe-area-inset-bottom));
+  text-align:center; color:var(--muted); font-size:.9rem; pointer-events:none;
+}
 </style>
 </head>
 <body>
@@ -123,57 +139,22 @@ body::before{
     </div>
 
     <div class="segmented" role="tablist" aria-label="Modus">
-      <button id="tabWT" class="wt-btn active" role="tab" aria-selected="true" title="Vakttårnstudiet">
-        <img src="watchtower-icon.png" alt="WT">
+      <!-- Taler til venstre -->
+      <button id="tabSP" class="active" role="tab" aria-selected="true" title="Taler">
+        <img id="otherIcon" src="other-icon.png" alt="Taler">
+        <span>Taler</span>
       </button>
-      <button id="tabSP" role="tab" aria-selected="false">Annet</button>
+      <button id="tabWT" role="tab" aria-selected="false" title="Vakttårnstudiet">
+        <img src="watchtower-icon.png" alt="WT">
+        <span>Vakttårn</span>
+      </button>
     </div>
   </div>
 
-  <!-- Vakttårnstudiet -->
-  <div id="viewWT" class="view active">
-    <div id="wtControlsCard" class="card infoband" style="justify-content:space-between; gap:12px">
-      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-        <select id="langSel" class="select" aria-label="Språk">
-          <option value="no">Norsk</option>
-          <option value="sv">Svenska</option>
-        </select>
-        <select id="weekSel" class="select" aria-label="Artikkel">
-          <option>Laster …</option>
-        </select>
-      </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap">
-        <div class="pill" id="pillParas">Avsnitt: 0</div>
-        <div class="pill" id="pillQ">Spørsmål: 0</div>
-        <div class="pill" id="pillReads">Les-skriftsteder: 0</div>
-      </div>
-    </div>
-
-    <div class="h1" id="articleTitle">—</div>
-    <div class="message" id="message">Velg språk og artikkel for å laste timer.</div>
-
-    <div class="timeline-wrap">
-      <div id="timeline" class="timeline">
-        <div id="introSlot"  class="slot" style="left:0%;width:0;background:#7f8d99"></div>
-        <div id="reviewSlot" class="slot" style="right:0;width:0;background:#c79b6a"></div>
-        <div id="outroSlot"  class="slot" style="right:0;width:0;background:#7f8d99"></div>
-        <div id="elapsed" class="elapsed"></div>
-        <div id="cursor"  class="cursor"></div>
-      </div>
-      <div class="clock" id="clockWT">00:00</div>
-    </div>
-
-    <div class="controls">
-      <button id="playWT"  class="round play"  title="Start/Gjenoppta" aria-label="Start">▶</button>
-      <button id="pauseWT" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
-      <button id="stopWT"  class="round stop"  title="Stopp" aria-label="Stopp" disabled>■</button>
-    </div>
-  </div>
-
-  <!-- Annet -->
-  <div id="viewSP" class="view">
-    <div class="card center">
-      <div id="spInputs" class="hiddenSoft" style="opacity:1; height:auto; transform:none; margin-bottom:6px">
+  <!-- TALER (standard aktiv) -->
+  <div id="viewSP" class="view active">
+    <div class="card" id="spCard">
+      <div id="spInputs" style="margin-bottom:6px">
         <div class="preset-row">
           <button class="preset" data-sec="1800">30:00</button>
           <button class="preset" data-sec="900">15:00</button>
@@ -196,12 +177,22 @@ body::before{
         </div>
       </div>
 
+      <!-- TALER tidslinje (prosent) -->
+      <div class="timeline-wrap">
+        <div id="timelineSP" class="timeline">
+          <div id="elapsedSP" class="elapsed"></div>
+          <div id="cursorSP"  class="cursor"></div>
+        </div>
+      </div>
+
       <img id="msImg" class="milestone-img" alt="" style="display:none"/>
 
-      <div id="clockSP" class="big-clock">10:00</div>
-      <div id="msgSP" class="message" style="margin-inline:auto; max-width:520px">Klar til nedtelling.</div>
+      <div style="display:flex; align-items:center; gap:16px; margin-top:10px">
+        <div id="clockSP" class="big-clock" style="margin:0">10:00</div>
+        <div id="msgSP" class="message" style="flex:1">Klar til nedtelling.</div>
+      </div>
 
-      <div class="controls" style="justify-content:center">
+      <div class="controls" style="justify-content:center; margin-top:12px">
         <button id="playSP"  class="round play"  title="Start/Gjenoppta" aria-label="Start">▶</button>
         <button id="pauseSP" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
         <button id="stopSP"  class="round stop"  title="Stopp/Nullstill" aria-label="Stopp" disabled>■</button>
@@ -209,41 +200,96 @@ body::before{
     </div>
   </div>
 
+  <!-- VAKTTÅRN -->
+  <div id="viewWT" class="view">
+    <div id="wtControlsCard" class="card infoband" style="justify-content:space-between; gap:12px">
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+        <select id="langSel" class="select" aria-label="Språk">
+          <option value="no">Norsk</option>
+          <option value="sv">Svenska</option>
+        </select>
+        <select id="weekSel" class="select" aria-label="Artikkel">
+          <option>Laster …</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <div class="pill" id="pillParas">Avsnitt: 0</div>
+        <div class="pill" id="pillQ">Spørsmål: 0</div>
+        <div class="pill" id="pillReads">Les-skriftsteder: 0</div>
+      </div>
+    </div>
+
+    <div class="h1" id="articleTitle">—</div>
+    <div class="message" id="message">Velg språk og artikkel for å laste timer.</div>
+
+    <div class="timeline-wrap">
+      <div id="timeline" class="timeline">
+        <div id="introSlot"  class="slot" style="left:0%;width:0;background:#8aa59b"></div>
+        <div id="reviewSlot" class="slot" style="right:0;width:0;background:#c5a881"></div>
+        <div id="outroSlot"  class="slot" style="right:0;width:0;background:#8aa59b"></div>
+        <div id="elapsed" class="elapsed"></div>
+        <div id="cursor"  class="cursor"></div>
+      </div>
+      <div class="clock" id="clockWT">00:00</div>
+    </div>
+
+    <div class="controls">
+      <button id="playWT"  class="round play"  title="Start/Gjenoppta" aria-label="Start">▶</button>
+      <button id="pauseWT" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
+      <button id="stopWT"  class="round stop"  title="Stopp" aria-label="Stopp" disabled>■</button>
+    </div>
+  </div>
+
   <div class="footer">Meeting Timer © 2025</div>
 </div>
 
 <script>
-/* ----- helpers ----- */
+/* ===== helpers ===== */
 const TOTAL=3600, INTRO=90, REVIEW=120, OUTRO=90, CONTENT=TOTAL-INTRO-REVIEW-OUTRO;
 const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
 const $=s=>document.querySelector(s), pct=s=>s/TOTAL*100;
-const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')};
+const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
+function isoMonday(d=new Date()){ const x=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return x.toISOString().slice(0,10); }
+function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+function labelFor(k,lang){ if(lang==='sv'){ if(k==='paras')return'Paragrafer'; if(k==='q')return'Frågor'; if(k==='reads')return'Läs-skriftställen'; } if(k==='paras')return'Avsnitt'; if(k==='q')return'Spørsmål'; if(k==='reads')return'Les-skriftsteder'; return k; }
 
-/* labels */
-function labelFor(k,lang){ if(lang==='sv'){ if(k==='paras')return'Paragrafer'; if(k==='q')return'Frågor'; if(k==='reads')return'Läs-skriftställen';}
-  if(k==='paras')return'Avsnitt'; if(k==='q')return'Spørsmål'; if(k==='reads')return'Les-skriftsteder'; return k; }
-
-/* state WT */
+/* ===== WT state ===== */
 let lang='no', paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, questions=0, reads=0;
 let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
 
-/* fetch JSON */
-async function fetchJSON(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw new Error('Fetch '+u); return r.json()}
-async function loadYear(l,y){ for(const p of [`data/${l}-${y}.json`,`Data/${l}-${y}.json`,`data/${l}-${y}`,`Data/${l}-${y}`]){try{return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`)}catch{}} throw 0;}
+/* ===== data load ===== */
+async function fetchJSON(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw 0; return r.json();}
+async function loadYear(l,y){ for(const p of [`data/${l}-${y}.json`,`Data/${l}-${y}.json`,`data/${l}-${y}`,`Data/${l}-${y}`]){ try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{} } throw 0;}
 async function hydrateOptions(){
-  const y=(new Date()).getFullYear(); let items=[];
-  try{ const list=[]; for(const yy of [y,y+1]){try{list.push(await loadYear(lang,yy))}catch{}} items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[])); }catch{}
+  const today=new Date(); const year=today.getFullYear(); let items=[];
+  try{ const list=[]; for(const yy of [year,year+1]){ try{ list.push(await loadYear(lang,yy)); }catch{} } items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[])); }catch{}
   const sel=$('#weekSel'); sel.innerHTML='';
-  if(!items.length){ const o=document.createElement('option'); o.textContent='Fant ingen datafiler'; o.disabled=true;o.selected=true; sel.appendChild(o); $('#message').textContent='Ingen data'; return; }
-  // vis kun tittel
-  items.slice(0,30).forEach(it=>{const o=document.createElement('option'); o.value=JSON.stringify(it); o.textContent=it.title||'(uten tittel)'; sel.appendChild(o)});
-  sel.selectedIndex=0; useItem(JSON.parse(sel.value));
+
+  // Lag liste: forrige uke, denne, +3 neste
+  const cur=isoMonday(today);
+  const prev=addDaysISO(cur,-7);
+  const nexts=[7,14,21].map(d=>addDaysISO(cur,d));
+  const want=[prev,cur,...nexts];
+
+  const picked=items.filter(it=>want.includes(it.week_start))
+                    .sort((a,b)=>a.week_start.localeCompare(b.week_start));
+
+  if(!picked.length){
+    const o=document.createElement('option'); o.textContent='Ingen artikler funnet (sjekk /data)'; o.disabled=true;o.selected=true; sel.appendChild(o);
+    $('#message').textContent='Ingen data lastet.'; return;
+  }
+  // Vis kun tittel
+  picked.forEach(it=>{ const o=document.createElement('option'); o.value=JSON.stringify(it); o.textContent=it.title||'(uten tittel)'; sel.appendChild(o); });
+  // Velg inneværende uke om den finnes, ellers første
+  const idx=picked.findIndex(x=>x.week_start===cur);
+  sel.selectedIndex = idx>-1 ? idx : 0;
+  useItem(JSON.parse(sel.value));
 }
 function useItem(it){
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=it.paragraphs|0; questions=it.questions|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
-  if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false}));}
+  if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillQ').textContent=`${labelFor('q',lang)}: ${questions}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
@@ -251,42 +297,54 @@ function useItem(it){
   $('#message').textContent='Klar til start. Trykk ▶ når du er klar.'; $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
 }
 
-/* allocation + timeline */
+/* ===== allocation with edge bias =====
+   20% mindre på første 5, 20% mer på siste 5 (uten overlapp om <10),
+   deretter skaleres alt til CONTENT. */
 function computeAllocation(){
   if(totalParagraphs<=0){perParagraph=[];cumulative=[];return;}
   const wps=WPM/60;
-  const raw=Array.from({length:totalParagraphs},(_,i)=>{const p=paras[i]||{words:0,q:1,les:0,hasAB:false}; let s=(p.words||0)/wps+(p.q||0)*SEC_PER_Q+(p.les||0)*SEC_PER_READ+(p.hasAB?AB_BONUS:0); return Math.max(5,s)});
+  const raw=Array.from({length:totalParagraphs},(_,i)=>{
+    const p=paras[i]||{words:0,q:1,les:0,hasAB:false};
+    let s=(p.words||0)/wps + (p.q||0)*SEC_PER_Q + (p.les||0)*SEC_PER_READ + (p.hasAB?AB_BONUS:0);
+    s=Math.max(5,s);
+    // bias
+    const firstN=Math.min(5,totalParagraphs);
+    const lastN =Math.min(5,totalParagraphs);
+    if(i < firstN) s*=0.8;
+    if(i >= totalParagraphs-lastN) s*=1.2;
+    // hvis overlapping (n<10), nøytraliser midten automatisk (begge kan treffe, da 0.8*1.2=0.96 ~ nær 1)
+    return s;
+  });
   const scale=CONTENT/((raw.reduce((a,b)=>a+b,0))||1);
-  perParagraph=raw.map(x=>x*scale); cumulative=[]; let acc=INTRO; for(let i=0;i<totalParagraphs;i++){cumulative.push(acc); acc+=perParagraph[i];}
+  perParagraph=raw.map(x=>x*scale);
+  cumulative=[]; let acc=INTRO; for(let i=0;i<totalParagraphs;i++){cumulative.push(acc); acc+=perParagraph[i];}
 }
-function hexToRgb(h){const s=h.replace('#','');const n=s.length===3?s.split('').map(x=>x+x).join(''):s;return{r:parseInt(n.slice(0,2),16),g:parseInt(n.slice(2,4),16),b:parseInt(n.slice(4,6),16)}}
-function lerpColor(h1,h2,t){const a=hexToRgb(h1),b=hexToRgb(h2);const r=Math.round(a.r+(b.r-a.r)*t),g=Math.round(a.g+(b.g-a.g)*t),bl=Math.round(a.b+(b.b-a.b)*t);return`rgb(${r}, ${g}, ${bl})`}
+
+/* ===== timeline (WT) ===== */
 function drawTimeline(){
   const t=$('#timeline'); Array.from(t.querySelectorAll('.para-slot')).forEach(n=>n.remove());
   $('#introSlot').style.left='0%'; $('#introSlot').style.width=pct(INTRO).toFixed(4)+'%';
   $('#outroSlot').style.right='0%'; $('#outroSlot').style.width=pct(OUTRO).toFixed(4)+'%';
   $('#reviewSlot').style.right=pct(OUTRO).toFixed(4)+'%'; $('#reviewSlot').style.width=pct(REVIEW).toFixed(4)+'%';
   if(totalParagraphs<=0){$('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return;}
-  const timelinePx=t.clientWidth, startCol='#efece6', endCol='#e5e1da';
-  // maks ca 8 labels; beregn step dynamisk
-  const maxLabels = timelinePx<400 ? 5 : 8;
-  const step = Math.max(1, Math.ceil(totalParagraphs / maxLabels));
+  const timelinePx=$('#timeline').clientWidth, maxLabels = timelinePx<400?5:8, step=Math.max(1,Math.ceil(totalParagraphs/maxLabels));
   for(let i=1;i<=totalParagraphs;i++){
     const leftP=pct(cumulative[i-1]), widthP=pct(perParagraph[i-1]);
-    const slot=document.createElement('div'); slot.className='para-slot';
+    const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':'');
     slot.style.left=leftP+'%'; slot.style.width=widthP+'%';
-    const tN=(i-1)/Math.max(1,(totalParagraphs-1)); slot.style.background=lerpColor(startCol,endCol,tN);
     const lbl=document.createElement('div');
-    if(i===1 || i===totalParagraphs || i%step===0){ lbl.textContent=String(i); lbl.style.fontSize = timelinePx<360?'.66rem':'.8rem'; }
+    if(i===1 || i===totalParagraphs || i%2===1){ // nummerer annenhver ryddig
+      if(i%step===0 || i===1 || i===totalParagraphs) lbl.textContent=String(i);
+    }
     slot.appendChild(lbl);
     slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
 }
-let _rAF=null; window.addEventListener('resize',()=>{ if(_rAF)cancelAnimationFrame(_rAF); _rAF=requestAnimationFrame(()=>{ if(totalParagraphs>0) drawTimeline(); }); });
+let _rAF=null; window.addEventListener('resize',()=>{ if(_rAF)cancelAnimationFrame(_rAF); _rAF=requestAnimationFrame(()=>{ if(totalParagraphs>0) drawTimeline(); drawTimelineSP(); }); });
 
-/* WT clock */
+/* ===== WT clock ===== */
 function resetClockUI(){ if(tickHandle)clearInterval(tickHandle); $('#clockWT').textContent='00:00'; $('#clockWT').classList.remove('over')}
 function startClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=setInterval(tickWT,250)}
 function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null}
@@ -308,60 +366,95 @@ $('#playWT').addEventListener('click',()=>{
 $('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); $('#message').textContent='Pause'; $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; });
 $('#stopWT').addEventListener('click',()=>{ if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000); started=false; paused=false; stopClock(); $('#message').textContent=`Ferdig – totalt ${fmt(accum)}`; $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true; accum=0; resetClockUI(); $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; $('#wtControlsCard').classList.remove('hiddenCard'); });
 
-/* Tabs */
+/* ===== Tabs & icons ===== */
 const views={WT:$('#viewWT'), SP:$('#viewSP')}, tabs={WT:$('#tabWT'), SP:$('#tabSP')};
 function activateView(k){ Object.entries(views).forEach(([x,el])=>el.classList.toggle('active',x===k)); Object.entries(tabs).forEach(([x,b])=>{b.classList.toggle('active',x===k); b.setAttribute('aria-selected',x===k?'true':'false');}); }
-$('#tabWT').addEventListener('click',()=>activateView('WT')); $('#tabSP').addEventListener('click',()=>activateView('SP'));
+$('#tabWT').addEventListener('click',()=>activateView('WT'));
+$('#tabSP').addEventListener('click',()=>activateView('SP'));
+// other-icon fallback .ng
+const otherIcon = document.getElementById('otherIcon');
+otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
 
-/* Språk + uke */
-$('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang); $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`; $('#pillQ').textContent=`${labelFor('q',lang)}: ${questions}`; $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`; });
+/* ===== Språk + uke ===== */
+$('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang);
+  $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`; $('#pillQ').textContent=`${labelFor('q',lang)}: ${questions}`;
+  $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`; });
 $('#weekSel').addEventListener('change',()=>{ const v=$('#weekSel').value; if(!v) return; useItem(JSON.parse(v)); });
 
-/* ----- Annet (nedtelling) ----- */
+/* ===== TALER (nedtelling med prosent-tidslinje) ===== */
 const PRESET_KEY='meetingTimer.annetSeconds';
 const spPresets=Array.from(document.querySelectorAll('.preset-row .preset'));
 let spRunning=false, spPaused=false, spStart=null, spAccum=0, spTick=null;
 let SP_TOTAL=parseInt(localStorage.getItem(PRESET_KEY),10)||600;
-let showStart=false, shownHalf=false, shownOneMin=false, shownOver=false, prevRemain=null, msHideTimer=null;
+let showStart=false, shownHalf=false, shownOneMin=false, shownOver=false, prevRemain=null;
 function spFmt(s){s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; return spAccum+Math.floor((Date.now()-spStart)/1000) }
 function markPreset(s){ spPresets.forEach(b=>b.classList.toggle('active',parseInt(b.dataset.sec,10)===s)) }
-function setStep(m,s){ m=Math.max(0,Math.min(999,m|0)); s=Math.max(0,Math.min(59,s|0)); $('#minVal').textContent=String(m); $('#secVal').textContent=String(s).padStart(2,'0'); if(!spRunning){ SP_TOTAL=m*60+s; $('#clockSP').textContent=spFmt(SP_TOTAL); markPreset([1800,900,600,300].includes(SP_TOTAL)?SP_TOTAL:-1); localStorage.setItem(PRESET_KEY,String(SP_TOTAL)); }}
+function setStep(m,s){ m=Math.max(0,Math.min(999,m|0)); s=Math.max(0,Math.min(59,s|0)); $('#minVal').textContent=String(m); $('#secVal').textContent=String(s).padStart(2,'0'); if(!spRunning){ SP_TOTAL=m*60+s; $('#clockSP').textContent=spFmt(SP_TOTAL); markPreset([1800,900,600,300].includes(SP_TOTAL)?SP_TOTAL:-1); localStorage.setItem(PRESET_KEY,String(SP_TOTAL)); drawTimelineSP(); }}
 function resetFlags(){ showStart=false; shownHalf=false; shownOneMin=false; shownOver=false; prevRemain=null; }
-function interpColor(t){ const a=[0x3b,0x7d,0x4f], b=[0xd0,0x89,0x3a]; const mix=i=>Math.round(a[i]+(b[i]-a[i])*(1-t)); return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`; }
-function showMilestone(name){ const el=$('#msImg'); if(!name){ el.style.display='none'; el.classList.remove('show'); el.removeAttribute('src'); return; } const hide=()=>{el.style.display='none'; el.classList.remove('show'); el.onerror=null}; el.onerror=hide; el.onload=()=>{ el.style.display='block'; requestAnimationFrame(()=>el.classList.add('show')); }; el.src=name; if(msHideTimer) clearTimeout(msHideTimer); msHideTimer=setTimeout(()=>showMilestone(null),8000); }
-function crossed(prev,cur,thr){ if(prev===null) return false; return prev>thr && cur<=thr; }
+
+/* Taler – tidslinje */
+function drawTimelineSP(){
+  const tl=$('#timelineSP');
+  // rens slots (vi trenger bare grunnflaten)
+  $('#elapsedSP').style.width='0%'; $('#cursorSP').style.left='0%';
+}
 
 function updateSP(){
-  const e=spElapsed(), remain=SP_TOTAL-e, clock=$('#clockSP');
+  const e=spElapsed(), remain=SP_TOTAL-e;
+  // fyll
+  const progress = Math.max(0, Math.min(1, e/SP_TOTAL));
+  $('#elapsedSP').style.width = (progress*100)+'%';
+  $('#cursorSP').style.left = `calc(${progress*100}% - 1px)`;
+
+  // meldinger + milestones
   if(spRunning && !spPaused){
     if(e<=10 && !showStart){ $('#msgSP').textContent='Vi er i gang'; showStart=true; }
     if(e>=Math.floor(SP_TOTAL/2) && !shownHalf){ $('#msgSP').textContent='Du er halvveis'; shownHalf=true; }
     if(remain===60 && !shownOneMin){ $('#msgSP').textContent='1 minutt igjen!'; shownOneMin=true; }
-    if(crossed(prevRemain,remain,1800)) showMilestone('milestone-30.png');
-    if(crossed(prevRemain,remain, 900)) showMilestone('milestone-15.png');
-    if(crossed(prevRemain,remain, 600)) showMilestone('milestone-10.png');
-    if(crossed(prevRemain,remain, 300)) showMilestone('milestone-5.png');
-    if(remain<0 && !shownOver){ $('#msgSP').textContent='Du har gått over tiden!'; shownOver=true; }
-  }else{ $('#msgSP').textContent='Klar til nedtelling.'; showMilestone(null); }
 
-  if(remain>=0){ clock.classList.remove('over'); clock.textContent=spFmt(remain); clock.style.color=remain>60?'':interpColor(Math.max(0,remain)/60); }
-  else{ clock.classList.add('over'); clock.style.color=''; clock.textContent=spFmt(-remain); }
+    // vis bilde når vi passerer terskler – og la det stå til Stopp
+    const prev = prevRemain;
+    function crossed(th){ return prev!==null && prev>th && remain<=th; }
+    if(crossed(1800)) showMilestone('milestone-30.png', true);
+    if(crossed( 900)) showMilestone('milestone-15.png', true);
+    if(crossed( 600)) showMilestone('milestone-10.png', true);
+    if(crossed( 300)) showMilestone('milestone-5.png',  true);
+
+    if(remain<0 && !shownOver){ $('#msgSP').textContent='Du har gått over tiden!'; shownOver=true; }
+  }
+
+  // klokke
+  if(remain>=0){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(remain); }
+  else{ $('#clockSP').classList.add('over'); $('#clockSP').textContent=spFmt(-remain); }
   prevRemain=remain;
 }
+
+/* Milestone–bilde: hvis hold=true, ikke auto-skjul */
+function showMilestone(name, hold=false){
+  const el=$('#msImg');
+  if(!name){ el.style.display='none'; el.classList.remove('show'); el.removeAttribute('src'); return; }
+  const onerr=()=>{ el.style.display='none'; el.classList.remove('show'); el.onerror=null; };
+  el.onerror=onerr;
+  el.onload=()=>{ el.style.display='block'; requestAnimationFrame(()=>el.classList.add('show')); };
+  el.src=name;
+  if(!hold){ /* ikke auto-skjul på taler – men WT brukte aldri denne */ }
+}
+
+/* TALER controls */
 function spStartFn(){
   if(spRunning && spPaused){ spPaused=false; spStart=Date.now(); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; return; }
   if(!spRunning){
-    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; resetFlags(); showMilestone(null);
-    // Skjul presets + velger under avspilling
-    const box=$('#spInputs'); box.classList.add('hiddenSoft');
+    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; resetFlags();
+    // Skjul presets + velger for clean look
+    $('#spInputs').classList.add('hiddenSoft');
     spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
-    // vis bilde ved start hvis preset er terskel
-    if(SP_TOTAL===1800) showMilestone('milestone-30.png');
-    if(SP_TOTAL=== 900) showMilestone('milestone-15.png');
-    if(SP_TOTAL=== 600) showMilestone('milestone-10.png');
-    if(SP_TOTAL=== 300) showMilestone('milestone-5.png');
+    // vis bile ved start hvis preset matcher terskel
+    if(SP_TOTAL===1800) showMilestone('milestone-30.png', true);
+    if(SP_TOTAL=== 900) showMilestone('milestone-15.png', true);
+    if(SP_TOTAL=== 600) showMilestone('milestone-10.png', true);
+    if(SP_TOTAL=== 300) showMilestone('milestone-5.png',  true);
     updateSP();
   }
 }
@@ -370,12 +463,16 @@ function spStopFn(){
   if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000);
   spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null;
   $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true;
-  $('#clockSP').classList.remove('over'); $('#clockSP').style.color=''; $('#msgSP').textContent='Klar til nedtelling.';
-  const s=parseInt(localStorage.getItem(PRESET_KEY),10)||600; setStep(Math.floor(s/60),s%60); $('#clockSP').textContent=spFmt(s); showMilestone(null);
+  $('#clockSP').classList.remove('over'); $('#msgSP').textContent='Klar til nedtelling.';
+  const s=parseInt(localStorage.getItem(PRESET_KEY),10)||600; setStep(Math.floor(s/60),s%60); $('#clockSP').textContent=spFmt(s);
+  showMilestone(null);
   $('#spInputs').classList.remove('hiddenSoft'); // vis igjen
 }
-$('#playSP').addEventListener('click',spStartFn); $('#pauseSP').addEventListener('click',spPauseFn); $('#stopSP').addEventListener('click',spStopFn);
-spPresets.forEach(btn=>btn.addEventListener('click',()=>{ if(spRunning) return; const s=parseInt(btn.dataset.sec,10)||600; localStorage.setItem(PRESET_KEY,String(s)); markPreset(s); setStep(Math.floor(s/60),s%60); $('#clockSP').textContent=spFmt(s); $('#msgSP').textContent='Klar til nedtelling.'; showMilestone(null); }));
+$('#playSP').addEventListener('click',spStartFn);
+$('#pauseSP').addEventListener('click',spPauseFn);
+$('#stopSP').addEventListener('click',spStopFn);
+
+spPresets.forEach(btn=>btn.addEventListener('click',()=>{ if(spRunning) return; const s=parseInt(btn.dataset.sec,10)||600; localStorage.setItem(PRESET_KEY,String(s)); markPreset(s); setStep(Math.floor(s/60),s%60); $('#clockSP').textContent=spFmt(s); $('#msgSP').textContent='Klar til nedtelling.'; showMilestone(null); drawTimelineSP(); }));
 $('#minUp').addEventListener('click',()=>{ if(spRunning) return; const m=parseInt(minVal.textContent,10)||0; setStep(m+1, parseInt(secVal.textContent,10)||0); });
 $('#minDown').addEventListener('click',()=>{ if(spRunning) return; const m=parseInt(minVal.textContent,10)||0; setStep(m-1, parseInt(secVal.textContent,10)||0); });
 $('#secUp').addEventListener('click',()=>{ if(spRunning) return; let s=(parseInt(secVal.textContent,10)||0)+1; let m=parseInt(minVal.textContent,10)||0; if(s>=60){m++; s=0} setStep(m,s); });
@@ -385,10 +482,15 @@ $('#secDown').addEventListener('click',()=>{ if(spRunning) return; let s=(parseI
 const brandBox=document.getElementById('brandBox'), logoImg=document.getElementById('logoImg');
 logoImg.addEventListener('click',()=>{ logoImg.classList.remove('ripple'); brandBox.classList.remove('rippling'); void logoImg.offsetWidth; void brandBox.offsetWidth; logoImg.classList.add('ripple'); brandBox.classList.add('rippling'); });
 
-/* Init */
+/* Init – start på TALER, velg inneværende uke på WT */
 (async function init(){
+  // Taler – preset
+  const s=parseInt(localStorage.getItem(PRESET_KEY),10)||600;
+  markPreset([1800,900,600,300].includes(s)?s:-1); setStep(Math.floor(s/60),s%60); $('#clockSP').textContent=spFmt(s);
+  drawTimelineSP();
+
+  // WT – språk + uke
   const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
-  const s=parseInt(localStorage.getItem(PRESET_KEY),10)||600; markPreset([1800,900,600,300].includes(s)?s:-1); setStep(Math.floor(s/60),s%60); $('#clockSP').textContent=spFmt(s);
   await hydrateOptions();
 })();
 </script>
