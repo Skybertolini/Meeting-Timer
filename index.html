@@ -150,46 +150,48 @@ body::before{
     </div>
   </div>
 
-  <!-- TALER (standard aktiv) -->
-  <div id="viewSP" class="view active">
-    <div class="card" id="spCard">
-      <div id="spInputs" style="margin-bottom:6px">
-        <div class="preset-row">
-          <button class="preset" data-sec="1800">30</button>
-          <button class="preset" data-sec="900">15</button>
-          <button class="preset" data-sec="600">10</button>
-          <button class="preset" data-sec="300">5</button>
-        </div>
-
-        <div class="picker">
-          <div class="minStepper">
-            <button id="minDec" aria-label="Mindre tid">‹</button>
-            <div class="minVal" id="minVal">10</div>
-            <button id="minInc" aria-label="Mer tid">›</button>
-          </div>
-          <div class="big-clock" id="clockSP">10:00</div>
-        </div>
+ <!-- TALER (standard aktiv) -->
+<div id="viewSP" class="view active">
+  <div class="card" id="spCard">
+    <div id="spInputs" style="margin-bottom:6px">
+      <div class="preset-row">
+        <button class="preset" data-sec="1800">30</button>
+        <button class="preset" data-sec="900">15</button>
+        <button class="preset" data-sec="600">10</button>
+        <button class="preset" data-sec="300">5</button>
       </div>
 
-      <!-- TALER tidslinje (prosent) -->
-      <div class="timeline-wrap">
-        <div id="timelineSP" class="timeline">
-          <div id="elapsedSP" class="elapsed"></div>
-          <div id="cursorSP"  class="cursor"></div>
+      <div class="picker">
+        <div class="minStepper">
+          <button id="minDec" aria-label="Mindre tid">‹</button>
+          <div class="minVal" id="minVal">10</div>
+          <button id="minInc" aria-label="Mer tid">›</button>
         </div>
-      </div>
-
-      <img id="msImg" class="milestone-img" alt="" style="display:none"/>
-
-      <div class="message" id="msgSP">Klar til nedtelling.</div>
-
-      <div class="controls" style="justify-content:center; margin-top:12px">
-        <button id="playSP"  class="round play"  title="Start/Gjenoppta" aria-label="Start">▶</button>
-        <button id="pauseSP" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
-        <button id="stopSP"  class="round stop"  title="Stopp/Nullstill" aria-label="Stopp" disabled>■</button>
       </div>
     </div>
+
+    <!-- TALER tidslinje (prosent) -->
+    <div class="timeline-wrap">
+      <div id="timelineSP" class="timeline">
+        <div id="elapsedSP" class="elapsed"></div>
+        <div id="cursorSP"  class="cursor"></div>
+      </div>
+    </div>
+
+    <!-- ⬇️ Klokken står nå alene, under tidslinjen, venstrestilt -->
+    <div class="big-clock" id="clockSP" style="margin-top:12px">10:00</div>
+
+    <img id="msImg" class="milestone-img" alt="" style="display:none"/>
+
+    <div class="message" id="msgSP">Klar til nedtelling.</div>
+
+    <div class="controls" style="justify-content:center; margin-top:12px">
+      <button id="playSP"  class="round play"  title="Start/Gjenoppta" aria-label="Start">▶</button>
+      <button id="pauseSP" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
+      <button id="stopSP"  class="round stop"  title="Stopp/Nullstill" aria-label="Stopp" disabled>■</button>
+    </div>
   </div>
+</div>
 
   <!-- VAKTTÅRN -->
   <div id="viewWT" class="view">
@@ -447,19 +449,33 @@ function updateSP(){
   prevRemain=remain;
 }
 
-/* TALER controls */
 function spStartFn(){
-  if(spRunning && spPaused){ spPaused=false; spStart=Date.now(); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; return; }
-  if(!spRunning){
-    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; resetFlags();
-    $('#spInputs').classList.add('hiddenSoft');
+  if(spRunning && spPaused){
+    spPaused=false; spStart=Date.now();
     spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
+    return;
+  }
+  if(!spRunning){
+    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0;
+
+    // ⬇️ Nullstill meldinger og timere
+    setSPMessage(''); 
+    resetFlags();
+
+    // Skjul presets/picker, men klokken er nå utenfor og blir synlig
+    $('#spInputs').classList.add('hiddenSoft');
+
+    spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
+    $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
+
+    // Vis start-bilde (presets/custom)
     if(SP_TOTAL===1800) showMilestone('milestone-30.png', true);
     else if(SP_TOTAL===900) showMilestone('milestone-15.png', true);
     else if(SP_TOTAL===600) showMilestone('milestone-10.png', true);
     else if(SP_TOTAL===300) showMilestone('milestone-5.png',  true);
     else showMilestone('milestone-other.png', true);
+
     updateSP();
   }
 }
