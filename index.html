@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Meeting Timer</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f8f7f4">
+<meta name="theme-color" content="#f8f7f5">
 
 <style>
 :root{
-  /* Diskré papir/e-blekk palett (svært lett beige) */
-  --bg-top:#f8f7f4;    /* nesten hvit */
-  --bg-bot:#f3f2ef;    /* svakt varmere */
-  --ink:#2f2a27;       /* mørk blekk-aktig tekst */
+  /* Diskré papir/e-blekk palett (nær hvit) */
+  --bg-top:#f8f7f5;
+  --bg-bot:#f3f2ef;
+  --ink:#2f2a27;       /* mørk blekk */
   --muted:#8b827a;
-  --card: rgba(255,255,252,.98);  /* kremet kort, nesten hvit */
+  --card: rgba(255,255,252,.98);  /* nesten hvit */
   --border: rgba(60,40,20,.10);
 
-  /* Dempede knapper (tydelige, ikke skarpe) */
+  /* Dempede knapper – tydelige, ikke skarpe */
   --green:#3b7d4f;
   --orange:#d0893a;
   --red:#b54a46;
@@ -26,7 +26,7 @@
   --radius:16px;
 }
 
-/* Typografi */
+/* Globalt */
 *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html,body{
   margin:0; padding:0; color:var(--ink);
@@ -34,7 +34,20 @@ html,body{
   font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   letter-spacing:.01em;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  position:relative;
 }
+body::before{
+  /* Super-subtil papirtekstur (uten bilde): litt noise/dither */
+  content:"";
+  position:fixed; inset:0; pointer-events:none; z-index:-1;
+  background:
+    radial-gradient( circle at 10% 20%, rgba(0,0,0,.015) 0 2px, transparent 3px ),
+    radial-gradient( circle at 80% 40%, rgba(0,0,0,.012) 0 2px, transparent 3px ),
+    radial-gradient( circle at 40% 70%, rgba(0,0,0,.01) 0 2px, transparent 3px );
+  mix-blend-mode:multiply;
+}
+
+/* Container */
 .container{ max-width:980px; margin:0 auto; padding:16px 16px 28px; }
 
 /* Topplinje */
@@ -44,12 +57,38 @@ html,body{
 }
 .brand{ display:flex; align-items:center; gap:14px; }
 .brand img{
-  height:180px; width:auto;         /* stor logo */
+  height:180px; width:auto; cursor:pointer;
   filter: drop-shadow(0 8px 24px rgba(70,50,30,.08));
+  transition: transform .25s ease, filter .25s ease;
 }
 @media (min-width: 768px){ .brand img{ height:216px; } }
 
-/* Segmented control (Cupertino) */
+.brand img.ripple{
+  animation: logoSquish .5s ease;
+}
+@keyframes logoSquish{
+  0%   { transform: scale(.98); filter: drop-shadow(0 4px 12px rgba(70,50,30,.06)); }
+  60%  { transform: scale(1.02); filter: drop-shadow(0 12px 28px rgba(70,50,30,.10)); }
+  100% { transform: scale(1.0);  filter: drop-shadow(0 8px 24px rgba(70,50,30,.08)); }
+}
+
+/* Ink ripple-effekt (pseudo) */
+.brand{ position:relative; overflow:visible; }
+.brand::after{
+  content:"";
+  position:absolute; left:70px; top:50%; width:0; height:0; border-radius:999px;
+  background: radial-gradient(circle, rgba(60,50,40,.10) 0%, rgba(60,50,40,0) 60%);
+  opacity:0; pointer-events:none;
+}
+.brand.rippling::after{
+  animation: inkRipple .55s ease;
+}
+@keyframes inkRipple{
+  0%{ width:0; height:0; opacity:.28; transform: translate(-50%,-50%) scale(1); }
+  100%{ width:220px; height:220px; opacity:0; transform: translate(-50%,-50%) scale(1.2); }
+}
+
+/* Cupertino segmented */
 .segmented{
   display:inline-flex; background:var(--card); border:1px solid var(--border);
   border-radius:999px; padding:4px; gap:4px; box-shadow:0 8px 30px rgba(70,50,30,.06);
@@ -69,6 +108,7 @@ html,body{
   border-radius:var(--radius);
   box-shadow:0 12px 40px rgba(70,50,30,.06);
   padding:14px;
+  transition: opacity .2s ease, transform .2s ease, height .2s ease, margin .2s ease;
 }
 .infoband{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 .pill{
@@ -102,10 +142,18 @@ html,body{
 .para-slot{
   position:absolute; top:0; height:100%; display:flex; align-items:center; justify-content:center;
   border-left:1px solid rgba(50,35,25,.06); border-right:1px solid rgba(255,255,255,.55);
-  font-weight:900; color:#463a34; text-shadow:0 1px 0 rgba(255,255,255,.55);
-  cursor:pointer; box-sizing:border-box; min-width:28px;
+  font-weight:900; color:#3a302b; text-shadow:0 1px 0 rgba(255,255,255,.55);
+  cursor:pointer; box-sizing:border-box; min-width:22px;
 }
-.para-slot > div{ pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:clip; line-height:1; }
+/* Tynn midtstrek i hver rute (hjelper når tall skjules) */
+.para-slot::after{
+  content:""; position:absolute; top:8px; bottom:8px; width:1px; left:50%;
+  background:rgba(60,45,35,.18);
+  transform:translateX(-.5px);
+}
+.para-slot > div{
+  pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:clip; line-height:1;
+}
 .elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(181,74,70,.22); width:0%; transition:width .25s linear; z-index:2 }
 .cursor { position:absolute; top:-10px; width:2px; height:76px; background:#b54a46; left:0%; z-index:3; box-shadow:0 0 0 2px rgba(181,74,70,.10) }
 
@@ -160,21 +208,31 @@ html,body{
   margin:12px auto;
   display:block;
   background:none; padding:0; border:none; box-shadow:none;
+  opacity:0; transform: translateY(4px);
+  transition: opacity .25s ease, transform .25s ease;
+}
+.milestone-img.show{ opacity:1; transform: translateY(0); }
+
+/* iPhone/smalt: strammere labels */
+@media (max-width: 420px){
+  .para-slot{ min-width:18px; }
+  .para-slot > div{ font-size:.7rem; }
+  .timeline{ height:52px; }
+  .cursor{ height:72px; }
 }
 
-/* iPhone: strammere labels ved smal bredde */
-@media (max-width: 390px){
-  .para-slot{ min-width:20px; }
-  .para-slot > div{ font-size:.7rem; }
+/* Skjul-kort under avspilling */
+.hiddenCard{
+  opacity:0; transform: translateY(-6px);
+  height:0; margin:0; padding-top:0; padding-bottom:0; overflow:hidden;
 }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="topbar">
-    <div class="brand">
-      <img src="meeting-timer-logo.png" alt="Meeting Timer logo" />
-      <!-- ingen titteltekst ved siden av logoen -->
+    <div class="brand" id="brandBox">
+      <img id="logoImg" src="meeting-timer-logo.png" alt="Meeting Timer logo" />
     </div>
 
     <div class="segmented" role="tablist" aria-label="Modus">
@@ -185,7 +243,7 @@ html,body{
 
   <!-- VIEW: Vakttårnstudiet -->
   <div id="viewWT" class="view active">
-    <div class="card infoband" style="justify-content:space-between; gap:12px">
+    <div id="wtControlsCard" class="card infoband" style="justify-content:space-between; gap:12px">
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
         <select id="langSel" class="select" aria-label="Språk">
           <option value="no">Norsk</option>
@@ -345,6 +403,7 @@ async function hydrateOptions(){
     return;
   }
 
+  // Inneværende mandag + 2 fram
   const start = isoMonday(today);
   const targets = [0,7,14].map(x=>addDaysISO(start,x));
   const options = items.filter(it=>targets.includes(it.week_start))
@@ -352,18 +411,18 @@ async function hydrateOptions(){
 
   if(options.length===0){
     const opt=document.createElement('option');
-    const have = [...new Set(items.map(i=>i.week_start))].slice(0,6).join(', ');
-    opt.textContent = `Ingen treff for ${targets.join(', ')}. Tilgjengelige: ${have||'–'}`;
+    opt.textContent = 'Ingen artikler for disse ukene.';
     opt.disabled=true; opt.selected=true;
     sel.appendChild(opt);
     $('#message').textContent='Uke ikke funnet i datafil.';
     return;
   }
 
+  // Vis kun tittel i nedtrekket
   options.forEach(it=>{
     const o=document.createElement('option');
     o.value = JSON.stringify(it);
-    o.textContent = `${it.week_start} – ${it.title || '(uten tittel)'}`;
+    o.textContent = it.title || '(uten tittel)';
     sel.appendChild(o);
   });
   sel.selectedIndex=0;
@@ -440,7 +499,7 @@ function drawTimeline(){
     const need = i>=10 ? LABEL_MIN_2 : LABEL_MIN_1;
     if(widthPx >= need){
       lbl.textContent = String(i);
-      lbl.style.fontSize = (widthPx<SHRINK_AT?'.72rem':'.82rem');
+      lbl.style.fontSize = (widthPx<SHRINK_AT?'.68rem':'.82rem');
     }else{
       lbl.textContent = '';
     }
@@ -497,7 +556,7 @@ function tickWT(){
   }
 }
 
-/* WT kontroller */
+/* WT kontroller + vis/skjul kort */
 $('#playWT').addEventListener('click', ()=>{
   if(started && paused){
     paused=false; startTs=Date.now(); startClock();
@@ -508,6 +567,7 @@ $('#playWT').addEventListener('click', ()=>{
     started=true; paused=false; startTs=Date.now(); startClock();
     $('#message').textContent='Introduksjon';
     $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false;
+    $('#wtControlsCard').classList.add('hiddenCard'); // skjul språk/uke
   }
 });
 $('#pauseWT').addEventListener('click', ()=>{
@@ -523,6 +583,7 @@ $('#stopWT').addEventListener('click', ()=>{
   $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
   accum=0; resetClockUI();
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
+  $('#wtControlsCard').classList.remove('hiddenCard'); // vis språk/uke igjen
 });
 
 /* ===========================
@@ -558,15 +619,16 @@ $('#weekSel').addEventListener('change', ()=>{
 });
 
 /* ===========================
-   ANNET – nedtelling
+   Annet – nedtelling m/ milepæler
    =========================== */
 const PRESET_KEY='meetingTimer.annetSeconds';
 const spPresets = Array.from(document.querySelectorAll('.preset-row .preset'));
 let spRunning=false, spPaused=false, spStart=null, spAccum=0, spTick=null;
 let SP_TOTAL = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
 
-// meldingsflagg
+// Meldingsflagg + forrige remaining
 let showStart=false, shownHalf=false, shownOneMin=false, shownOver=false;
+let prevRemain=null; let msHideTimer=null;
 
 function spFmt(s){ s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0'); }
 function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; const live=Math.floor((Date.now()-spStart)/1000); return spAccum+live; }
@@ -585,17 +647,23 @@ function setStep(min, sec){
   }
 }
 
-function resetFlags(){ showStart=false; shownHalf=false; shownOneMin=false; shownOver=false; }
+function resetFlags(){ showStart=false; shownHalf=false; shownOneMin=false; shownOver=false; prevRemain=null; }
 function interpColor(t){ const a=[0x3b,0x7d,0x4f], b=[0xd0,0x89,0x3a]; const mix=i=>Math.round(a[i]+(b[i]-a[i])*(1-t)); return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`; }
 
 function showMilestone(imgName){
   const el = $('#msImg');
-  if(!imgName){ el.style.display='none'; el.removeAttribute('src'); return; }
-  const src = imgName;
-  const hide = ()=>{ el.style.display='none'; el.removeAttribute('src'); el.onerror=null; };
+  if(!imgName){ el.style.display='none'; el.classList.remove('show'); el.removeAttribute('src'); return; }
+  const hide = ()=>{ el.style.display='none'; el.classList.remove('show'); el.onerror=null; };
   el.onerror = hide;
-  el.onload = ()=>{ el.style.display='block'; };
-  el.src = src;
+  el.onload = ()=>{ el.style.display='block'; requestAnimationFrame(()=>el.classList.add('show')); };
+  el.src = imgName;
+  if(msHideTimer) clearTimeout(msHideTimer);
+  msHideTimer = setTimeout(()=> showMilestone(null), 8000); // auto-skjul etter 8s
+}
+
+function crossed(prev, cur, threshold){
+  if(prev===null) return false;
+  return prev > threshold && cur <= threshold;
 }
 
 function updateSP(){
@@ -608,15 +676,13 @@ function updateSP(){
     if(e>=Math.floor(SP_TOTAL/2) && !shownHalf){ $('#msgSP').textContent='Du er halvveis'; shownHalf=true; }
     if(remain===60 && !shownOneMin){ $('#msgSP').textContent='1 minutt igjen!'; shownOneMin=true; }
 
-    // Milepælsbilder ved 30:00 og 10:00 igjen
-    if(remain===1800) showMilestone('milestone-30.png');
-    if(remain===600)  showMilestone('milestone-10.png');
+    // Milepæler: trigges når vi passerer terskelen nedover (robust mot tick-interval)
+    if(crossed(prevRemain, remain, 1800)) showMilestone('milestone-30.png');
+    if(crossed(prevRemain, remain,  900)) showMilestone('milestone-15.png');
+    if(crossed(prevRemain, remain,  600)) showMilestone('milestone-10.png');
+    if(crossed(prevRemain, remain,  300)) showMilestone('milestone-5.png');
 
     if(remain<0 && !shownOver){ $('#msgSP').textContent='Du har gått over tiden!'; shownOver=true; }
-    if(remain!==1800 && remain!==600) {
-      // skjul bilde igjen når man passerer
-      if($('#msImg').style.display==='block' && remain<600) showMilestone(null);
-    }
   }else{
     $('#msgSP').textContent='Klar til nedtelling.';
     showMilestone(null);
@@ -631,6 +697,8 @@ function updateSP(){
     clock.style.color = '';
     clock.textContent = spFmt(-remain);
   }
+
+  prevRemain = remain;
 }
 function spStartFn(){
   if(spRunning && spPaused){
@@ -654,7 +722,7 @@ function spPauseFn(){
 }
 function spStopFn(){
   if(spRunning && !spPaused) spAccum += Math.floor((Date.now()-spStart)/1000);
-  spRunning=false; spPaused=false; spStart=null; spAccum=0;
+  spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null;
   spTick && clearInterval(spTick); spTick=null;
   $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true;
   $('#clockSP').classList.remove('over'); $('#clockSP').style.color='';
@@ -684,6 +752,18 @@ $('#minUp').addEventListener('click', ()=>{ if(spRunning) return; const m=parseI
 $('#minDown').addEventListener('click', ()=>{ if(spRunning) return; const m=parseInt(minVal.textContent,10)||0; setStep(m-1, parseInt(secVal.textContent,10)||0); });
 $('#secUp').addEventListener('click', ()=>{ if(spRunning) return; let s=(parseInt(secVal.textContent,10)||0)+1; let m=parseInt(minVal.textContent,10)||0; if(s>=60){ m++; s=0; } setStep(m,s); });
 $('#secDown').addEventListener('click', ()=>{ if(spRunning) return; let s=(parseInt(secVal.textContent,10)||0)-1; let m=parseInt(minVal.textContent,10)||0; if(s<0){ if(m>0){ m--; s=59; } else { s=0; } } setStep(m,s); });
+
+/* ===========================
+   Logo – liten “ink ripple”
+   =========================== */
+const brandBox = document.getElementById('brandBox');
+const logoImg  = document.getElementById('logoImg');
+logoImg.addEventListener('click', ()=>{
+  logoImg.classList.remove('ripple'); brandBox.classList.remove('rippling');
+  // restart animasjoner
+  void logoImg.offsetWidth; void brandBox.offsetWidth;
+  logoImg.classList.add('ripple'); brandBox.classList.add('rippling');
+});
 
 /* ===========================
    INIT
