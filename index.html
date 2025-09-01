@@ -5,102 +5,162 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Meeting Timer</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f7f8fa">
+<meta name="theme-color" content="#f3efe6">
 
 <style>
 :root{
-  /* Papiraktige farger */
-  --paper-bg-top:#f4f1e9;
-  --paper-bg-bot:#eae6dd;
-  --text:#3a2f2b;
-  --card-bg:#fdfbf7;
-  --card-border:rgba(0,0,0,.08);
+  /* Papir/e-blekk-inspirert palett */
+  --bg-top:#f3efe6;     /* lys papir */
+  --bg-bot:#eae5db;     /* litt mørkere papir */
+  --ink:#332b27;        /* mørk blekk-aktig tekst */
+  --muted:#8c8278;      /* sekundær tekst */
+  --card: rgba(253,251,247,.96); /* kremet kort */
+  --border: rgba(60,40,20,.10);
 
-  /* Dempa knappefarger */
-  --green:#3b7d4f;
-  --orange:#d9913c;
-  --red:#b94a48;
-  --gray:#7d7d7d;
+  /* Dempa knapper (fortsatt tydelige) */
+  --green:#3b7d4f;   /* grønn play */
+  --orange:#d0893a;  /* pause */
+  --red:#b54a46;     /* stopp */
+  --pill:#fffdf8;    /* piller/select bakgrunn */
 
-  --muted:#9a9186;
-  --radius:14px;
+  --radius:16px;
 }
+
+/* Typografi (Apple-ish) */
+*{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html,body{
+  margin:0; padding:0;
+  color:var(--ink);
+  background:linear-gradient(180deg,var(--bg-top) 0%, var(--bg-bot) 100%);
   font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  background:linear-gradient(180deg,var(--paper-bg-top) 0%,var(--paper-bg-bot) 100%);
-  color:var(--text); margin:0; padding:24px; display:flex; flex-direction:column; align-items:center;
+  letter-spacing:.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-.container{ width:min(960px,94vw); max-width:880px }
+.container{ max-width:980px; margin:0 auto; padding:16px 16px 28px; }
 
 /* Topplinje */
-.topbar{ width:100%; display:flex; justify-content:space-between; align-items:center; margin:-8px 0 20px; gap:12px }
-.left-group{ display:flex; align-items:center; gap:12px }
-.logo-box img{ max-height:180px; width:auto; }
-
-/* Inputs */
-textarea{
-  width:100%; height:180px; resize:vertical; padding:12px; font-size:1rem;
-  border:1px solid var(--card-border); border-radius:var(--radius);
-  background:var(--card-bg); color:inherit;
+.topbar{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:8px 0 22px; /* ekstra luft ned */
 }
-textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 0 4px rgba(46,170,220,.18) }
-
-/* Info-linje */
-.info-line{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:16px; margin-bottom:20px }
-.inline-edit{
-  display:inline-flex; align-items:center; gap:8px; background:var(--card-bg);
-  border:1px solid var(--card-border); border-radius:999px; padding:8px 10px;
+.brand{ display:flex; align-items:center; gap:14px; }
+.brand img{
+  height:180px; width:auto;           /* ~3× større logo */
+  filter: drop-shadow(0 8px 24px rgba(70,50,30,.10));
 }
-.inline-edit label{ font-size:.95rem }
-.inline-edit input{ width:90px; padding:6px 8px; font-size:1rem; border:1px solid #cfc9c2; border-radius:8px; background:#fffefc; color:#333 }
+@media (min-width: 768px){
+  .brand img{ height:216px; }
+}
+.brand .title{ font-weight:900; letter-spacing:.2px; font-size:1.55rem; }
 
-/* Tittel + melding */
-.title{ font-size:1.4rem; font-weight:800; margin-top:14px; margin-bottom:12px }
-.message-box{
-  margin-top:10px; padding:14px 18px; background:var(--card-bg); border:1px solid var(--card-border);
-  border-radius:var(--radius); font-size:1.05rem; color:var(--text);
-  min-height:1.2em; text-align:center;
+/* Cupertino segmented control */
+.segmented{
+  display:inline-flex; background:var(--card); border:1px solid var(--border);
+  border-radius:999px; padding:4px; gap:4px; box-shadow:0 8px 30px rgba(70,50,30,.08);
+}
+.segmented button{
+  border:0; background:transparent; padding:10px 16px; border-radius:999px;
+  font-weight:800; color:var(--ink); cursor:pointer;
+}
+.segmented button.active{
+  background:var(--pill); box-shadow:0 2px 10px rgba(70,50,30,.08);
 }
 
-/* Timeline */
-.timeline-wrap{ width:100%; margin-top:28px; margin-bottom:20px }
+/* Kort / piller / select */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:0 12px 40px rgba(70,50,30,.08);
+  padding:14px;
+}
+.infoband{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.pill{
+  background:var(--pill); border:1px solid var(--border);
+  border-radius:999px; padding:8px 12px; font-weight:800;
+  box-shadow:0 4px 14px rgba(70,50,30,.06);
+}
+.select{
+  appearance:none; border:1px solid var(--border); border-radius:12px;
+  padding:10px 12px; background:var(--pill); font-weight:800;
+  box-shadow:0 4px 14px rgba(70,50,30,.06); min-width:220px; color:var(--ink);
+}
+
+/* Tittel + statusmelding */
+.h1{ font-size:1.3rem; font-weight:900; margin:20px 0 10px; }
+.message{
+  background:var(--pill); border:1px solid var(--border); border-radius:12px;
+  padding:12px 14px; min-height:1.2em; color:var(--ink);
+  box-shadow:0 8px 24px rgba(70,50,30,.06); margin-bottom:14px;
+}
+
+/* Tidslinje */
+.timeline-wrap{ margin-top:26px }
 .timeline{
-  position:relative; height:52px; border-radius:var(--radius);
-  background:linear-gradient(180deg,#f8f6f0 0%,#ece9e2 100%);
-  border:1px solid rgba(0,0,0,.08);
-  overflow:visible;
+  position:relative; height:56px; border-radius:14px; overflow:visible;
+  background:linear-gradient(180deg,#f6f3eb 0%, #ece7de 100%); /* papir-ish */
+  border:1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 12px 36px rgba(70,50,30,.06);
 }
-.slot{ position:absolute; top:0; height:100%; opacity:.25 }
+.slot{ position:absolute; top:0; height:100%; opacity:.22 } /* litt mer subtil */
 .para-slot{
   position:absolute; top:0; height:100%;
   display:flex; align-items:center; justify-content:center;
-  border-left:1px solid rgba(0,0,0,.04); border-right:1px solid rgba(255,255,255,.45);
-  font-size:.8rem; font-weight:700; color:#3a2f2b;
-  cursor:pointer;
+  border-left:1px solid rgba(50,35,25,.06);
+  border-right:1px solid rgba(255,255,255,.55);
+  font-weight:900; color:#463a34; text-shadow:0 1px 0 rgba(255,255,255,.55);
+  cursor:pointer; box-sizing:border-box; min-width:28px;
 }
-.elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(185,74,72,.25); width:0%; transition:width .25s linear; z-index:2 }
-.cursor{ position:absolute; top:-10px; width:2px; height:72px; background:#b94a48; left:0%; z-index:3 }
+.para-slot > div{ pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:clip; line-height:1; }
+.elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(181,74,70,.25); width:0%; transition:width .25s linear; z-index:2 }
+.cursor { position:absolute; top:-10px; width:2px; height:76px; background:#b54a46; left:0%; z-index:3; box-shadow:0 0 0 2px rgba(181,74,70,.12) }
 
-#clock{ margin-top:12px; font-size:2.1rem; font-weight:800; color:var(--green); }
+.big-clock, .clock{
+  margin-top:18px; font-size:2.2rem; font-weight:900; color:#3c7c51; text-shadow:0 1px 0 rgba(255,255,255,.65);
+}
+.over{ color:#b54a46 !important; text-shadow:none; }
 
 /* Kontroller */
-.footer{ margin-top:22px; width:100%; display:flex; gap:14px; justify-content:center }
-.round-btn{ display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:999px; border:0; cursor:pointer }
-.play-btn{ background:var(--green) } .play-btn::before{ content:"▶"; color:#fff; font-size:1.5rem; margin-left:3px }
-.pause-btn{ background:var(--orange) } .pause-btn::before{ content:"❚❚"; color:#fff; font-size:1.2rem }
-.stop-btn{ background:var(--red) } .stop-btn::before{ content:""; display:block; width:16px; height:16px; background:#fff; border-radius:2px }
-
-/* Presets (annet-fanen) */
-.preset-row{ display:flex; justify-content:center; gap:10px; margin:20px 0 }
-.preset{
-  background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px;
-  padding:10px 16px; cursor:pointer; font-weight:700; font-size:1rem;
+.controls{ display:flex; gap:12px; margin-top:14px; }
+.round{
+  width:58px; height:58px; border-radius:999px; border:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem;
+  box-shadow:0 10px 28px rgba(70,50,30,.10);
 }
-.preset.active{ background:var(--green); color:#fff; }
+.play{ background:var(--green) }
+.pause{ background:var(--orange) }
+.stop{ background:var(--red) }
+.round:disabled{ background:#b9b1a8; cursor:not-allowed; box-shadow:none }
 
-/* Milestone images */
+/* Visninger */
+.view{ display:none }
+.view.active{ display:block }
+
+/* Annet (nedtelling) */
+.center{ text-align:center }
+.preset-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.preset{
+  border:1px solid var(--border); background:var(--pill); border-radius:999px;
+  padding:10px 14px; font-weight:900; cursor:pointer;
+  box-shadow:0 8px 22px rgba(70,50,30,.08);
+}
+.preset.active{ background:#3c7c51; color:#fff }
+
+/* Stepper */
+.picker{ margin-top:10px; display:flex; gap:16px; justify-content:center; align-items:center; }
+.stepper{
+  display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--pill);
+  border:1px solid var(--border); border-radius:14px; padding:10px 12px; min-width:92px; box-shadow:0 8px 22px rgba(70,50,30,.08)
+}
+.stepper .value{ font-size:2rem; font-weight:900; min-width:64px; }
+.stepper button{ border:0; border-radius:10px; padding:6px 10px; font-weight:800; background:#fff; cursor:pointer; box-shadow:0 6px 16px rgba(70,50,30,.06); color:var(--ink) }
+.sep{ font-size:2rem; font-weight:900; opacity:.55 }
+
+/* Footer */
+.footer{ text-align:center; color:var(--muted); font-size:.9rem; margin-top:22px }
+
+/* Milepæl-bilder: 40%, ingen ramme */
 .milestone-img{
   max-width:40%;
   height:auto;
@@ -116,23 +176,9 @@ textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 
 <body>
 <div class="container">
   <div class="topbar">
-    <div class="left-group">
-      <div class="logo-box">
-        <img src="meeting-timer-logo.png" alt="Meeting Timer logo">
-      </div>
-    </div>
-    <select id="langSelect" class="lang-select" aria-label="Language">
-      <option value="no">Norsk</option>
-      <option value="sv">Svenska</option>
-    </select>
-  </div>
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="topbar">
     <div class="brand">
-      <img src="meeting-timer-logo.png" alt="Meeting Timer" />
+      <img src="meeting-timer-logo.png" alt="Meeting Timer logo" />
+      <div class="title">Meeting Timer</div>
     </div>
 
     <div class="segmented" role="tablist" aria-label="Modus">
@@ -141,15 +187,10 @@ textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 
     </div>
   </div>
 
-  <!-- Banner-plass (vises på Annet ved 30/10 min) -->
-  <div id="spBanner" class="sp-banner" hidden>
-    <img id="spBannerImg" alt="" />
-  </div>
-
   <!-- VIEW: Vakttårnstudiet -->
   <div id="viewWT" class="view active">
-    <div class="card infoband" style="justify-content:space-between; gap:10px">
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+    <div class="card infoband" style="justify-content:space-between; gap:12px">
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
         <select id="langSel" class="select" aria-label="Språk">
           <option value="no">Norsk</option>
           <option value="sv">Svenska</option>
@@ -170,11 +211,11 @@ textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 
 
     <div class="timeline-wrap">
       <div id="timeline" class="timeline">
-        <div id="introSlot" class="slot" style="left:0%;width:0;background:#0d6efd"></div>
-        <div id="reviewSlot" class="slot" style="right:0;width:0;background:#ff8800"></div>
-        <div id="outroSlot" class="slot" style="right:0;width:0;background:#0d6efd"></div>
+        <div id="introSlot"  class="slot" style="left:0%;width:0;background:#73889a"></div>
+        <div id="reviewSlot" class="slot" style="right:0;width:0;background:#d3a066"></div>
+        <div id="outroSlot"  class="slot" style="right:0;width:0;background:#73889a"></div>
         <div id="elapsed" class="elapsed"></div>
-        <div id="cursor" class="cursor"></div>
+        <div id="cursor"  class="cursor"></div>
       </div>
       <div class="clock" id="clockWT">00:00</div>
     </div>
@@ -190,9 +231,8 @@ textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 
   <div id="viewSP" class="view">
     <div class="card center">
       <div class="preset-row">
-        <button class="preset" data-sec="1800">30:00</button>
-        <button class="preset" data-sec="900">15:00</button>
         <button class="preset" data-sec="600">10:00</button>
+        <button class="preset" data-sec="480">08:00</button>
         <button class="preset" data-sec="300">05:00</button>
       </div>
 
@@ -226,7 +266,7 @@ textarea:focus{ outline:none; border-color:rgba(46,170,220,.55); box-shadow:0 0 
 
 <script>
 /* ===========================
-   Helpers / konstanter
+   Konstanter / helpers
    =========================== */
 const TOTAL = 3600, INTRO=90, REVIEW=120, OUTRO=90, CONTENT=TOTAL-INTRO-REVIEW-OUTRO;
 const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
@@ -240,13 +280,14 @@ function isoMonday(d=new Date()){
 }
 function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
 
-/* Språk-etiketter */
+/* Språkspesifikke etiketter */
 function labelFor(key, lang){
   if(lang==='sv'){
     if(key==='paras') return 'Paragrafer';
     if(key==='q')     return 'Frågor';
     if(key==='reads') return 'Läs-skriftställen';
   }
+  // default NO
   if(key==='paras') return 'Avsnitt';
   if(key==='q')     return 'Spørsmål';
   if(key==='reads') return 'Les-skriftsteder';
@@ -261,7 +302,7 @@ let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, questions=0, re
 let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
 
 /* ===========================
-   Last data (JSON)
+   Last data (JSON) – prøv data/ og Data/, med/uten .json
    =========================== */
 async function fetchJSON(url){
   const res = await fetch(url, {cache:'no-store'});
@@ -277,7 +318,7 @@ async function loadYear(lang, year){
   ];
   for(const u of tries){
     try{ return await fetchJSON(`${u}?v=${Date.now().toString().slice(7)}`); }
-    catch(e){}
+    catch(e){ /* prøv neste */ }
   }
   throw new Error('Fant ingen datafil for ' + lang + ' ' + year);
 }
@@ -291,8 +332,8 @@ async function hydrateOptions(){
     for(const y of [year, year+1]){
       try{ payloads.push(await loadYear(lang, y)); }catch(e){}
     }
-    // aksepter {items:[...]} eller bare [...]
-    items = payloads.flatMap(p => Array.isArray(p) ? p : (p?.items||[]));
+    // Godta både {items:[...]} og bare [...]
+    items = payloads.flatMap(p => Array.isArray(p) ? p : (p?.items || []));
   }catch(e){}
 
   const sel = $('#weekSel');
@@ -303,7 +344,7 @@ async function hydrateOptions(){
     opt.textContent='Fant ingen datafiler (sjekk /data eller /Data i repoet).';
     opt.disabled=true; opt.selected=true;
     sel.appendChild(opt);
-    $('#message').textContent='Ingen data lastet. Sjekk at filene heter data/no-2025.json eller Data/no-2025.json.';
+    $('#message').textContent='Ingen data lastet. Sjekk at filene heter data/no-ÅR.json.';
     return;
   }
 
@@ -382,11 +423,8 @@ function drawTimeline(){
   if(totalParagraphs<=0){ $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return; }
 
   const timelinePx = t.clientWidth;
-  const startCol='#e8f6ee', endCol='#bfe3ce';
-
-  /* Dynamisk label-tetthet */
-  const LABEL_W = 16;
-  const stepBase = Math.max(1, Math.ceil((totalParagraphs * LABEL_W) / Math.max(1,timelinePx)));
+  const startCol='#efe8dc', endCol='#dcd3c8'; /* dempa grønn erstattet av papirtoner */
+  const LABEL_MIN_1 = 18, LABEL_MIN_2 = 26, SHRINK_AT = 34;
 
   for(let i=1;i<=totalParagraphs;i++){
     const leftP = pct(cumulative[i-1]);
@@ -402,10 +440,11 @@ function drawTimeline(){
     slot.style.background=lerpColor(startCol,endCol,tN);
 
     const lbl=document.createElement('div');
-    lbl.className='lbl';
-    if(widthPx >= LABEL_W || ((i % stepBase)===0 || i===1 || i===totalParagraphs)){
+    const need = i>=10 ? LABEL_MIN_2 : LABEL_MIN_1;
+    if(widthPx >= need){
       lbl.textContent = String(i);
-    } else {
+      lbl.style.fontSize = (widthPx<SHRINK_AT?'.72rem':'.82rem');
+    }else{
       lbl.textContent = '';
     }
     slot.appendChild(lbl);
@@ -505,6 +544,24 @@ $('#tabWT').addEventListener('click', ()=>activateView('WT'));
 $('#tabSP').addEventListener('click', ()=>activateView('SP'));
 
 /* ===========================
+   Språk + uke
+   =========================== */
+$('#langSel').addEventListener('change', async ()=>{
+  lang = $('#langSel').value || 'no';
+  await hydrateOptions();
+  localStorage.setItem('meetingTimer.lang', lang);
+  // oppdater etiketter på pillene (verdiene beholdes)
+  $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs}`;
+  $('#pillQ').textContent     = `${labelFor('q',lang)}: ${questions}`;
+  $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`;
+});
+$('#weekSel').addEventListener('change', ()=>{
+  const val = $('#weekSel').value;
+  if(!val) return;
+  useItem(JSON.parse(val));
+});
+
+/* ===========================
    ANNET – nedtelling
    =========================== */
 const PRESET_KEY='meetingTimer.annetSeconds';
@@ -527,39 +584,13 @@ function setStep(min, sec){
   if(!spRunning){
     SP_TOTAL = min*60+sec;
     $('#clockSP').textContent=spFmt(SP_TOTAL);
-    markPreset([1800,900,600,300].includes(SP_TOTAL)?SP_TOTAL:-1);
+    markPreset([600,480,300].includes(SP_TOTAL)?SP_TOTAL:-1);
     localStorage.setItem(PRESET_KEY, String(SP_TOTAL));
   }
 }
 
 function resetFlags(){ showStart=false; shownHalf=false; shownOneMin=false; shownOver=false; }
-
-/* — Bannerhjelpere for Annet — */
-function showBannerForSeconds(sec){
-  const box = document.getElementById('spBanner');
-  const img = document.getElementById('spBannerImg');
-  let src = '';
-  if (sec === 1800) src = '30-min.png';
-  else if (sec === 600) src = '10-min.png';
-  if (src){
-    img.src = src;
-    img.alt = (sec===1800?'30':'10') + ' minutter';
-    box.hidden = false;
-  } else {
-    box.hidden = true;
-    img.removeAttribute('src');
-    img.removeAttribute('alt');
-  }
-}
-function hideBanner(){
-  const box = document.getElementById('spBanner');
-  const img = document.getElementById('spBannerImg');
-  box.hidden = true;
-  img.removeAttribute('src');
-  img.removeAttribute('alt');
-}
-
-function interpColor(t){ const a=[0x1e,0x82,0x4c], b=[0xf0,0xad,0x4e]; const mix=i=>Math.round(a[i]+(b[i]-a[i])*(1-t)); return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`; }
+function interpColor(t){ const a=[0x3c,0x7c,0x51], b=[0xd0,0x89,0x3a]; const mix=i=>Math.round(a[i]+(b[i]-a[i])*(1-t)); return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`; }
 
 function updateSP(){
   const e=spElapsed();
@@ -589,7 +620,6 @@ function spStartFn(){
   if(spRunning && spPaused){
     spPaused=false; spStart=Date.now(); spTick && clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
-    showBannerForSeconds(SP_TOTAL);
     return;
   }
   if(!spRunning){
@@ -597,7 +627,6 @@ function spStartFn(){
     spTick && clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
     updateSP();
-    showBannerForSeconds(SP_TOTAL);
   }
 }
 function spPauseFn(){
@@ -617,7 +646,6 @@ function spStopFn(){
   const s = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
-  hideBanner(); /* skjul banner ved stopp */
 }
 $('#playSP').addEventListener('click', spStartFn);
 $('#pauseSP').addEventListener('click', spPauseFn);
@@ -649,7 +677,7 @@ $('#secDown').addEventListener('click', ()=>{ if(spRunning) return; let s=(parse
 
   // Annet – gjenopprett siste preset
   const s = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
-  markPreset([1800,900,600,300].includes(s)?s:-1);
+  markPreset([600,480,300].includes(s)?s:-1);
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
 
