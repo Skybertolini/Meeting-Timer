@@ -5,66 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Meeting Timer</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#f3efe6">
+<meta name="theme-color" content="#f8f7f4">
 
 <style>
 :root{
-  /* Papir/e-blekk-inspirert palett */
-  --bg-top:#f3efe6;     /* lys papir */
-  --bg-bot:#eae5db;     /* litt mørkere papir */
-  --ink:#332b27;        /* mørk blekk-aktig tekst */
-  --muted:#8c8278;      /* sekundær tekst */
-  --card: rgba(253,251,247,.96); /* kremet kort */
+  /* Diskré papir/e-blekk palett (svært lett beige) */
+  --bg-top:#f8f7f4;    /* nesten hvit */
+  --bg-bot:#f3f2ef;    /* svakt varmere */
+  --ink:#2f2a27;       /* mørk blekk-aktig tekst */
+  --muted:#8b827a;
+  --card: rgba(255,255,252,.98);  /* kremet kort, nesten hvit */
   --border: rgba(60,40,20,.10);
 
-  /* Dempa knapper (fortsatt tydelige) */
-  --green:#3b7d4f;   /* grønn play */
-  --orange:#d0893a;  /* pause */
-  --red:#b54a46;     /* stopp */
-  --pill:#fffdf8;    /* piller/select bakgrunn */
+  /* Dempede knapper (tydelige, ikke skarpe) */
+  --green:#3b7d4f;
+  --orange:#d0893a;
+  --red:#b54a46;
+  --pill:#fffefb;
 
   --radius:16px;
 }
 
-/* Typografi (Apple-ish) */
+/* Typografi */
 *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
 html,body{
-  margin:0; padding:0;
-  color:var(--ink);
+  margin:0; padding:0; color:var(--ink);
   background:linear-gradient(180deg,var(--bg-top) 0%, var(--bg-bot) 100%);
   font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   letter-spacing:.01em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 .container{ max-width:980px; margin:0 auto; padding:16px 16px 28px; }
 
 /* Topplinje */
 .topbar{
   display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:8px 0 22px; /* ekstra luft ned */
+  padding:8px 0 22px;
 }
 .brand{ display:flex; align-items:center; gap:14px; }
 .brand img{
-  height:180px; width:auto;           /* ~3× større logo */
-  filter: drop-shadow(0 8px 24px rgba(70,50,30,.10));
+  height:180px; width:auto;         /* stor logo */
+  filter: drop-shadow(0 8px 24px rgba(70,50,30,.08));
 }
-@media (min-width: 768px){
-  .brand img{ height:216px; }
-}
-.brand .title{ font-weight:900; letter-spacing:.2px; font-size:1.55rem; }
+@media (min-width: 768px){ .brand img{ height:216px; } }
 
-/* Cupertino segmented control */
+/* Segmented control (Cupertino) */
 .segmented{
   display:inline-flex; background:var(--card); border:1px solid var(--border);
-  border-radius:999px; padding:4px; gap:4px; box-shadow:0 8px 30px rgba(70,50,30,.08);
+  border-radius:999px; padding:4px; gap:4px; box-shadow:0 8px 30px rgba(70,50,30,.06);
 }
 .segmented button{
   border:0; background:transparent; padding:10px 16px; border-radius:999px;
   font-weight:800; color:var(--ink); cursor:pointer;
 }
 .segmented button.active{
-  background:var(--pill); box-shadow:0 2px 10px rgba(70,50,30,.08);
+  background:var(--pill); box-shadow:0 2px 10px rgba(70,50,30,.06);
 }
 
 /* Kort / piller / select */
@@ -72,19 +67,19 @@ html,body{
   background:var(--card);
   border:1px solid var(--border);
   border-radius:var(--radius);
-  box-shadow:0 12px 40px rgba(70,50,30,.08);
+  box-shadow:0 12px 40px rgba(70,50,30,.06);
   padding:14px;
 }
 .infoband{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 .pill{
   background:var(--pill); border:1px solid var(--border);
   border-radius:999px; padding:8px 12px; font-weight:800;
-  box-shadow:0 4px 14px rgba(70,50,30,.06);
+  box-shadow:0 4px 14px rgba(70,50,30,.05);
 }
 .select{
   appearance:none; border:1px solid var(--border); border-radius:12px;
-  padding:10px 12px; background:var(--pill); font-weight:800;
-  box-shadow:0 4px 14px rgba(70,50,30,.06); min-width:220px; color:var(--ink);
+  padding:10px 12px; background:var(--pill); font-weight:800; color:var(--ink);
+  box-shadow:0 4px 14px rgba(70,50,30,.05); min-width:220px;
 }
 
 /* Tittel + statusmelding */
@@ -92,32 +87,30 @@ html,body{
 .message{
   background:var(--pill); border:1px solid var(--border); border-radius:12px;
   padding:12px 14px; min-height:1.2em; color:var(--ink);
-  box-shadow:0 8px 24px rgba(70,50,30,.06); margin-bottom:14px;
+  box-shadow:0 8px 24px rgba(70,50,30,.05); margin-bottom:14px; text-align:left;
 }
 
 /* Tidslinje */
 .timeline-wrap{ margin-top:26px }
 .timeline{
   position:relative; height:56px; border-radius:14px; overflow:visible;
-  background:linear-gradient(180deg,#f6f3eb 0%, #ece7de 100%); /* papir-ish */
+  background:linear-gradient(180deg,#faf9f6 0%, #f1efe9 100%);
   border:1px solid var(--border);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.75), 0 12px 36px rgba(70,50,30,.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 12px 36px rgba(70,50,30,.05);
 }
-.slot{ position:absolute; top:0; height:100%; opacity:.22 } /* litt mer subtil */
+.slot{ position:absolute; top:0; height:100%; opacity:.20 }
 .para-slot{
-  position:absolute; top:0; height:100%;
-  display:flex; align-items:center; justify-content:center;
-  border-left:1px solid rgba(50,35,25,.06);
-  border-right:1px solid rgba(255,255,255,.55);
+  position:absolute; top:0; height:100%; display:flex; align-items:center; justify-content:center;
+  border-left:1px solid rgba(50,35,25,.06); border-right:1px solid rgba(255,255,255,.55);
   font-weight:900; color:#463a34; text-shadow:0 1px 0 rgba(255,255,255,.55);
   cursor:pointer; box-sizing:border-box; min-width:28px;
 }
 .para-slot > div{ pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:clip; line-height:1; }
-.elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(181,74,70,.25); width:0%; transition:width .25s linear; z-index:2 }
-.cursor { position:absolute; top:-10px; width:2px; height:76px; background:#b54a46; left:0%; z-index:3; box-shadow:0 0 0 2px rgba(181,74,70,.12) }
+.elapsed{ position:absolute; top:0; left:0; height:100%; background:rgba(181,74,70,.22); width:0%; transition:width .25s linear; z-index:2 }
+.cursor { position:absolute; top:-10px; width:2px; height:76px; background:#b54a46; left:0%; z-index:3; box-shadow:0 0 0 2px rgba(181,74,70,.10) }
 
 .big-clock, .clock{
-  margin-top:18px; font-size:2.2rem; font-weight:900; color:#3c7c51; text-shadow:0 1px 0 rgba(255,255,255,.65);
+  margin-top:18px; font-size:2.2rem; font-weight:900; color:#3b7d4f; text-shadow:0 1px 0 rgba(255,255,255,.65);
 }
 .over{ color:#b54a46 !important; text-shadow:none; }
 
@@ -126,12 +119,12 @@ html,body{
 .round{
   width:58px; height:58px; border-radius:999px; border:0; cursor:pointer;
   display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem;
-  box-shadow:0 10px 28px rgba(70,50,30,.10);
+  box-shadow:0 10px 24px rgba(70,50,30,.08);
 }
 .play{ background:var(--green) }
 .pause{ background:var(--orange) }
 .stop{ background:var(--red) }
-.round:disabled{ background:#b9b1a8; cursor:not-allowed; box-shadow:none }
+.round:disabled{ background:#bfb8af; cursor:not-allowed; box-shadow:none }
 
 /* Visninger */
 .view{ display:none }
@@ -143,18 +136,18 @@ html,body{
 .preset{
   border:1px solid var(--border); background:var(--pill); border-radius:999px;
   padding:10px 14px; font-weight:900; cursor:pointer;
-  box-shadow:0 8px 22px rgba(70,50,30,.08);
+  box-shadow:0 8px 20px rgba(70,50,30,.06);
 }
-.preset.active{ background:#3c7c51; color:#fff }
+.preset.active{ background:#3b7d4f; color:#fff }
 
 /* Stepper */
 .picker{ margin-top:10px; display:flex; gap:16px; justify-content:center; align-items:center; }
 .stepper{
   display:flex; flex-direction:column; align-items:center; gap:8px; background:var(--pill);
-  border:1px solid var(--border); border-radius:14px; padding:10px 12px; min-width:92px; box-shadow:0 8px 22px rgba(70,50,30,.08)
+  border:1px solid var(--border); border-radius:14px; padding:10px 12px; min-width:92px; box-shadow:0 8px 20px rgba(70,50,30,.06)
 }
 .stepper .value{ font-size:2rem; font-weight:900; min-width:64px; }
-.stepper button{ border:0; border-radius:10px; padding:6px 10px; font-weight:800; background:#fff; cursor:pointer; box-shadow:0 6px 16px rgba(70,50,30,.06); color:var(--ink) }
+.stepper button{ border:0; border-radius:10px; padding:6px 10px; font-weight:800; background:#fff; cursor:pointer; box-shadow:0 6px 14px rgba(70,50,30,.05); color:var(--ink) }
 .sep{ font-size:2rem; font-weight:900; opacity:.55 }
 
 /* Footer */
@@ -166,10 +159,13 @@ html,body{
   height:auto;
   margin:12px auto;
   display:block;
-  background:none;
-  padding:0;
-  border:none;
-  box-shadow:none;
+  background:none; padding:0; border:none; box-shadow:none;
+}
+
+/* iPhone: strammere labels ved smal bredde */
+@media (max-width: 390px){
+  .para-slot{ min-width:20px; }
+  .para-slot > div{ font-size:.7rem; }
 }
 </style>
 </head>
@@ -178,7 +174,7 @@ html,body{
   <div class="topbar">
     <div class="brand">
       <img src="meeting-timer-logo.png" alt="Meeting Timer logo" />
-      <div class="title">Meeting Timer</div>
+      <!-- ingen titteltekst ved siden av logoen -->
     </div>
 
     <div class="segmented" role="tablist" aria-label="Modus">
@@ -211,9 +207,9 @@ html,body{
 
     <div class="timeline-wrap">
       <div id="timeline" class="timeline">
-        <div id="introSlot"  class="slot" style="left:0%;width:0;background:#73889a"></div>
-        <div id="reviewSlot" class="slot" style="right:0;width:0;background:#d3a066"></div>
-        <div id="outroSlot"  class="slot" style="right:0;width:0;background:#73889a"></div>
+        <div id="introSlot"  class="slot" style="left:0%;width:0;background:#7f8d99"></div>
+        <div id="reviewSlot" class="slot" style="right:0;width:0;background:#c79b6a"></div>
+        <div id="outroSlot"  class="slot" style="right:0;width:0;background:#7f8d99"></div>
         <div id="elapsed" class="elapsed"></div>
         <div id="cursor"  class="cursor"></div>
       </div>
@@ -231,8 +227,9 @@ html,body{
   <div id="viewSP" class="view">
     <div class="card center">
       <div class="preset-row">
+        <button class="preset" data-sec="1800">30:00</button>
+        <button class="preset" data-sec="900">15:00</button>
         <button class="preset" data-sec="600">10:00</button>
-        <button class="preset" data-sec="480">08:00</button>
         <button class="preset" data-sec="300">05:00</button>
       </div>
 
@@ -249,6 +246,8 @@ html,body{
           <button id="secDown">▼</button>
         </div>
       </div>
+
+      <img id="msImg" class="milestone-img" alt="" style="display:none"/>
 
       <div id="clockSP" class="big-clock">10:00</div>
       <div id="msgSP" class="message" style="margin-inline:auto; max-width:520px">Klar til nedtelling.</div>
@@ -280,14 +279,13 @@ function isoMonday(d=new Date()){
 }
 function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
 
-/* Språkspesifikke etiketter */
+/* Språksetiketter */
 function labelFor(key, lang){
   if(lang==='sv'){
     if(key==='paras') return 'Paragrafer';
     if(key==='q')     return 'Frågor';
     if(key==='reads') return 'Läs-skriftställen';
   }
-  // default NO
   if(key==='paras') return 'Avsnitt';
   if(key==='q')     return 'Spørsmål';
   if(key==='reads') return 'Les-skriftsteder';
@@ -302,7 +300,7 @@ let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, questions=0, re
 let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
 
 /* ===========================
-   Last data (JSON) – prøv data/ og Data/, med/uten .json
+   JSON lasting
    =========================== */
 async function fetchJSON(url){
   const res = await fetch(url, {cache:'no-store'});
@@ -318,7 +316,7 @@ async function loadYear(lang, year){
   ];
   for(const u of tries){
     try{ return await fetchJSON(`${u}?v=${Date.now().toString().slice(7)}`); }
-    catch(e){ /* prøv neste */ }
+    catch(e){ }
   }
   throw new Error('Fant ingen datafil for ' + lang + ' ' + year);
 }
@@ -332,7 +330,6 @@ async function hydrateOptions(){
     for(const y of [year, year+1]){
       try{ payloads.push(await loadYear(lang, y)); }catch(e){}
     }
-    // Godta både {items:[...]} og bare [...]
     items = payloads.flatMap(p => Array.isArray(p) ? p : (p?.items || []));
   }catch(e){}
 
@@ -341,10 +338,10 @@ async function hydrateOptions(){
 
   if(!items.length){
     const opt=document.createElement('option');
-    opt.textContent='Fant ingen datafiler (sjekk /data eller /Data i repoet).';
+    opt.textContent='Fant ingen datafiler (sjekk /data).';
     opt.disabled=true; opt.selected=true;
     sel.appendChild(opt);
-    $('#message').textContent='Ingen data lastet. Sjekk at filene heter data/no-ÅR.json.';
+    $('#message').textContent='Ingen data lastet.';
     return;
   }
 
@@ -359,7 +356,7 @@ async function hydrateOptions(){
     opt.textContent = `Ingen treff for ${targets.join(', ')}. Tilgjengelige: ${have||'–'}`;
     opt.disabled=true; opt.selected=true;
     sel.appendChild(opt);
-    $('#message').textContent='Fant ingen ukesobjekter for inneværende uke + 2 fram. Sjekk week_start-datoene.';
+    $('#message').textContent='Uke ikke funnet i datafil.';
     return;
   }
 
@@ -423,7 +420,7 @@ function drawTimeline(){
   if(totalParagraphs<=0){ $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return; }
 
   const timelinePx = t.clientWidth;
-  const startCol='#efe8dc', endCol='#dcd3c8'; /* dempa grønn erstattet av papirtoner */
+  const startCol='#efece6', endCol='#e5e1da'; /* diskret papirtoner */
   const LABEL_MIN_1 = 18, LABEL_MIN_2 = 26, SHRINK_AT = 34;
 
   for(let i=1;i<=totalParagraphs;i++){
@@ -550,7 +547,6 @@ $('#langSel').addEventListener('change', async ()=>{
   lang = $('#langSel').value || 'no';
   await hydrateOptions();
   localStorage.setItem('meetingTimer.lang', lang);
-  // oppdater etiketter på pillene (verdiene beholdes)
   $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillQ').textContent     = `${labelFor('q',lang)}: ${questions}`;
   $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`;
@@ -584,13 +580,23 @@ function setStep(min, sec){
   if(!spRunning){
     SP_TOTAL = min*60+sec;
     $('#clockSP').textContent=spFmt(SP_TOTAL);
-    markPreset([600,480,300].includes(SP_TOTAL)?SP_TOTAL:-1);
+    markPreset([1800,900,600,300].includes(SP_TOTAL)?SP_TOTAL:-1);
     localStorage.setItem(PRESET_KEY, String(SP_TOTAL));
   }
 }
 
 function resetFlags(){ showStart=false; shownHalf=false; shownOneMin=false; shownOver=false; }
-function interpColor(t){ const a=[0x3c,0x7c,0x51], b=[0xd0,0x89,0x3a]; const mix=i=>Math.round(a[i]+(b[i]-a[i])*(1-t)); return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`; }
+function interpColor(t){ const a=[0x3b,0x7d,0x4f], b=[0xd0,0x89,0x3a]; const mix=i=>Math.round(a[i]+(b[i]-a[i])*(1-t)); return `rgb(${mix(0)}, ${mix(1)}, ${mix(2)})`; }
+
+function showMilestone(imgName){
+  const el = $('#msImg');
+  if(!imgName){ el.style.display='none'; el.removeAttribute('src'); return; }
+  const src = imgName;
+  const hide = ()=>{ el.style.display='none'; el.removeAttribute('src'); el.onerror=null; };
+  el.onerror = hide;
+  el.onload = ()=>{ el.style.display='block'; };
+  el.src = src;
+}
 
 function updateSP(){
   const e=spElapsed();
@@ -601,9 +607,19 @@ function updateSP(){
     if(e<=10 && !showStart){ $('#msgSP').textContent='Vi er i gang'; showStart=true; }
     if(e>=Math.floor(SP_TOTAL/2) && !shownHalf){ $('#msgSP').textContent='Du er halvveis'; shownHalf=true; }
     if(remain===60 && !shownOneMin){ $('#msgSP').textContent='1 minutt igjen!'; shownOneMin=true; }
+
+    // Milepælsbilder ved 30:00 og 10:00 igjen
+    if(remain===1800) showMilestone('milestone-30.png');
+    if(remain===600)  showMilestone('milestone-10.png');
+
     if(remain<0 && !shownOver){ $('#msgSP').textContent='Du har gått over tiden!'; shownOver=true; }
+    if(remain!==1800 && remain!==600) {
+      // skjul bilde igjen når man passerer
+      if($('#msImg').style.display==='block' && remain<600) showMilestone(null);
+    }
   }else{
     $('#msgSP').textContent='Klar til nedtelling.';
+    showMilestone(null);
   }
 
   if(remain>=0){
@@ -623,7 +639,7 @@ function spStartFn(){
     return;
   }
   if(!spRunning){
-    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; resetFlags();
+    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; resetFlags(); showMilestone(null);
     spTick && clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
     updateSP();
@@ -646,6 +662,7 @@ function spStopFn(){
   const s = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
+  showMilestone(null);
 }
 $('#playSP').addEventListener('click', spStartFn);
 $('#pauseSP').addEventListener('click', spPauseFn);
@@ -660,6 +677,7 @@ spPresets.forEach(btn=>{
     setStep(Math.floor(s/60), s%60);
     $('#clockSP').textContent=spFmt(s);
     $('#msgSP').textContent='Klar til nedtelling.';
+    showMilestone(null);
   });
 });
 $('#minUp').addEventListener('click', ()=>{ if(spRunning) return; const m=parseInt(minVal.textContent,10)||0; setStep(m+1, parseInt(secVal.textContent,10)||0); });
@@ -677,7 +695,7 @@ $('#secDown').addEventListener('click', ()=>{ if(spRunning) return; let s=(parse
 
   // Annet – gjenopprett siste preset
   const s = parseInt(localStorage.getItem(PRESET_KEY),10) || 600;
-  markPreset([600,480,300].includes(s)?s:-1);
+  markPreset([1800,900,600,300].includes(s)?s:-1);
   setStep(Math.floor(s/60), s%60);
   $('#clockSP').textContent=spFmt(s);
 
