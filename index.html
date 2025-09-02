@@ -512,7 +512,6 @@ function drawTimelineSP(){
   $('#elapsedSP').style.width = (progress*100)+'%';
   $('#cursorSP').style.left  = `calc(${progress*100}% - 1px)`;
 }
-}
 function showMilestone(name){
   const el=$('#msImg');
   if(!name){ el.style.display='none'; el.classList.remove('show'); el.removeAttribute('src'); return; }
