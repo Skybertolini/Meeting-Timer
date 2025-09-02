@@ -566,7 +566,7 @@ function spStartFn(){
   }
   if(!spRunning){
     spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0;
-    setSPMessage('Vi er i gang! ☺️', 10000); // startmelding
+    setSPMessage('Vi er i gang! 😄', 10000); // startmelding
     resetFlags();
     $('#spInputs').classList.add('hiddenSoft'); // skjul presets/slider
     spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
