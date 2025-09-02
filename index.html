@@ -496,12 +496,22 @@ function applyIdleClock(){
 function resetFlags(){ showStart=false; shownHalf=false; shownOneMin=false; shownOver=false; prevRemain=null; spMsgTimers.forEach(t=>clearTimeout(t)); spMsgTimers=[]; spShownStartMsg=false; spShown2min=false; }
 
 function drawTimelineSP(){
-  const totalScale = 3600; // 1 time skala uansett
+  // Hvis vi teller opp: 30 min skala
+  // Hvis vi teller ned: valgt tid (SP_TOTAL)
+  const totalScale = isCountUp() ? 1800 : SP_TOTAL; // 1800 sek = 30 min
   const e = spElapsed();
-  const base = isCountUp()? e : (SP_TOTAL-e);
-  const progress = Math.max(0, Math.min(1, base/totalScale ));
+
+  let progress;
+  if (isCountUp()) {
+    progress = Math.min(1, e / totalScale);
+  } else {
+    const remain = SP_TOTAL - e;
+    progress = Math.max(0, Math.min(1, remain / totalScale));
+  }
+
   $('#elapsedSP').style.width = (progress*100)+'%';
   $('#cursorSP').style.left  = `calc(${progress*100}% - 1px)`;
+}
 }
 function showMilestone(name){
   const el=$('#msImg');
