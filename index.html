@@ -120,7 +120,9 @@ body::before{
 .play{background:var(--green)} .pause{background:var(--orange)} .stop{background:var(--red)} .round:disabled{background:#bfb8af; cursor:not-allowed; box-shadow:none}
 
 /* Views */
-.view{display:none} .view.active{display:block}
+.view{display:none; min-height:100%}
+.view.active{display:block}
+  .container{min-height:100vh}
 
 /* TALER */
 .center{text-align:center}
