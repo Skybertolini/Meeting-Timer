@@ -189,6 +189,22 @@ body::before{
  <!-- TALER (standard aktiv) -->
 <div id="viewSP" class="view active">
   <div class="card" id="spCard">
+    <!-- Liten tittel som matcher beskjedstilen, men i bold -->
+<div style="font-weight:900; color:#4a5552; margin:2px 0 8px;">
+  Timer for midtukemøtet
+</div>
+
+<div id="spInputs" style="margin-bottom:6px">
+  <div class="preset-row">
+    <button class="preset" data-sec="1800">30</button>
+    <button class="preset" data-sec="900">15</button>
+    <button class="preset" data-sec="600">10</button>
+    <button class="preset" data-sec="300">5</button>
+  </div>
+  <div class="picker" id="minuteSlider">
+    ...
+  </div>
+</div>
     <div id="spInputs" style="margin-bottom:6px">
       <div class="preset-row">
         <button class="preset" data-sec="1800">30</button>
