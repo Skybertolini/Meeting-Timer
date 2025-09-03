@@ -14,7 +14,7 @@
 :root{
   --bg-top:#f8f7f5; --bg-bot:#f3f2ef; --ink:#2b3432; --muted:#8b827a;
   --card:rgba(255,255,252,.98); --border:rgba(40,30,20,.10);
-  --green:#2f5f49; --orange:#c7843a; --red:#b54a46; --pill:#fffefb;
+  --green:#2f5f49; --pill:#fffefb;
   --radius:16px;
 
   /* Papir-grønn tidslinje + faser */
@@ -23,6 +23,10 @@
   --phase-intro:#f2e2cf;    /* mild oransje */
   --phase-review:#f3edc8;   /* lys gul */
   --phase-outro:#f2e2cf;
+
+  /* NYE toner for pause/stopp (fra illustrasjonen) */
+  --pause-beige:#e9e1d2;  /* lys papirbeige */
+  --stop-brown:#4b3a30;   /* dyp brun */
 }
 
 /* Base */
@@ -123,10 +127,10 @@ body::before{
 /* Kontroller */
 .controls{display:flex; gap:12px; margin-top:12px}
 .round{width:58px; height:58px; border-radius:999px; border:0; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow:0 10px 24px rgba(70,50,30,.08)}
-.play{background:var(--green)} .pause{background:var(--orange)} .stop{background:var(--red)} .round:disabled{background:#bfb8af; cursor:not-allowed; box-shadow:none}
-
-/* Forhindrer uønsket tekstmarkering */
-button, .preset, .segmented button, .round { user-select:none; -webkit-user-select:none; }
+.play{background:var(--green)}
+/* 🔄 Nye farger */
+.pause{background:var(--pause-beige); color:#2b2a29;}
+.stop{ background:var(--stop-brown); }
 
 /* Views */
 .view{display:none} .view.active{display:block}
@@ -145,7 +149,6 @@ button, .preset, .segmented button, .round { user-select:none; -webkit-user-sele
   position:absolute; left:0; right:0; bottom:8px; height:10px;
   background:linear-gradient(180deg,#d7d6d4 0%, #cac8c5 100%);
   border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
-  touch-action:none; /* bedre drag på mobil */
 }
 .dial .thumb{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
@@ -175,6 +178,17 @@ button, .preset, .segmented button, .round { user-select:none; -webkit-user-sele
 /* Skjul-kort mens det spilles */
 .hiddenCard{opacity:0; transform:translateY(-6px); height:0; margin:0; padding-top:0; padding-bottom:0; overflow:hidden}
 .hiddenSoft{opacity:0; height:0; margin:0; padding-top:0; padding-bottom:0; overflow:hidden; transform:translateY(-4px); transition:opacity .2s,transform .2s,height .2s,margin .2s}
+
+/* ➕ WT-siden alltid smal – matcher talersiden */
+#viewWT .h1,
+#viewWT .message,
+#viewWT .timeline-wrap,
+#viewWT .controls,
+#viewWT .card{
+  max-width:680px;
+  margin-left:auto;
+  margin-right:auto;
+}
 </style>
 </head>
 <body>
@@ -198,8 +212,8 @@ button, .preset, .segmented button, .round { user-select:none; -webkit-user-sele
   <!-- TALER (standard aktiv) -->
   <div id="viewSP" class="view active">
     <div class="card" id="spCard">
-      <!-- Liten tittel i bold (900) + litt letter-spacing -->
-      <div style="font-weight:900; letter-spacing:.02em; color:#4a5552; margin:2px 0 8px;">
+      <!-- Liten tittel som matcher beskjedstilen, men i bold -->
+      <div style="font-weight:1000; color:#4a5552; margin:2px 0 8px;">
         TIMER FOR MIDTUKEMØTET
       </div>
 
@@ -308,8 +322,8 @@ let wtShown10=false, wtTenTimer=null;
 
 // WT message helpers
 let wtMsgHoldTimer=null, wtMsgHoldUntil=0, wtLastE=0;
-const WT_SMILE_MIN = [5,15,25,40,55];   // min etter start
-const WT_CHEER_MIN = [2,10,20,35,45];   // min etter start
+const WT_SMILE_MIN = [5,15,25,40,55];
+const WT_CHEER_MIN = [2,10,20,35,45];
 const wtSmileSeen = new Set();
 const wtCheerSeen = new Set();
 
@@ -378,7 +392,6 @@ function drawTimeline(){
     const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':'');
     slot.style.left=leftP+'%'; slot.style.width=widthP+'%';
 
-    // ALLTID vis nummer – dynamisk skrift
     const slotPx = perParagraph[i-1]*pxPerSec;
     const lbl=document.createElement('div');
     lbl.textContent=String(i);
@@ -417,16 +430,13 @@ function tickWT(){
   $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=TOTAL);
   const p=Math.min(e/TOTAL*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`;
 
-  // 10 min igjen → ny tekst (20 sek)
   if(!wtShown10 && remaining<=600 && remaining>0){
     wtShown10 = true;
     wtFlash('10 min igjen, dette klarer du! 😎', 20000);
   }
 
-  // hold midlertidig melding hvis aktiv
   if(wtMsgHoldTimer && Date.now()<wtMsgHoldUntil){ wtLastE = e; return; }
 
-  // Korte “smil/heia”-popups
   const crossed = (arr, seen, msg)=>{ for(const m of arr){ const s=m*60; if(!seen.has(m) && wtLastE < s && e >= s){ seen.add(m); wtFlash(msg, 10000); break; } } };
   crossed(WT_SMILE_MIN, wtSmileSeen, 'Husk å smile! 😁');
   crossed(WT_CHEER_MIN, wtCheerSeen, 'Jeg heier på deg! 🤩');
@@ -460,7 +470,6 @@ $('#stopWT').addEventListener('click',()=>{
   if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000);
   started=false; paused=false; stopClock();
   const e=accum;
-  // Stoppe-kommentarer:
   if(e>=3300 && e<3600) setWTMessage('Godt jobbet, du klarte det på under en time! 🥳');
   else if(e>=3600 && e<3720) setWTMessage('Nesten helt perfekt! 🤩');
   else if(e>=3720 && e<3900) setWTMessage('Litt over, neste gang klarer du enda bedre. 👍');
@@ -484,7 +493,6 @@ function activateView(k){
 }
 $('#tabWT').addEventListener('click',()=>activateView('WT'));
 $('#tabSP').addEventListener('click',()=>activateView('SP'));
-// other-icon fallback .ng
 const otherIcon = document.getElementById('otherIcon');
 otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
 
@@ -523,8 +531,7 @@ function resetFlags(){
 }
 
 function drawTimelineSP(){
-  // Count-up: 30 min skala. Count-down: valgt tid.
-  const totalScale = isCountUp() ? 1800 : SP_TOTAL; // 1800 = 30 min
+  const totalScale = isCountUp() ? 1800 : SP_TOTAL; // 30 min ved count-up
   const e = spElapsed();
   let progress;
   if (isCountUp()) progress = Math.min(1, e / totalScale);
@@ -554,7 +561,6 @@ function updateSP(){
       if(remain===60 && !shownOneMin){ setSPMessage('Snart ferdig nå! ⏱️'); shownOneMin=true; }
       if(remain<0 && !shownOver){ setSPMessage('Oj, du har gått over tiden. 😅'); shownOver=true; }
 
-      // milestone-bilder ved 30/15/10/5 min igjen
       const crossed = th => (prevRemain!==null && prevRemain>th && remain<=th);
       if(crossed(1800)) showMilestone('milestone-30.png');
       if(crossed( 900)) showMilestone('milestone-15.png');
@@ -564,7 +570,6 @@ function updateSP(){
     }
   }
 
-  // klokke
   if(isCountUp()){
     $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(e);
   }else{
@@ -586,11 +591,10 @@ function spStartFn(){
     spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0;
     setSPMessage('Vi er i gang! ☺️', 10000);
     resetFlags();
-    $('#spInputs').classList.add('hiddenSoft'); // skjul presets/slider
+    $('#spInputs').classList.add('hiddenSoft');
     spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
 
-    // Start-bilde
     if(!isCountUp()){
       if(SP_TOTAL===1800) showMilestone('milestone-30.png');
       else if(SP_TOTAL===900) showMilestone('milestone-15.png');
@@ -608,11 +612,10 @@ function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date
 function spStopFn(){
   if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000);
   spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null;
-  setSPMessage('Godt jobbet! 👏'); // stopp-beskjed
-  showMilestone('milestone-stop.png'); // stop-bilde
+  setSPMessage('Godt jobbet! 👏');
+  showMilestone('milestone-stop.png');
   $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true;
   $('#clockSP').classList.remove('over');
-  // Ikke reset klokketekst – la siste verdi stå
   $('#spInputs').classList.remove('hiddenSoft');
 }
 
@@ -620,7 +623,6 @@ $('#playSP').addEventListener('click',spStartFn);
 $('#pauseSP').addEventListener('click',spPauseFn);
 $('#stopSP').addEventListener('click',spStopFn);
 
-/* Presets – oppdatér også play-ikonet */
 spPresets.forEach(btn=>btn.addEventListener('click',()=>{
   if(spRunning) return;
   const s=parseInt(btn.dataset.sec,10)||0;
@@ -647,8 +649,9 @@ function renderTicks(){
   }
 }
 function positionThumb(){
-  const pct = dialValue/60; // 0..1
-  thumb.style.left = (pct*100) + '%';
+  const track = dial.querySelector('.track');
+  const pct = dialValue/60;
+  thumb.style.left = ((pct*100)) + '%';
 }
 function setDial(val){
   if(spRunning) return;
@@ -687,13 +690,11 @@ logoImg.addEventListener('click',()=>{
 
 /* Init */
 (async function init(){
-  // Taler init
   markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
   applyIdleClock();
   updatePlayIcon();
   drawTimelineSP();
 
-  // WT init
   const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
   await hydrateOptions();
 })();
