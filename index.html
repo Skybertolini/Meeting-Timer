@@ -125,6 +125,9 @@ body::before{
 .round{width:58px; height:58px; border-radius:999px; border:0; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow:0 10px 24px rgba(70,50,30,.08)}
 .play{background:var(--green)} .pause{background:var(--orange)} .stop{background:var(--red)} .round:disabled{background:#bfb8af; cursor:not-allowed; box-shadow:none}
 
+/* Forhindrer uønsket tekstmarkering */
+button, .preset, .segmented button, .round { user-select:none; -webkit-user-select:none; }
+
 /* Views */
 .view{display:none} .view.active{display:block}
 
@@ -142,6 +145,7 @@ body::before{
   position:absolute; left:0; right:0; bottom:8px; height:10px;
   background:linear-gradient(180deg,#d7d6d4 0%, #cac8c5 100%);
   border-radius:999px; box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  touch-action:none; /* bedre drag på mobil */
 }
 .dial .thumb{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
@@ -194,8 +198,8 @@ body::before{
   <!-- TALER (standard aktiv) -->
   <div id="viewSP" class="view active">
     <div class="card" id="spCard">
-      <!-- Liten tittel som matcher beskjedstilen, men i bold -->
-      <div style="font-weight:1000; color:#4a5552; margin:2px 0 8px;">
+      <!-- Liten tittel i bold (900) + litt letter-spacing -->
+      <div style="font-weight:900; letter-spacing:.02em; color:#4a5552; margin:2px 0 8px;">
         TIMER FOR MIDTUKEMØTET
       </div>
 
@@ -209,12 +213,10 @@ body::before{
         </div>
 
         <div class="picker" id="minuteSlider">
-          <button id="minDec" aria-label="Mindre tid">‹</button>
           <div class="dial">
             <div class="ticks" id="ticks"></div>
             <div class="track"><div class="thumb" id="thumb"></div></div>
           </div>
-          <button id="minInc" aria-label="Mer tid">›</button>
         </div>
       </div>
 
@@ -645,10 +647,8 @@ function renderTicks(){
   }
 }
 function positionThumb(){
-  const track = dial.querySelector('.track');
-  const rect = track.getBoundingClientRect();
   const pct = dialValue/60; // 0..1
-  thumb.style.left = ((pct*100)) + '%';
+  thumb.style.left = (pct*100) + '%';
 }
 function setDial(val){
   if(spRunning) return;
@@ -675,8 +675,6 @@ renderTicks(); positionThumb();
   track.addEventListener('pointermove',e=>{ if(drag) setFromClientX(e.clientX); });
   track.addEventListener('pointerup',()=>{drag=false;});
 })();
-document.getElementById('minInc').addEventListener('click',()=> setDial(dialValue+1));
-document.getElementById('minDec').addEventListener('click',()=> setDial(dialValue-1));
 
 /* Logo effekt */
 const brandBox=document.getElementById('brandBox'), logoImg=document.getElementById('logoImg');
