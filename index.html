@@ -14,7 +14,11 @@
 :root{
   --bg-top:#f8f7f5; --bg-bot:#f3f2ef; --ink:#2b3432; --muted:#8b827a;
   --card:rgba(255,255,252,.98); --border:rgba(40,30,20,.10);
-  --green:#2f5f49; --pill:#fffefb;
+  --green:#2f5f49;
+  --pause:#e7dfd2;          /* ny pause-farge (beige) */
+  --stop:#7b6b5e;           /* ny stopp-farge (mørk brun) */
+  --press:#cfc7bd;          /* grå-beige når trykket */
+  --pill:#fffefb;
   --radius:16px;
 
   /* Papir-grønn tidslinje + faser */
@@ -24,10 +28,12 @@
   --phase-review:#f3edc8;   /* lys gul */
   --phase-outro:#f2e2cf;
 
-  /* NYE toner for pause/stopp (fra illustrasjonen) */
-  --pause-beige:#e9e1d2;     /* pause */
-  --stop-brown:#6a5a50;      /* ⬅️ litt lysere stopp */
-}
+  /* Nye layout-justeringer */
+  --content-max: 640px;     /* felles smal bredde for begge views */
+  --preset-gap: 8px;        /* mindre spacing mellom presets */
+  --preset-pad: 10px 14px;  /* litt mindre padding */
+  --preset-size: 1.05rem;   /* litt mindre font */
+  --dial-width: min(440px,78vw); /* litt smalere slider */
 }
 
 /* Base */
@@ -42,7 +48,7 @@ html,body{
 body{display:flex; flex-direction:column; min-height:100%}
 .container{
   flex:1 0 auto; max-width:980px; margin:0 auto; padding:16px 16px 28px;
-  min-width:320px; /* 🔒 stabil bredde så topplinje ikke hopper */
+  min-width:320px; /* 🔒 stabil min-bredde */
 }
 .footer{flex:0 0 auto; text-align:center; color:var(--muted); font-size:.9rem; padding:10px 0 14px}
 
@@ -89,10 +95,10 @@ body::before{
   100%{ transform:translate3d(0,0,0) rotate(0) scale(1) }
 }
 
-/* Segmented – IKONER KUN */
+/* Segmented – IKONER KUN (litt mindre) */
 .segmented{display:inline-flex; background:var(--card); border:1px solid var(--border); border-radius:999px; padding:6px; gap:6px; box-shadow:0 8px 24px rgba(70,50,30,.06); flex-shrink:0;}
-.segmented button{border:0; background:transparent; padding:12px; border-radius:999px; cursor:pointer; display:flex; align-items:center; justify-content:center}
-.segmented button img{width:33px; height:33px; display:block}
+.segmented button{border:0; background:transparent; padding:10px; border-radius:999px; cursor:pointer; display:flex; align-items:center; justify-content:center}
+.segmented button img{width:28px; height:28px; display:block}
 .segmented button.active{
   background:#efece6;
   box-shadow: inset 0 3px 10px rgba(50,40,30,.15), 0 2px 8px rgba(70,50,30,.05);
@@ -103,7 +109,7 @@ body::before{
 .card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 12px 40px rgba(70,50,30,.06); padding:14px}
 .infoband{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
 .pill{background:var(--pill); border:1px solid var(--border); border-radius:999px; padding:8px 12px; font-weight:600; box-shadow:0 4px 14px rgba(70,50,30,.05); color:#4a5552}
-.select{appearance:none; border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:var(--pill); font-weight:900; color:var(--ink); box-shadow:0 4px 14px rgba(70,50,30,.05); min-width:220px}
+.select{appearance:none; border:1px solid var(--border); border-radius:12px; padding:10px 12px; background:var(--pill); font-weight:900; color:var(--ink); box-shadow:0 4px 14px rgba(70,50,30,.05); min-width:180px}
 
 /* Tekst/meldinger */
 .h1{font-size:1.38rem; font-weight:900; margin:18px 0 10px; text-transform:uppercase}
@@ -129,37 +135,41 @@ body::before{
 .controls{display:flex; gap:12px; margin-top:12px}
 .round{width:58px; height:58px; border-radius:999px; border:0; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.5rem; box-shadow:0 10px 24px rgba(70,50,30,.08)}
 .play{background:var(--green)}
-/* 🔄 Nye farger */
-.pause{background:var(--pause-beige); color:#2b2a29;}
-.stop{ background:var(--stop-brown); }
+.pause{background:var(--pause); color:#2b2a29}
+.stop{background:var(--stop)}
+.round:disabled{background:#bfb8af; cursor:not-allowed; box-shadow:none}
 
-  /* Trykket-inn/pressed-state: gjør knappen grå mens man trykker */
+/* Trykket-inn følelse (mobil/desktop) */
 .round.pressed{
-  background:#cfc7bd !important;  /* myk grå-beige */
+  background:var(--press) !important;
   color:#2b2a29 !important;
   box-shadow: inset 0 3px 8px rgba(50,40,30,.18);
   transform: translateY(1px);
 }
-
-/* Fint å beholde hover/active også for desktop-mus */
 .round:active{
-  background:#cfc7bd !important;
+  background:var(--press) !important;
   color:#2b2a29 !important;
   transform: translateY(1px);
 }
+
 /* Views */
 .view{display:none} .view.active{display:block}
 
 /* TALER */
 .center{text-align:center}
-/* Presets */
-.preset-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap}
-.preset{border:1px solid var(--border); background:var(--pill); border-radius:999px; padding:15px 21px; font-weight:900; cursor:pointer; box-shadow:0 8px 20px rgba(70,50,30,.06); color:var(--green); font-size:1.25rem}
+/* Presets – litt mindre */
+.preset-row{display:flex; gap:var(--preset-gap); justify-content:center; flex-wrap:wrap}
+.preset{
+  border:1px solid var(--border); background:var(--pill); border-radius:999px;
+  padding:var(--preset-pad); font-weight:900; cursor:pointer;
+  box-shadow:0 8px 20px rgba(70,50,30,.06); color:var(--green);
+  font-size:var(--preset-size);
+}
 .preset.active{background:#2f5f49; color:#fff}
 
-/* Slider-dial (minutter) */
+/* Slider-dial (minutter) – smalere */
 .picker{margin-top:12px; display:flex; gap:14px; justify-content:center; align-items:center}
-.dial{position:relative; width:min(520px,80vw); height:72px}
+.dial{position:relative; width:var(--dial-width); height:64px}
 .dial .track{
   position:absolute; left:0; right:0; bottom:8px; height:10px;
   background:linear-gradient(180deg,#d7d6d4 0%, #cac8c5 100%);
@@ -174,7 +184,7 @@ body::before{
 .dial .thumb:active{ transform:translate(-50%,-50%) scale(0.98) }
 .ticks{position:absolute; left:0; right:0; top:0; height:48px; display:flex; justify-content:space-between; pointer-events:none}
 .ticks span{
-  font-weight:900; font-size:32px; color:#222; opacity:.16; transition:opacity .1s;
+  font-weight:900; font-size:28px; color:#222; opacity:.16; transition:opacity .1s;
 }
 .ticks span.active{ opacity:1; }
 .ticks span.near { opacity:.5; }
@@ -194,15 +204,19 @@ body::before{
 .hiddenCard{opacity:0; transform:translateY(-6px); height:0; margin:0; padding-top:0; padding-bottom:0; overflow:hidden}
 .hiddenSoft{opacity:0; height:0; margin:0; padding-top:0; padding-bottom:0; overflow:hidden; transform:translateY(-4px); transition:opacity .2s,transform .2s,height .2s,margin .2s}
 
-/* ➕ WT-siden alltid smal – matcher talersiden */
-#viewWT .h1,
-#viewWT .message,
-#viewWT .timeline-wrap,
-#viewWT .controls,
-#viewWT .card{
-  max-width:680px;
-  margin-left:auto;
-  margin-right:auto;
+/* 🔒 Smal, konsistent bredde for WT og SP – kort + tidslinje */
+#viewSP .card,
+#viewSP .timeline-wrap,
+#viewWT .card,
+#viewWT .timeline-wrap{
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+/* Unngå at selectene blåser ut bredden på WT */
+#viewWT .select{ min-width:180px; }
+@media (max-width:420px){
+  #viewWT .select{ min-width:140px; }
 }
 </style>
 </head>
@@ -227,7 +241,7 @@ body::before{
   <!-- TALER (standard aktiv) -->
   <div id="viewSP" class="view active">
     <div class="card" id="spCard">
-      <!-- Liten tittel som matcher beskjedstilen, men i bold -->
+      <!-- Liten tittel -->
       <div style="font-weight:1000; color:#4a5552; margin:2px 0 8px;">
         TIMER FOR MIDTUKEMØTET
       </div>
@@ -249,7 +263,7 @@ body::before{
         </div>
       </div>
 
-      <!-- TALER tidslinje (prosent/30 min skala ved count-up, ellers valgt lengde) -->
+      <!-- TALER tidslinje -->
       <div class="timeline-wrap">
         <div id="timelineSP" class="timeline">
           <div id="elapsedSP" class="elapsed"></div>
@@ -337,8 +351,8 @@ let wtShown10=false, wtTenTimer=null;
 
 // WT message helpers
 let wtMsgHoldTimer=null, wtMsgHoldUntil=0, wtLastE=0;
-const WT_SMILE_MIN = [5,15,25,40,55];
-const WT_CHEER_MIN = [2,10,20,35,45];
+const WT_SMILE_MIN = [5,15,25,40,55];   // min etter start
+const WT_CHEER_MIN = [2,10,20,35,45];   // min etter start
 const wtSmileSeen = new Set();
 const wtCheerSeen = new Set();
 
@@ -524,8 +538,7 @@ let spRunning=false, spPaused=false, spStart=null, spAccum=0, spTick=null;
 let SP_TOTAL=parseInt(localStorage.getItem(PRESET_KEY),10);
 if(isNaN(SP_TOTAL)) SP_TOTAL=0; // start på 0 => count-up
 let shownOneMin=false, shownOver=false, prevRemain=null;
-let spMsgTimers=[];
-let spShownStartMsg=false, spShown2min=false;
+let spMsgTimers=[]; let spShownStartMsg=false, spShown2min=false;
 
 function isCountUp(){ return SP_TOTAL===0; }
 function spFmt(s){s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
@@ -546,7 +559,8 @@ function resetFlags(){
 }
 
 function drawTimelineSP(){
-  const totalScale = isCountUp() ? 1800 : SP_TOTAL; // 30 min ved count-up
+  // Count-up: 30 min skala. Count-down: valgt tid.
+  const totalScale = isCountUp() ? 1800 : SP_TOTAL; // 1800 = 30 min
   const e = spElapsed();
   let progress;
   if (isCountUp()) progress = Math.min(1, e / totalScale);
@@ -606,7 +620,7 @@ function spStartFn(){
     spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0;
     setSPMessage('Vi er i gang! ☺️', 10000);
     resetFlags();
-    $('#spInputs').classList.add('hiddenSoft');
+    $('#spInputs').classList.add('hiddenSoft'); // skjul presets/slider
     spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
     $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
 
@@ -627,17 +641,16 @@ function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date
 function spStopFn(){
   if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000);
   spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null;
-  setSPMessage('Godt jobbet! 👏');
-  showMilestone('milestone-stop.png');
+  setSPMessage('Godt jobbet! 👏'); showMilestone('milestone-stop.png');
   $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true;
   $('#clockSP').classList.remove('over');
-  $('#spInputs').classList.remove('hiddenSoft');
+  $('#spInputs').classList.remove('hiddenSoft'); // vis inputs igjen
 }
-
 $('#playSP').addEventListener('click',spStartFn);
 $('#pauseSP').addEventListener('click',spPauseFn);
 $('#stopSP').addEventListener('click',spStopFn);
 
+/* Presets */
 spPresets.forEach(btn=>btn.addEventListener('click',()=>{
   if(spRunning) return;
   const s=parseInt(btn.dataset.sec,10)||0;
@@ -665,7 +678,7 @@ function renderTicks(){
 }
 function positionThumb(){
   const track = dial.querySelector('.track');
-  const pct = dialValue/60;
+  const pct = dialValue/60; // 0..1
   thumb.style.left = ((pct*100)) + '%';
 }
 function setDial(val){
@@ -703,13 +716,27 @@ logoImg.addEventListener('click',()=>{
   logoImg.classList.add('shake');
 });
 
+/* Pressed-feedback for runde knapper (mobil/desktop) */
+(function pressFeedback(){
+  const add = e => {
+    const t = e.target.closest('.round'); if(!t) return;
+    t.classList.add('pressed');
+    const up = () => { t.classList.remove('pressed'); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true); };
+    window.addEventListener('pointerup', up, true);
+    window.addEventListener('pointercancel', up, true);
+  };
+  document.addEventListener('pointerdown', add, true);
+})();
+
 /* Init */
 (async function init(){
+  // Taler init
   markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
   applyIdleClock();
   updatePlayIcon();
   drawTimelineSP();
 
+  // WT init
   const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
   await hydrateOptions();
 })();
