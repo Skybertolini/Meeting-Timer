@@ -212,6 +212,22 @@ body::before{
   max-width: var(--content-max);
   margin-inline: auto;
 }
+/* WT: make non-card blocks match Speaker width & padding */
+#viewWT .h1,
+#viewWT .message,
+#viewWT #clockWT,
+#viewWT .controls{
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: 14px; /* match .card inner padding */
+}
+#viewWT .controls{ justify-content: center; }
+#viewWT .timeline-wrap{
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: 14px; /* align timeline with card content width */
+}
+
 
 /* Unngå at selectene blåser ut bredden på WT */
 #viewWT .select{ min-width:180px; }
@@ -240,6 +256,17 @@ body::before{
 }
 
 .brand img{ transform-origin:50% 50%; }
+
+/* --- Read markers under timeline (📖) --- */
+.para-read,
+.para-read-emoji{
+  position:absolute; left:50%; bottom:-22px; transform:translateX(-50%);
+  width:16px; height:16px; pointer-events:none; opacity:.95;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.6));
+}
+.para-read-emoji{ width:auto; height:auto; font-size:14px; line-height:1; }
+.para-slot{ overflow: visible; } /* ensure icons are visible even if slot is narrow */
+
 </style>
 </head>
 <body>
@@ -450,7 +477,38 @@ function drawTimeline(){
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
 
-    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
+    // Les-ikon under slotten
+    try{
+      const pData = (typeof paras!=='undefined' && paras[i-1]) ? paras[i-1] : null;
+      if (pData && (pData.les|0) > 0) {
+        const mark = document.createElement('img');
+        mark.className = 'para-read';
+        mark.alt = labelFor('reads',lang);
+        mark.src = 'read-icon.png';
+        mark.onerror = () => {
+          mark.remove();
+          const e = document.createElement('div');
+          e.className = 'para-read-emoji';
+          e.setAttribute('aria-hidden','true');
+          e.textContent = '📖';
+          slot.appendChild(e);
+        };
+        slot.appendChild(mark);
+      }
+    }catch(_){}
+
+    slot.addEventListener('click',()=>{
+    // Allow choosing any start paragraph before start, or while paused
+    if(started && !paused) return;
+    const target = cumulative[i-1];
+    accum = Math.max(0, Math.min(Math.round(target), TOTAL-OUTRO-REVIEW));
+    const pNow = Math.min(accum/TOTAL*100, 100);
+    $('#elapsed').style.width = pNow + '%';
+    $('#cursor').style.left = `calc(${pNow}% - 1px)`;
+    $('#clockWT').textContent = fmt(accum);
+    $('#clockWT').classList.toggle('over', accum >= TOTAL);
+    $('#message').textContent = `${labelFor('paras',lang)} ${i}`;
+  });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
