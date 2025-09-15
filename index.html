@@ -227,6 +227,19 @@ body::before{
 /* --- Extra clearance below timeline so icons don't overlap --- */
 .timeline-wrap{ margin-bottom:26px !important; }
 
+
+.brand img.spinBoost{ animation:logoSpinBoost 3s cubic-bezier(.3,0,.7,1) both; }
+
+@keyframes logoSpinBoost{
+  0%   { transform: rotate(0deg); }
+  10%  { transform: rotate(90deg); }
+  25%  { transform: rotate(360deg); }   /* 1 turn */
+  50%  { transform: rotate(1080deg); }  /* 3 turns */
+  75%  { transform: rotate(2880deg); }  /* 8 turns */
+  100% { transform: rotate(6480deg); }  /* 18 turns (superfort mot slutten) */
+}
+
+.brand img{ transform-origin:50% 50%; }
 </style>
 </head>
 <body>
