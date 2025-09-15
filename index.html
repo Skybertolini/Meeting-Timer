@@ -116,7 +116,26 @@ body::before{
 .message{background:var(--pill); border:1px solid var(--border); border-radius:12px; padding:12px 14px; min-height:1.2em; box-shadow:0 8px 24px rgba(70,50,30,.05); margin-bottom:12px; color:#4a5552}
 
 /* Tidslinje – grønn papirlook */
-.timeline-wrap{margin-top:22px}
+.timeline-wrap{margin-top:22px; margin-bottom:18px}
+/* WT: lås samme smale bredde på alt som ikke er kort */
+#viewWT .h1,
+#viewWT .message,
+#viewWT #clockWT,
+#viewWT .controls{
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+#viewWT .controls{ justify-content:center; }
+
+/* Små les-ikoner under tidslinjen */
+.para-read,
+.para-read-emoji{
+  position:absolute; left:50%; bottom:-16px; transform:translateX(-50%);
+  width:16px; height:16px; pointer-events:none; opacity:.95;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,.6));
+}
+.para-read-emoji{ width:auto; height:auto; font-size:14px; line-height:1; }
+
 .timeline{position:relative; height:56px; border-radius:14px; overflow:visible; background:linear-gradient(180deg, var(--tl-green-1) 0%, #edf5f0 100%); border:1px solid var(--border); box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 12px 36px rgba(70,50,30,.05)}
 .slot{position:absolute; top:0; height:100%; opacity:.22}
 #introSlot{background:var(--phase-intro)}
@@ -275,7 +294,7 @@ body::before{
 
       <img id="msImg" class="milestone-img" alt="" style="display:none"/>
 
-      <div class="message" id="msgSP">Start stoppeklokken eller velg en tid og start nedtelling.</div>
+      <div class="message" id="msgSP" role="status" aria-live="polite">Start stoppeklokken eller velg en tid og start nedtelling.</div>
 
       <div class="controls" style="justify-content:center; margin-top:12px">
         <button id="playSP" class="round play" title="Start/Gjenoppta" aria-label="Start">
@@ -306,7 +325,7 @@ body::before{
     </div>
 
     <div class="h1" id="articleTitle">—</div>
-    <div class="message" id="message">Velg språk og artikkel for å laste timer.</div>
+    <div class="message" id="message" role="status" aria-live="polite">Velg språk og artikkel for å laste timer.</div>
 
     <div class="timeline-wrap">
       <div id="timeline" class="timeline">
@@ -377,7 +396,22 @@ async function hydrateOptions(){
 function useItem(it){
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
-  paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
+  
+  // Adjust reads based on optional read_paras
+  try{
+    const readParas = Array.isArray(it.read_paras) ? it.read_paras : [];
+    if(readParas.length){ reads = readParas.length; }
+  }catch{};
+paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
+
+  // Hydrate read_paras (1-based) -> p.les and reads
+  try{
+    const readParas = Array.isArray(it.read_paras) ? it.read_paras : [];
+    if(readParas.length){
+      paras.forEach((p,i)=>{ if(readParas.includes(i+1)) p.les = Math.max(1, p.les|0); });
+      reads = readParas.length;
+    }
+  }catch{};
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
@@ -397,8 +431,8 @@ function computeAllocation(){
     let s=(p.words||0)/wps + (p.q||0)*SEC_PER_Q + (p.les||0)*SEC_PER_READ + (p.hasAB?AB_BONUS:0);
     s=Math.max(5,s);
     const firstN=Math.min(5,totalParagraphs), lastN=Math.min(5,totalParagraphs);
-    if(i < firstN) s*=0.8;
-    if(i >= totalParagraphs-lastN) s*=1.2;
+    if(i < firstN) s*=0.9;
+    if(i >= totalParagraphs-lastN) s*=1.1;
     return s;
   });
   const scale=CONTENT/((raw.reduce((a,b)=>a+b,0))||1);
@@ -428,7 +462,27 @@ function drawTimeline(){
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
 
-    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
+    
+    // Les-ikon under slotten hvis p.les>0
+    try{
+      const pData = paras[i-1];
+      if(pData && (pData.les|0) > 0){
+        const mark = document.createElement('img');
+        mark.className = 'para-read';
+        mark.alt = labelFor('reads',lang);
+        mark.src = 'read-icon.png';
+        mark.onerror = () => {
+          mark.remove();
+          const e = document.createElement('div');
+          e.className = 'para-read-emoji';
+          e.setAttribute('aria-hidden','true');
+          e.textContent = '📖';
+          slot.appendChild(e);
+        };
+        slot.appendChild(mark);
+      }
+    }catch{}
+slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
@@ -564,7 +618,7 @@ function drawTimelineSP(){
   const e = spElapsed();
   let progress;
   if (isCountUp()) progress = Math.min(1, e / totalScale);
-  else { const remain = SP_TOTAL - e; progress = Math.max(0, Math.min(1, remain / totalScale)); }
+  else { progress = Math.max(0, Math.min(1, e / totalScale)); }
   $('#elapsedSP').style.width = (progress*100)+'%';
   $('#cursorSP').style.left  = `calc(${progress*100}% - 1px)`;
 }
