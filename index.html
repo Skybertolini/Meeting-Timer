@@ -523,7 +523,7 @@ function activateView(k){
 $('#tabWT').addEventListener('click',()=>activateView('WT'));
 $('#tabSP').addEventListener('click',()=>activateView('SP'));
 const otherIcon = document.getElementById('otherIcon');
-otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
+otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.png'; otherIcon.dataset.triedNg='1'; }});
 
 /* ===== Språk + uke ===== */
 $('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang);
