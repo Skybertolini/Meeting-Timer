@@ -213,7 +213,7 @@ body::before{
   margin-inline: auto;
 }
 
-/* Unngå at selectene blåser ut bredden på WT */
+/* Unngå at select blåser ut bredden på WT */
 #viewWT .select{ min-width:180px; }
 @media (max-width:420px){
   #viewWT .select{ min-width:140px; }
@@ -291,10 +291,6 @@ body::before{
   <div id="viewWT" class="view">
     <div id="wtControlsCard" class="card infoband" style="justify-content:space-between; gap:12px">
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-        <select id="langSel" class="select" aria-label="Språk">
-          <option value="no">Norsk</option>
-          <option value="sv">Svenska</option>
-        </select>
         <select id="weekSel" class="select" aria-label="Artikkel">
           <option>Laster …</option>
         </select>
@@ -306,7 +302,7 @@ body::before{
     </div>
 
     <div class="h1" id="articleTitle">—</div>
-    <div class="message" id="message">Velg språk og artikkel for å laste timer.</div>
+    <div class="message" id="message">Velg artikkel for å laste timer.</div>
 
     <div class="timeline-wrap">
       <div id="timeline" class="timeline">
@@ -342,10 +338,9 @@ const $=s=>document.querySelector(s), pct=s=>s/TOTAL*100;
 const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function isoMonday(d=new Date()){ const x=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return x.toISOString().slice(0,10); }
 function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
-function labelFor(k,lang){ if(lang==='sv'){ if(k==='paras')return'Paragrafer'; if(k==='reads')return'Läs-skriftställen'; } if(k==='paras')return'Avsnitt'; if(k==='reads')return'Les-skriftsteder'; return k; }
 
 /* ===== WT state ===== */
-let lang='no', paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, reads=0;
+let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, reads=0;
 let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
 let wtShown10=false, wtTenTimer=null;
 
@@ -358,10 +353,19 @@ const wtCheerSeen = new Set();
 
 /* ===== data load ===== */
 async function fetchJSON(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw 0; return r.json();}
-async function loadYear(l,y){ for(const p of [`data/${l}-${y}.json`,`Data/${l}-${y}.json`,`data/${l}-${y}`,`Data/${l}-${y}`]){ try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{} } throw 0;}
+async function loadYear(y){
+  // Kun norsk data; støtt datamappenavn med/uten stor D og fil uten .json (for bakoverkomp.)
+  for(const p of [`data/no-${y}.json`,`Data/no-${y}.json`,`data/no-${y}`,`Data/no-${y}`]){
+    try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{}
+  }
+  throw 0;
+}
 async function hydrateOptions(){
   const today=new Date(); const year=today.getFullYear(); let items=[];
-  try{ const list=[]; for(const yy of [year,year+1]){ try{ list.push(await loadYear(lang,yy)); }catch{} } items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[])); }catch{}
+  try{
+    const list=[]; for(const yy of [year,year+1]){ try{ list.push(await loadYear(yy)); }catch{} }
+    items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[]));
+  }catch{}
   const sel=$('#weekSel'); sel.innerHTML='';
 
   const cur=isoMonday(today), prev=addDaysISO(cur,-7), nexts=[7,14,21].map(d=>addDaysISO(cur,d));
@@ -379,8 +383,8 @@ function useItem(it){
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
-  $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
-  $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
+  $('#pillParas').textContent=`Avsnitt: ${totalParagraphs}`;
+  $('#pillReads').textContent=`Les-skriftsteder: ${reads}`;
   computeAllocation(); drawTimeline(); resetClockUI();
   $('#message').textContent='Klar til start. Trykk ▶ når du er klar.'; $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
   wtShown10=false; if(wtTenTimer){clearTimeout(wtTenTimer);wtTenTimer=null;}
@@ -428,7 +432,7 @@ function drawTimeline(){
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
 
-    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
+    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`Avsnitt ${i}`; });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
@@ -476,7 +480,7 @@ function tickWT(){
   else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage('Repetisjonsspørsmål');
   else{
     let idx=0; for(let i=0;i<totalParagraphs;i++){const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1]; if(e>=s&&e<end){idx=i;break}}
-    let msg=`${labelFor('paras',lang)} ${idx+1}`;
+    let msg=`Avsnitt ${idx+1}`;
     if(e>=1800&&e<1860) msg+=' – du er halvveis';
     setWTMessage(msg);
   }
@@ -525,10 +529,7 @@ $('#tabSP').addEventListener('click',()=>activateView('SP'));
 const otherIcon = document.getElementById('otherIcon');
 otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
 
-/* ===== Språk + uke ===== */
-$('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang);
-  $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
-  $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`; });
+/* ===== Ukevelger (kun norsk) ===== */
 $('#weekSel').addEventListener('change',()=>{ const v=$('#weekSel').value; if(!v) return; useItem(JSON.parse(v)); });
 
 /* ===== TALER (nedtelling / count-up) ===== */
@@ -728,7 +729,7 @@ logoImg.addEventListener('click',()=>{
   document.addEventListener('pointerdown', add, true);
 })();
 
-/* Init */
+/* Init (kun norsk) */
 (async function init(){
   // Taler init
   markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
@@ -736,8 +737,7 @@ logoImg.addEventListener('click',()=>{
   updatePlayIcon();
   drawTimelineSP();
 
-  // WT init
-  const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
+  // WT init – last norske artikler automatisk
   await hydrateOptions();
 })();
 </script>
