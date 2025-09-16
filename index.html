@@ -63,6 +63,10 @@ body::before{
 
 /* Topbar */
 .topbar{
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: 14px;
+
   display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0 18px;
   min-height:72px; /* 🔒 lås høyde så knappene ikke flytter seg */
 }
@@ -219,91 +223,11 @@ body::before{
   #viewWT .select{ min-width:140px; }
 }
 
-/* --- Read markers under timeline (📖) & spacing --- */
-.para-read,
-.para-read-emoji{
-  position:absolute; left:50%; bottom:-22px; transform:translateX(-50%);
-  width:16px; height:16px; pointer-events:none; opacity:.95;
-  filter: drop-shadow(0 1px 0 rgba(255,255,255,.6));
-}
-.para-read-emoji{ width:auto; height:auto; font-size:14px; line-height:1; }
-.para-slot{ overflow: visible; }
-.timeline-wrap{ margin-bottom:26px; }
-
-/* --- WT: match Speaker width & padding for non-card elements --- */
-#viewWT .h1,
-#viewWT .message,
-#viewWT #clockWT,
-#viewWT .controls,
-#viewWT .timeline-wrap{
-  max-width: var(--content-max);
-  margin-inline: auto;
-  padding-inline: 14px;
-}
-#viewWT .controls{ justify-content:center; }
-
-/* --- Logo spin boost on click + smooth fade for swaps --- */
-.brand img{ transition: opacity .25s ease; transform-origin:50% 50%; }
-.brand img.spinBoost{ animation:logoSpinBoost  2.5s cubic-bezier(.22,.61,.36,1); }
-@keyframes logoSpinBoost{
-  0%   { transform: rotate(0deg); }
-  12%  { transform: rotate(120deg); }     /* ease-in */
-  28%  { transform: rotate(540deg); }     /* picking up speed */
-  52%  { transform: rotate(1260deg); }    /* ~3.5 turns */
-  78%  { transform: rotate(2340deg); }    /* high speed */
-  100% { transform: rotate(3240deg); }    /* ~9 turns total, smooth finish */
-}
-  10%  { transform: rotate(90deg); }
-  25%  { transform: rotate(360deg); }
-  50%  { transform: rotate(1080deg); }
-  75%  { transform: rotate(2880deg); }
-  100% { transform: rotate(6480deg); }
-}
-/* Fallback tint if active image missing */
-.brand img.logo-active-fallback{ filter: hue-rotate(25deg) saturate(1.2) brightness(1.05); }
-
-
-/* App-like fixed column width + no reflow on vertical scrollbar */
-html{ overflow-y: scroll; } /* keep scrollbar space reserved to avoid width jump */
-#viewSP > *, #viewWT > *{ max-width: var(--content-max); margin-inline:auto; }
-#viewSP .h1, #viewSP .message, #viewSP #clockSP, #viewSP .controls, #viewSP .timeline-wrap{ padding-inline:14px; }
-#viewWT .h1, #viewWT .message, #viewWT #clockWT, #viewWT .controls, #viewWT .timeline-wrap{ padding-inline:14px; }
-.card, .timeline-wrap{ box-sizing:border-box; }
-
-
-/* Disable image drag/save UX for a more app-like feel */
-img{ -webkit-user-drag:none; user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
-a, button, img{ -webkit-tap-highlight-color: transparent; }
-
-
-/* Language selector */
-.langpick select{
-  appearance:none; -webkit-appearance:none; background:#fff;
-  border:1px solid rgba(0,0,0,.12); border-radius:999px; padding:6px 10px;
-  font-weight:600; font-size:.9rem; cursor:pointer;
-}
-.topbar{ gap:14px; }
-
-
-/* Align topbar with content width, brand left, controls right */
-.topbar{
-  max-width: var(--content-max);
-  margin-inline: auto;
-  padding-inline: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.topbar > .brand{ flex:0 0 auto; }
-.topbar > :not(.brand):first-of-type{ margin-left:auto; }
-
-
+/* Language picker pill + full-name dropdown */
 .langpick{ position:relative; }
 .langpick .pill{ pointer-events:none; }
 .langpick select{
-  position:absolute; inset:0;
-  opacity:0; cursor:pointer;
-  appearance:none; -webkit-appearance:none;
+  position:absolute; inset:0; opacity:0; appearance:none; -webkit-appearance:none; cursor:pointer;
 }
 
 </style>
@@ -312,7 +236,16 @@ a, button, img{ -webkit-tap-highlight-color: transparent; }
 <div class="container">
   <div class="topbar">
     <div class="brand" id="brandBox">
-      <div class="burst"></div>
+      <div class="burst">
+    <div class="langpick">
+      <span id="langAbbr" class="pill">NO</span>
+      <select id="langSelect" aria-label="Språk">
+        <option value="no">Norsk</option>
+        <option value="sv">Svenska</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
       <img id="logoImg" src="meeting-timer-logo.png" alt="Meeting Timer logo">
     </div>
 
@@ -323,16 +256,7 @@ a, button, img{ -webkit-tap-highlight-color: transparent; }
       <button id="tabWT" role="tab" aria-selected="false" title="Vakttårn">
         <img src="watchtower-icon.png" alt="">
       </button>
-    
-    <div class="langpick">
-      <span id="langAbbr" class="pill">NO</span>
-      <select id="langSelect" aria-label="Språk">
-        <option value="no">Norsk</option>
-        <option value="sv">Svenska</option>
-        <option value="en">English</option>
-      </select>
     </div>
-
   </div>
 
   <!-- TALER (standard aktiv) -->
@@ -372,7 +296,7 @@ a, button, img{ -webkit-tap-highlight-color: transparent; }
 
       <img id="msImg" class="milestone-img" alt="" style="display:none"/>
 
-      <div class="message" id="msgSP" role="status" aria-live="polite">Start stoppeklokken eller velg en tid og start nedtelling.</div>
+      <div class="message" id="msgSP">Start stoppeklokken eller velg en tid og start nedtelling.</div>
 
       <div class="controls" style="justify-content:center; margin-top:12px">
         <button id="playSP" class="round play" title="Start/Gjenoppta" aria-label="Start">
@@ -403,7 +327,7 @@ a, button, img{ -webkit-tap-highlight-color: transparent; }
     </div>
 
     <div class="h1" id="articleTitle">—</div>
-    <div class="message" id="message" role="status" aria-live="polite">Velg språk og artikkel for å laste timer.</div>
+    <div class="message" id="message">Velg språk og artikkel for å laste timer.</div>
 
     <div class="timeline-wrap">
       <div id="timeline" class="timeline">
@@ -434,65 +358,11 @@ a, button, img{ -webkit-tap-highlight-color: transparent; }
 <script>
 /* ===== helpers ===== */
 const TOTAL=3600, INTRO=90, REVIEW=120, OUTRO=90, CONTENT=TOTAL-INTRO-REVIEW-OUTRO;
-const WPM=150, SEC_PER_Q=10, SEC_PER_READ=20, AB_BONUS=30;
+const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
 const $=s=>document.querySelector(s), pct=s=>s/TOTAL*100;
 const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function isoMonday(d=new Date()){ const x=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return x.toISOString().slice(0,10); }
 function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
-
-/* === i18n helpers === */
-function paraWord(lang){ return lang==='sv' ? 'Paragraf' : (lang==='en' ? 'Paragraph' : 'Avsnitt'); }
-function readWord(lang){ return lang==='sv' ? 'Läs-skriftställe' : (lang==='en' ? 'Read Scripture' : 'Les-skriftsted'); }
-function halfwaySuffix(lang){
-  return lang==='sv' ? ' – du är halvvägs' : (lang==='en' ? ' – you are halfway' : ' – du er halvveis');
-}
-/* Fixed messages */
-const MSG = {
-  no: {
-    intro:'Introduksjon', outro:'Avslutning', review:'Repetisjonsspørsmål',
-    overtime_counter:'Vi er på overtid',
-    started:'Vi er i gang! ☺️', pause:'Pause',
-    almost_done:'Snart ferdig nå! ⏱️',
-    smile:'Husk å smile! 😁',
-    cheer:'Jeg heier på deg! 🤩',
-    good:'Godt jobbet! 👏',
-    under_hour:'Godt jobbet, du klarte det på under en time! 🥳',
-    nearly:'Nesten helt perfekt! 🤩',
-    bit_over:'Litt over, neste gang klarer du enda bedre. 👍',
-    oops_over:'Oj, du har gått over tiden. 😅',
-    try_harder:'Aj aj, her har du litt å jobbe med. 😅'
-  },
-  sv: {
-    intro:'Introduktion', outro:'Avslutning', review:'Repetitionsfrågor',
-    overtime_counter:'Vi er på overtid',
-    started:'Nu kör vi! ☺️', pause:'Paus',
-    almost_done:'Snart klar! ⏱️',
-    smile:'Kom ihåg att le! 😁',
-    cheer:'Jag hejar på dig! 🤩',
-    good:'Bra jobbat! 👏',
-    under_hour:'Snyggt, du klarade det på under en timme! 🥳',
-    nearly:'Nästan helt perfekt! 🤩',
-    bit_over:'Lite över, nästa gång går det ännu bättre. 👍',
-    oops_over:'Oj, du gick över tiden. 😅',
-    try_harder:'Oj då, här finns det att jobba på. 😅'
-  },
-  en: {
-    intro:'Introduction', outro:'Conclusion', review:'Review questions',
-    overtime_counter:'Vi er på overtid',
-    started:'We’re live! ☺️', pause:'Pause',
-    almost_done:'Almost done! ⏱️',
-    smile:'Remember to smile! 😁',
-    cheer:'I’m cheering for you! 🤩',
-    good:'Great job! 👏',
-    under_hour:'Nice, you finished in under an hour! 🥳',
-    nearly:'So close to perfect! 🤩',
-    bit_over:'A bit over — next time will be even better. 👍',
-    oops_over:'Oops, you ran over time. 😅',
-    try_harder:'Oops, there’s room for improvement. 😅'
-  }
-};
-function tr(key, lang){ const L = (lang==='sv'||lang==='en')?lang:'no'; return MSG[L][key] || key; }
-
 function labelFor(k,lang){ if(lang==='sv'){ if(k==='paras')return'Paragrafer'; if(k==='reads')return'Läs-skriftställen'; } if(k==='paras')return'Avsnitt'; if(k==='reads')return'Les-skriftsteder'; return k; }
 
 /* ===== WT state ===== */
@@ -526,20 +396,9 @@ async function hydrateOptions(){
   useItem(JSON.parse(sel.value));
 }
 function useItem(it){
-  // --- Compact JSON support ---
-  if (!('paragraphs' in it) && Array.isArray(it.words)) it.paragraphs = it.words.length;
-  if (Array.isArray(it.read_paras)) it.reads = it.read_paras.length;
-
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
-  // Hydrate p.les from read_paras (1-based indices)
-  (Array.isArray(it.read_paras) ? it.read_paras : []).forEach(n=>{
-    const idx=(n|0)-1; if(idx>=0 && idx<paras.length){ paras[idx].les = 1; }
-  });
-  // Update reads pill/count
-  try{ reads = Array.isArray(it.read_paras) ? it.read_paras.length : (it.reads|0); $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`; }catch(_){}
-
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
@@ -589,27 +448,8 @@ function drawTimeline(){
     const fs = Math.max(9, Math.min(14, Math.floor(slotPx*0.33)));
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
-    // Read icon marker under slot if paragraph has a reading
-    try{
-      const pData = (typeof paras!=='undefined' && paras[i-1]) ? paras[i-1] : null;
-      if (pData && (pData.les|0) > 0) {
-        const mark = document.createElement('img'); mark.className = 'para-read'; mark.alt = labelFor('reads',lang); mark.src = 'read-icon.png';
-        slot.appendChild(mark);
-      }
-    }catch(_){}
 
-
-    slot.addEventListener('click',()=>{
-    if(started && !paused) return;
-    const target=cumulative[i-1];
-    accum=Math.max(0,Math.min(Math.round(target), TOTAL-OUTRO-REVIEW));
-    const pNow=Math.min(accum/TOTAL*100,100);
-    $('#elapsed').style.width=pNow+'%';
-    $('#cursor').style.left=`calc(${pNow}% - 1px)`;
-    $('#clockWT').textContent=fmt(accum);
-    $('#clockWT').classList.toggle('over',accum>=TOTAL);
-    $('#message').textContent=`${labelFor('paras',lang)} ${i}`;
-  });
+    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
@@ -651,40 +491,39 @@ function tickWT(){
   crossed(WT_SMILE_MIN, wtSmileSeen, 'Husk å smile! 😁');
   crossed(WT_CHEER_MIN, wtCheerSeen, 'Jeg heier på deg! 🤩');
 
-  if(e<INTRO) setWTMessage(tr('intro',lang));
-  else if(e>=TOTAL) setWTMessage(tr('overtime_counter',lang));
-  else if(e>=TOTAL-OUTRO) setWTMessage(tr('outro',lang));
-  else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage(tr('review',lang));
+  if(e<INTRO) setWTMessage('Introduksjon');
+  else if(e>=TOTAL) setWTMessage('Tiden er brukt – teller over');
+  else if(e>=TOTAL-OUTRO) setWTMessage('Avslutning');
+  else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage('Repetisjonsspørsmål');
   else{
     let idx=0; for(let i=0;i<totalParagraphs;i++){const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1]; if(e>=s&&e<end){idx=i;break}}
-    let hasRead = (paras[idx] && (paras[idx].les|0)>0);
-    let msg = `${paraWord(lang)} ${idx+1}` + (hasRead?` + ${readWord(lang)}`:``);
-    if(e>=1800&&e<1860) msg += halfwaySuffix(lang);
+    let msg=`${labelFor('paras',lang)} ${idx+1}`;
+    if(e>=1800&&e<1860) msg+=' – du er halvveis';
     setWTMessage(msg);
   }
   wtLastE = e;
 }
 /* WT controls + hide controls card while running + stop-feedback */
-$('#playWT').addEventListener('click',()=>{ setLogoActive(true);
+$('#playWT').addEventListener('click',()=>{
   if(started && paused){
     paused=false; startTs=Date.now(); startClock();
     $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false;
     return;
   }
   if(!started){
-    started=true; paused=false; startTs=Date.now(); startClock(); setWTMessage(tr('intro',lang));
+    started=true; paused=false; startTs=Date.now(); startClock(); setWTMessage('Introduksjon');
     $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; $('#wtControlsCard').classList.add('hiddenCard');
   }
 });
-$('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage(tr('pause',lang)); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; });
-$('#stopWT').addEventListener('click',()=>{ setLogoActive(false); 
+$('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage('Pause'); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; });
+$('#stopWT').addEventListener('click',()=>{ 
   if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000);
   started=false; paused=false; stopClock();
   const e=accum;
-  if(e>=3300 && e<3600) setWTMessage(tr('under_hour',lang));
-  else if(e>=3600 && e<3720) setWTMessage(tr('nearly',lang));
-  else if(e>=3720 && e<3900) setWTMessage(tr('bit_over',lang));
-  else if(e>=3900 && e<4200) setWTMessage(tr('try_harder',lang));
+  if(e>=3300 && e<3600) setWTMessage('Godt jobbet, du klarte det på under en time! 🥳');
+  else if(e>=3600 && e<3720) setWTMessage('Nesten helt perfekt! 🤩');
+  else if(e>=3720 && e<3900) setWTMessage('Litt over, neste gang klarer du enda bedre. 👍');
+  else if(e>=3900 && e<4200) setWTMessage('Aj aj, her har du litt å jobbe med. 😅');
   else setWTMessage(`Ferdig – totalt ${fmt(e)}`);
 
   $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true; accum=0; resetClockUI(); $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; $('#wtControlsCard').classList.remove('hiddenCard');
@@ -705,7 +544,7 @@ function activateView(k){
 $('#tabWT').addEventListener('click',()=>activateView('WT'));
 $('#tabSP').addEventListener('click',()=>activateView('SP'));
 const otherIcon = document.getElementById('otherIcon');
-otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.png'; otherIcon.dataset.triedNg='1'; }});
+otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
 
 /* ===== Språk + uke ===== */
 $('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang);
@@ -769,7 +608,7 @@ function updateSP(){
 
     if(!isCountUp()){
       const remain = SP_TOTAL - e;
-      if(remain===60 && !shownOneMin){ setSPMessage(tr('almost_done',lang)); shownOneMin=true; }
+      if(remain===60 && !shownOneMin){ setSPMessage('Snart ferdig nå! ⏱️'); shownOneMin=true; }
       if(remain<0 && !shownOver){ setSPMessage('Oj, du har gått over tiden. 😅'); shownOver=true; }
 
       const crossed = th => (prevRemain!==null && prevRemain>th && remain<=th);
@@ -791,7 +630,7 @@ function updateSP(){
   drawTimelineSP();
 }
 
-function spStartFn(){ setLogoActive(true);
+function spStartFn(){
   if(spRunning && spPaused){
     spPaused=false; spStart=Date.now();
     spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
@@ -820,7 +659,7 @@ function spStartFn(){ setLogoActive(true);
   }
 }
 function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date.now()-spStart)/1000); spPaused=true; spTick&&clearInterval(spTick); spTick=null; $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false; updateSP(); }
-function spStopFn(){ setLogoActive(false);
+function spStopFn(){
   if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000);
   spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null;
   setSPMessage('Godt jobbet! 👏'); showMilestone('milestone-stop.png');
@@ -889,36 +728,13 @@ renderTicks(); positionThumb();
   track.addEventListener('pointerup',()=>{drag=false;});
 })();
 
-
-/* Logo swap helpers (active while timer runs) */
-let _logoDefaultSrc = null;
-const _logoActiveSrc = 'meeting-timer-logo-active.png';
-(function initLogoSrc(){
-  const img = document.getElementById('logoImg');
-  if (img && !_logoDefaultSrc){ _logoDefaultSrc = img.getAttribute('src') || 'meeting-timer-logo.png'; }
-})();
-function _swapLogo(src){
-  const img = document.getElementById('logoImg'); if(!img) return;
-  img.style.opacity = '0';
-  const done = ()=>{ img.onload=null; img.onerror=null; img.style.opacity='1'; };
-  img.onload = done;
-  img.onerror = done;
-  img.src = src;
-}function setLogoActive(on){
-  const img = document.getElementById('logoImg'); if(!img) return;
-  if(on){ _swapLogo(_logoActiveSrc); }
-  else { _swapLogo(_logoDefaultSrc); }
-}
 /* Logo effekt */
 const brandBox=document.getElementById('brandBox'), logoImg=document.getElementById('logoImg');
 logoImg.addEventListener('click',()=>{
-  brandBox.classList.remove('explode');
-  logoImg.classList.remove('shake','spinBoost');
+  brandBox.classList.remove('explode'); logoImg.classList.remove('shake');
   void brandBox.offsetWidth; void logoImg.offsetWidth;
   brandBox.classList.add('explode');
-  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    logoImg.classList.add('spinBoost');
-  }
+  logoImg.classList.add('shake');
 });
 
 /* Pressed-feedback for runde knapper (mobil/desktop) */
@@ -946,81 +762,19 @@ logoImg.addEventListener('click',()=>{
   await hydrateOptions();
 })();
 
-// Prevent saving images via right-click / long-press context menu
-document.addEventListener('contextmenu', (e)=>{
-  const img = e.target && (e.target.closest ? e.target.closest('img') : null);
-  if(img){ e.preventDefault(); }
-}, {capture:true});
-// iOS: further reduce long-press image actions by disabling gesture callouts
-try{ document.querySelectorAll('img').forEach(img=>{ img.setAttribute('draggable','false'); }); }catch(_){}
-
-
-// Language selector wiring
+// Language picker wiring (abbr pill + full names in menu)
 (function(){
   const sel = document.getElementById('langSelect');
   if(!sel) return;
-  sel.value = (lang==='sv'||lang==='en')?lang:'no';
-  sel.addEventListener('change', ()=>{
-    lang = sel.value;
-    // Update pills if present
-    try{
-      $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads|0}`;
-      $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs|0}`;
-    }catch(_){}
-    // Re-render timeline labels and refresh current message
-    try{ drawTimeline(); }catch(_){}
-    try{
-      const e = (typeof wtLastE!=='undefined' && wtLastE!==null) ? wtLastE : 0;
-      if(totalParagraphs>0){
-        let idx=0;
-        for(let i=0;i<totalParagraphs;i++){
-          const s=cumulative[i], end=(i>=totalParagraphs-1?(TOTAL-OUTRO-REVIEW):cumulative[i+1]);
-          if(e>=s&&e<end){idx=i;break}
-        }
-        let hasRead=(paras[idx]&&(paras[idx].les|0)>0);
-        let msg=`${paraWord(lang)} ${idx+1}` + (hasRead?` + ${readWord(lang)}`:``);
-        if(e>=1800&&e<1860) msg += halfwaySuffix(lang);
-        setWTMessage(msg);
-      }
-    }catch(_){}
-  });
-})();
-
-
-function setLangAbbr(){
   const map={no:'NO', sv:'SV', en:'EN'};
-  const el=document.getElementById('langAbbr');
-  if(el) el.textContent = map[lang] || (lang||'EN').toUpperCase();
-}
-(function(){
-  const sel = document.getElementById('langSelect');
-  if(!sel) return;
+  const ab = document.getElementById('langAbbr');
   sel.value = (lang==='sv'||lang==='en')?lang:'no';
-  setLangAbbr();
+  if(ab) ab.textContent = map[sel.value] || 'NO';
   sel.addEventListener('change', ()=>{
     lang = sel.value;
-    setLangAbbr();
-    // Update pills if present
-    try{
-      $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads|0}`;
-      $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs|0}`;
-    }catch(_){}
-    // Re-render timeline and message
-    try{ drawTimeline(); }catch(_){}
-    try{
-      const e = (typeof wtLastE!=='undefined' && wtLastE!==null) ? wtLastE : 0;
-      if(totalParagraphs>0){
-        let idx=0;
-        for(let i=0;i<totalParagraphs;i++){
-          const s=cumulative[i], end=(i>=totalParagraphs-1?(TOTAL-OUTRO-REVIEW):cumulative[i+1]);
-          if(e>=s&&e<end){idx=i;break}
-        }
-        let hasRead=(paras[idx]&&(paras[idx].les|0)>0);
-        let msg=`${paraWord(lang)} ${idx+1}` + (hasRead?` + ${readWord(lang)}`:``);
-        if(e>=1800&&e<1860) msg += halfwaySuffix(lang);
-        setWTMessage(msg);
-      }
-    }catch(_){}
+    if(ab) ab.textContent = map[lang] || 'NO';
+    try{ if (typeof drawTimeline==='function') drawTimeline(); }catch(_){}
+    try{ if (typeof drawTimelineSP==='function') drawTimelineSP(); }catch(_){}
   });
 })();
 </script>
