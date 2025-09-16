@@ -14,7 +14,9 @@
   --bg-top:#f8f7f5; --bg-bot:#f3f2ef; --ink:#2b3432; --muted:#8b827a;
   --card:rgba(255,255,252,.98); --border:rgba(40,30,20,.10);
   --green:#2f5f49; --pause:#e7dfd2; --stop:#7b6b5e; --press:#cfc7bd; --pill:#fffefb; --radius:16px;
-  --tl-green-1:#e9f3ec; --tl-green-2:#deefe4; --phase-intro:#8fb8ff; --phase-review:#ffb457; --phase-outro:#8fb8ff;
+  --tl-green-1:#e9f3ec; --tl-green-2:#deefe4; --phase-intro:#87b9ff; /* klarere blå – intro */
+  --phase-review:#ffb766; /* tydelig oransje – repetisjonsspørsmål */
+  --phase-outro:#87b9ff; /* klarere blå – avslutning */ /* blå – avslutning */
   --content-max:640px; --preset-gap:8px; --preset-pad:10px 14px; --preset-size:1.05rem; --dial-width:min(440px,78vw);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -53,10 +55,10 @@ body{display:flex;flex-direction:column;min-height:100%}
 
 /* Headings/messages */
 .h1{font-size:1.38rem;font-weight:900;margin:18px 0 10px;text-transform:uppercase}
-.message{background:var(--pill);border:2px solid var(--border);border-radius:12px;padding:18px 20px;min-height:1.2em;box-shadow:0 8px 24px rgba(70,50,30,.05);margin-bottom:12px;color:#4a5552;font-size:2rem;line-height:1.25}
+.message{background:var(--pill);border:2px solid var(--border);border-radius:12px;padding:20px 22px;min-height:2.4em;box-shadow:0 8px 24px rgba(70,50,30,.05);margin-bottom:20px;color:#4a5552;font-size:1.8rem;line-height:1.4}
 
 /* Timeline */
-.timeline-wrap{margin-top:22px; margin-bottom:48px}
+.timeline-wrap{margin-top:22px; margin-bottom:40px}
 .timeline{position:relative;height:56px;border-radius:14px;overflow:visible;background:linear-gradient(180deg,var(--tl-green-1) 0%,#edf5f0 100%);border:1px solid var(--border);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 12px 36px rgba(70,50,30,.05)}
 .slot{position:absolute;top:0;height:100%;opacity:.22}
 #introSlot{background:var(--phase-intro)}
@@ -65,11 +67,12 @@ body{display:flex;flex-direction:column;min-height:100%}
 .para-slot{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;border-left:1px solid rgba(50,35,25,.06);border-right:1px solid rgba(255,255,255,.55);font-weight:900;color:#2f3b34;text-shadow:0 1px 0 rgba(255,255,255,.55);cursor:pointer;box-sizing:border-box;min-width:14px;background:var(--tl-green-1)}
 .para-slot.alt{background:var(--tl-green-2)}
 .para-slot>div{pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1}
+/* 📖 på les-avsnitt */
 .read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-24px; width:18px; height:18px; background:url('read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
 .elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2}
 .cursor{position:absolute;top:-10px;width:2px;height:76px;background:#2f5f49;left:0%;z-index:3;box-shadow:0 0 0 2px rgba(58,111,82,.10)}
 .big-clock,.clock{margin-top:16px;font-size:2.2rem;font-weight:900;color:#2f5f49;text-shadow:0 1px 0 rgba(255,255,255,.65)}
-#clockWT{font-size:2.75rem}
+#clockWT{font-size:2.75rem; margin-top:40px}
 .over{color:#b54a46!important;text-shadow:none}
 
 .controls{display:flex;gap:12px;margin-top:12px}
@@ -94,7 +97,16 @@ body{display:flex;flex-direction:column;min-height:100%}
 .ticks span.active{opacity:1}.ticks span.near{opacity:.5}
 .milestone-img{max-width:40%;height:auto;margin:12px auto;display:block;background:none;padding:0;border:none;box-shadow:none;opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
 .milestone-img.show{opacity:1;transform:translateY(0)}
-@media (max-width:420px){.brand img{height:150px}.timeline{height:52px}.cursor{height:72px}}
+@media (max-width:420px){
+  .brand img{height:120px}
+  .timeline{height:50px}
+  .cursor{height:70px}
+  .h1{font-size:1.1rem}
+  #articleTitle{font-size:1.2rem}
+  .message{font-size:1.4rem; padding:16px 18px}
+  #clockWT{font-size:2.2rem; margin-top:36px}
+  .round{width:52px; height:52px; font-size:1.3rem}
+}
 .hiddenCard{opacity:0;transform:translateY(-6px);height:0;margin:0;padding-top:0;padding-bottom:0;overflow:hidden}
 .hiddenSoft{opacity:0;height:0;margin:0;padding-top:0;padding-bottom:0;overflow:hidden;transform:translateY(-4px);transition:opacity .2s,transform .2s,height .2s,margin .2s}
 #viewSP .card,#viewSP .timeline-wrap,#viewWT .card,#viewWT .timeline-wrap{max-width:var(--content-max);margin-inline:auto}
@@ -208,7 +220,7 @@ async function fetchJSON(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok
 async function loadYear(y){ for(const p of [`data/no-${y}.json`,`Data/no-${y}.json`,`data/no-${y}`,`Data/no-${y}`]){ try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{} } throw 0; }
 async function hydrateOptions(){ const today=new Date(); const year=today.getFullYear(); let items=[]; try{ const list=[]; for(const yy of [year,year+1]){ try{ list.push(await loadYear(yy)); }catch{} } items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[])); }catch{}
   const sel=$('#weekSel'); sel.innerHTML=''; const cur=isoMonday(today), prev=addDaysISO(cur,-7), nexts=[7,14,21].map(d=>addDaysISO(cur,d)); const want=[prev,cur,...nexts]; const picked=(items||[]).filter(it=>want.includes(it.week_start)).sort((a,b)=>a.week_start.localeCompare(b.week_start)); if(!picked.length){ const o=document.createElement('option'); o.textContent='Ingen artikler funnet (sjekk /data)'; o.disabled=true;o.selected=true; sel.appendChild(o); $('#message').textContent='Ingen data lastet.'; return; } picked.forEach(it=>{ const o=document.createElement('option'); o.value=JSON.stringify(it); o.textContent=it.title||'(uten tittel)'; sel.appendChild(o); }); const idx=picked.findIndex(x=>x.week_start===cur); sel.selectedIndex = idx>-1 ? idx : 0; useItem(JSON.parse(sel.value)); }
-function useItem(it){ $('#articleTitle').textContent=it.title||'—'; totalParagraphs=(it.paragraphs|0)||(Array.isArray(it.words)?it.words.length:0)||(it.paras|0)||0; reads=it.reads|0; const rp = Array.isArray(it.readParas) ? it.readParas : (Array.isArray(it.read_paras) ? it.read_paras : null); readSet=new Set(rp || ((Number.isFinite(reads) && reads>0) ? Array.from({length:reads},(_,i)=>i+1) : [])); paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false})); if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
+function useItem(it){ $('#articleTitle').textContent=it.title||'—'; totalParagraphs=(it.paragraphs|0)||(Array.isArray(it.words)?it.words.length:0)||(it.paras|0)||0; reads = it.reads|0; const rp = Array.isArray(it.readParas) ? it.readParas : (Array.isArray(it.read_paras) ? it.read_paras : null); readSet = new Set(rp || ((Number.isFinite(reads) && reads>0) ? Array.from({length:reads},(_,i)=>i+1) : [])); paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false})); if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`Avsnitt: ${totalParagraphs}`; $('#pillReads').textContent=`📖 Les-skriftsteder: ${readSet.size}`; computeAllocation(); drawTimeline(); resetClockUI(); $('#message').textContent='Klar til start. Trykk ▶ når du er klar.'; $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true; wtShown10=false; if(wtMsgHoldTimer){ clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=null; } wtMsgHoldUntil=0; wtLastE=0; wtSmileSeen.clear(); wtCheerSeen.clear(); }
 
 /* ===== allocation ===== */
