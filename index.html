@@ -245,6 +245,37 @@ html{ overflow-y: scroll; } /* keep scrollbar space to avoid width hop */
 .langpick .pill{ pointer-events:none; }
 .langpick select{ position:absolute; inset:0; opacity:0; -webkit-appearance:none; appearance:none; cursor:pointer; z-index:10; }
 
+
+/* --- App column & topbar --- */
+html{ overflow-y: scroll; }
+.topbar{ max-width: var(--content-max); margin-inline:auto; padding-inline:14px; display:flex; align-items:center; gap:10px; }
+.topbar .brand{ flex:0 0 auto; }
+.topbar .segmented{ margin-left:auto; }
+.topbar .langpick{ margin-left:10px; position:relative; width:56px; z-index:5; }
+.langpick .pill{ pointer-events:none; display:inline-block; text-align:center; min-width:48px; }
+.langpick select{ position:absolute; inset:0; opacity:0; appearance:none; -webkit-appearance:none; cursor:pointer; z-index:10; }
+
+/* Same width & padding on both views */
+#viewSP .h1,#viewSP .message,#viewSP #clockSP,#viewSP .controls,#viewSP .timeline-wrap,
+#viewWT .h1,#viewWT .message,#viewWT #clockWT,#viewWT .controls,#viewWT .timeline-wrap{
+  max-width: var(--content-max); margin-inline:auto; padding-inline:14px;
+}
+#viewSP .controls,#viewWT .controls{ justify-content:center; }
+
+/* Timeline special slots */
+#introSlot{ background:linear-gradient(to right, rgba(0,120,255,.12), rgba(0,120,255,.06)); }
+#outroSlot{ background:linear-gradient(to right, rgba(0,120,255,.06), rgba(0,120,255,.12)); }
+#reviewSlot{ background:linear-gradient(to right, rgba(255,135,0,.10), rgba(255,135,0,.06)); }
+
+/* Read markers */
+.para-slot{ overflow:visible; }
+.para-read{ position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); width:16px; height:16px; pointer-events:none; opacity:.95; }
+.timeline-wrap{ margin-bottom:26px; }
+
+
+img{ -webkit-user-drag:none; user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
+a,button,img{ -webkit-tap-highlight-color: transparent; }
+
 </style>
 </head>
 <body>
@@ -262,6 +293,14 @@ html{ overflow-y: scroll; } /* keep scrollbar space to avoid width hop */
       <button id="tabSP" role="tab" aria-selected="false" title="Taler">
         <img id="otherIcon" src="other-icon.png" alt="">
       </button>
+    </div>
+    <div class="langpick">
+      <span id="langAbbr" class="pill">NO</span>
+      <select id="langSelect" aria-label="Språk">
+        <option value="no">Norsk</option>
+        <option value="sv">Svenska</option>
+        <option value="en">English</option>
+      </select>
     </div>
   </div>
 
@@ -385,7 +424,22 @@ const wtCheerSeen = new Set();
 
 /* ===== data load ===== */
 async function fetchJSON(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw 0; return r.json();}
-async function loadYear(l,y){ for(const p of [`data/${l}-${y}.json`,`Data/${l}-${y}.json`,`data/${l}-${y}`,`Data/${l}-${y}`]){ try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{} } throw 0;}
+
+async function loadYear(l,y){
+  async function tryFetch(url){
+    try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) throw 0; return await r.json(); }catch{ return null; }
+  }
+  const langs=[l, (l==='no'?'sv':'no'), 'en'];
+  for(const L of langs){
+    for(const ext of ['json']){
+      const url = `data/${L}-${y}.${ext}?v=${Date.now().toString().slice(7)}`;
+      const j = await tryFetch(url);
+      if(j) return j;
+    }
+  }
+  return {items:[]};
+}
+-${y}.json`,`Data/${l}-${y}.json`,`data/${l}-${y}`,`Data/${l}-${y}`]){ try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{} } throw 0;}
 async function hydrateOptions(){
   const today=new Date(); const year=today.getFullYear(); let items=[];
   try{ const list=[]; for(const yy of [year,year+1]){ try{ list.push(await loadYear(lang,yy)); }catch{} } items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[])); }catch{}
@@ -402,9 +456,16 @@ async function hydrateOptions(){
   useItem(JSON.parse(sel.value));
 }
 function useItem(it){
+  // Compact JSON support + reads hydration
+  if (!('paragraphs' in it) && Array.isArray(it.words)) it.paragraphs = it.words.length;
+  if (Array.isArray(it.read_paras)) it.reads = it.read_paras.length;
+
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
+  (Array.isArray(it.read_paras) ? it.read_paras : []).forEach(n=>{ const idx=(n|0)-1; if(idx>=0 && idx<paras.length) paras[idx].les = 1; });
+  try{ reads = Array.isArray(it.read_paras) ? it.read_paras.length : (it.reads|0); if($('#pillReads')) $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`; }catch(_){}
+
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
@@ -454,8 +515,10 @@ function drawTimeline(){
     const fs = Math.max(9, Math.min(14, Math.floor(slotPx*0.33)));
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
+    try{ const pData = paras && paras[i-1] ? paras[i-1] : null; if(pData && (pData.les|0)>0){ const mark=document.createElement('img'); mark.className='para-read'; mark.alt='read'; mark.src='read-icon.png'; slot.appendChild(mark);} }catch(_){}
 
-    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
+
+    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent = `${labelFor('paras',lang)} ${i}` + ((paras[i-1]&&(paras[i-1].les|0)>0)?' + '+labelFor('reads',lang):''); });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
@@ -771,6 +834,24 @@ logoImg.addEventListener('click',()=>{
 document.addEventListener('contextmenu', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
 document.addEventListener('dragstart', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
 try{ document.querySelectorAll('img').forEach(img=>img.setAttribute('draggable','false')); }catch(_){}
+
+document.addEventListener('contextmenu', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
+document.addEventListener('dragstart', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
+try{ document.querySelectorAll('img').forEach(img=>img.setAttribute('draggable','false')); }catch(_){}
+
+
+(function(){
+  const sel=document.getElementById('langSelect'); const ab=document.getElementById('langAbbr');
+  if(!sel||!ab) return;
+  const map={no:'NO',sv:'SV',en:'EN'};
+  sel.value=(lang==='sv'||lang==='en')?lang:'no'; ab.textContent=map[sel.value]||'NO';
+  sel.addEventListener('change', async ()=>{
+    lang=sel.value; ab.textContent=map[lang]||'NO';
+    try{ await hydrateOptions(); }catch(_){}
+    try{ drawTimeline(); }catch(_){}
+    try{ if(typeof drawTimelineSP==='function') drawTimelineSP(); }catch(_){}
+  });
+})();
 </script>
 </body>
 </html>
