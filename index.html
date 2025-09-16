@@ -218,35 +218,6 @@ body::before{
 @media (max-width:420px){
   #viewWT .select{ min-width:140px; }
 }
-
-/* === Responsive base === */
-*{ box-sizing: border-box; }
-html,body{ margin:0; padding:0; }
-:root{ --content-max: 720px; }
-.topbar{ max-width:var(--content-max); margin-inline:auto; padding-inline:14px; display:flex; align-items:center; gap:10px; }
-.topbar .brand{ flex:0 0 auto; }
-.topbar .segmented{ margin-left:auto; }
-#viewSP .h1,#viewSP .message,#viewSP #clockSP,#viewSP .controls,#viewSP .timeline-wrap,
-#viewWT .h1,#viewWT .message,#viewWT #clockWT,#viewWT .controls,#viewWT .timeline-wrap{
-  max-width:var(--content-max); margin-inline:auto; padding-inline:14px; width:100%;
-}
-img{ max-width:100%; height:auto; }
-/* Intro/Review/Outro tint */
-#introSlot{ background:linear-gradient(to right, rgba(0,120,255,.12), rgba(0,120,255,.06)); }
-#outroSlot{ background:linear-gradient(to right, rgba(0,120,255,.06), rgba(0,120,255,.12)); }
-#reviewSlot{ background:linear-gradient(to right, rgba(255,135,0,.10), rgba(255,135,0,.06)); }
-/* Read markers spacing */
-.para-slot{ overflow:visible; }
-.para-read{ position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); width:16px; height:16px; pointer-events:none; opacity:.95; }
-.timeline-wrap{ margin-bottom:26px; }
-/* Small phones */
-@media (max-width: 420px){
-  .h1{ font-size: clamp(1.1rem, 5vw, 1.5rem); }
-  #clockWT,#clockSP{ font-size: clamp(1.6rem, 8vw, 2.2rem); }
-  .controls .btn{ padding:10px 12px; min-width:44px; min-height:44px; }
-  .pill{ font-size:.85rem; }
-}
-
 </style>
 </head>
 <body>
@@ -364,8 +335,6 @@ img{ max-width:100%; height:auto; }
 </div>
 
 <script>
-let lang='no';
-
 /* ===== helpers ===== */
 const TOTAL=3600, INTRO=90, REVIEW=120, OUTRO=90, CONTENT=TOTAL-INTRO-REVIEW-OUTRO;
 const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
@@ -771,15 +740,6 @@ logoImg.addEventListener('click',()=>{
   const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
   await hydrateOptions();
 })();
-
-// Redraw timelines on resize for responsiveness
-let _rt=0; window.addEventListener('resize', ()=>{
-  clearTimeout(_rt); _rt = setTimeout(()=>{
-    try{ if(typeof drawTimeline==='function') drawTimeline(); }catch(_){}
-    try{ if(typeof drawTimelineSP==='function') drawTimelineSP(); }catch(_){}
-  }, 100);
-});
-
 </script>
 </body>
 </html>
