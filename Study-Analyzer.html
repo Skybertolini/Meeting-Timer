@@ -107,7 +107,7 @@
         <span id="copyHint" class="muted"></span>
       </div>
       <p class="muted" style="margin-top:8px">
-        Lim inn i <code>data/no-YYYY.json</code> eller <code>data/sv-YYYY.json</code> under <code>"items"</code>.
+        Lim inn i <code>data/no-YYYY.json</code> eller <code>data/sv-YYYY.json</code> under <code>"items"</code> (kompakt format: <code>week_start</code>, <code>title</code>, <code>words</code>, <code>read_paras</code>).
       </p>
     </div>
   </div>
@@ -312,33 +312,31 @@ function extractParagraphs(text, lang){
 /* ========= Render / Analyze ========= */
 function recompute(){
   const title      = $('#title').value.trim();
-  const paragraphs = parseInt($('#paragraphs').value||'0',10) || 0;
+  const paragraphs = parseInt($('#paragraphs').value||'0',10) || 0; // KPI only
   const questions  = parseInt($('#questions').value||'0',10)  || 0; // KPI only
   const week       = $('#week').value || isoMonday();
 
   const words      = window._lastWords || [];
   const read_paras = window._lastReadParas || [];
-  const readsJson  = read_paras.length; // sann kilde til JSON
 
+  // === KOMPAKT JSON ===
   const obj = {
     items: [{
       week_start: week,
       title,
-      paragraphs,
       words,
-      read_paras,
-      reads: readsJson
+      read_paras
     }]
   };
   $('#jsonOut').textContent = fmtJSON(obj);
 
-  // KPIs
+  // KPIs (kun visning)
   const totalWords = words.reduce((a,b)=>a+b,0);
   const kpi = $('#kpi');
   kpi.innerHTML = `
     <span class="pill"><strong>${paragraphs}</strong> avsnitt</span>
     <span class="pill"><strong>${questions}</strong> spørsmål</span>
-    <span class="pill"><strong>${readsJson}</strong> Les/Läs</span>
+    <span class="pill"><strong>${read_paras.length}</strong> Les/Läs</span>
     <span class="pill"><strong>${totalWords}</strong> ord totalt</span>
   `;
 }
