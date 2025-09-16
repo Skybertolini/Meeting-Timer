@@ -244,9 +244,15 @@ body::before{
 
 /* --- Logo spin boost on click + smooth fade for swaps --- */
 .brand img{ transition: opacity .25s ease; transform-origin:50% 50%; }
-.brand img.spinBoost{ animation:logoSpinBoost 3s cubic-bezier(.3,0,.7,1) both; }
+.brand img.spinBoost{ animation:logoSpinBoost  2.5s cubic-bezier(.22,.61,.36,1); }
 @keyframes logoSpinBoost{
   0%   { transform: rotate(0deg); }
+  12%  { transform: rotate(120deg); }     /* ease-in */
+  28%  { transform: rotate(540deg); }     /* picking up speed */
+  52%  { transform: rotate(1260deg); }    /* ~3.5 turns */
+  78%  { transform: rotate(2340deg); }    /* high speed */
+  100% { transform: rotate(3240deg); }    /* ~9 turns total, smooth finish */
+}
   10%  { transform: rotate(90deg); }
   25%  { transform: rotate(360deg); }
   50%  { transform: rotate(1080deg); }
@@ -255,6 +261,19 @@ body::before{
 }
 /* Fallback tint if active image missing */
 .brand img.logo-active-fallback{ filter: hue-rotate(25deg) saturate(1.2) brightness(1.05); }
+
+
+/* App-like fixed column width + no reflow on vertical scrollbar */
+html{ overflow-y: scroll; } /* keep scrollbar space reserved to avoid width jump */
+#viewSP > *, #viewWT > *{ max-width: var(--content-max); margin-inline:auto; }
+#viewSP .h1, #viewSP .message, #viewSP #clockSP, #viewSP .controls, #viewSP .timeline-wrap{ padding-inline:14px; }
+#viewWT .h1, #viewWT .message, #viewWT #clockWT, #viewWT .controls, #viewWT .timeline-wrap{ padding-inline:14px; }
+.card, .timeline-wrap{ box-sizing:border-box; }
+
+
+/* Disable image drag/save UX for a more app-like feel */
+img{ -webkit-user-drag:none; user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
+a, button, img{ -webkit-tap-highlight-color: transparent; }
 
 </style>
 </head>
@@ -837,6 +856,15 @@ logoImg.addEventListener('click',()=>{
   const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
   await hydrateOptions();
 })();
+
+// Prevent saving images via right-click / long-press context menu
+document.addEventListener('contextmenu', (e)=>{
+  const img = e.target && (e.target.closest ? e.target.closest('img') : null);
+  if(img){ e.preventDefault(); }
+}, {capture:true});
+// iOS: further reduce long-press image actions by disabling gesture callouts
+try{ document.querySelectorAll('img').forEach(img=>{ img.setAttribute('draggable','false'); }); }catch(_){}
+
 </script>
 </body>
 </html>
