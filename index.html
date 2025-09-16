@@ -219,39 +219,9 @@ body::before{
   #viewWT .select{ min-width:140px; }
 }
 
-/* --- Read markers under timeline (📖) & spacing --- */
-.para-read,
-.para-read-emoji{
-  position:absolute; left:50%; bottom:-22px; transform:translateX(-50%);
-  width:16px; height:16px; pointer-events:none; opacity:.95;
-  filter: drop-shadow(0 1px 0 rgba(255,255,255,.6));
-}
-.para-read-emoji{ width:auto; height:auto; font-size:14px; line-height:1; }
-.para-slot{ overflow: visible; }
-.timeline-wrap{ margin-bottom:26px; }
-
-/* --- WT: match Speaker width & padding for non-card elements --- */
-#viewWT .h1,
-#viewWT .message,
-#viewWT #clockWT,
-#viewWT .controls,
-#viewWT .timeline-wrap{
-  max-width: var(--content-max);
-  margin-inline: auto;
-  padding-inline: 14px;
-}
-#viewWT .controls{ justify-content:center; }
-
-/* --- Logo spin boost --- */
-.brand img.spinBoost{ animation:logoSpinBoost 3s cubic-bezier(.3,0,.7,1) both; }
-@keyframes logoSpinBoost{
-  0%   { transform: rotate(0deg); }
-  10%  { transform: rotate(90deg); }
-  25%  { transform: rotate(360deg); }
-  50%  { transform: rotate(1080deg); }
-  75%  { transform: rotate(2880deg); }
-  100% { transform: rotate(6480deg); }
-}
+/* --- Logo swap styles (smooth fade + optional fallback tint) --- */
+.brand img{ transition: opacity .25s ease; }
+.brand img.logo-active-fallback{ filter: hue-rotate(25deg) saturate(1.2) brightness(1.05); }
 
 </style>
 </head>
@@ -310,7 +280,7 @@ body::before{
 
       <img id="msImg" class="milestone-img" alt="" style="display:none"/>
 
-      <div class="message" id="msgSP" role="status" aria-live="polite">Start stoppeklokken eller velg en tid og start nedtelling.</div>
+      <div class="message" id="msgSP">Start stoppeklokken eller velg en tid og start nedtelling.</div>
 
       <div class="controls" style="justify-content:center; margin-top:12px">
         <button id="playSP" class="round play" title="Start/Gjenoppta" aria-label="Start">
@@ -341,7 +311,7 @@ body::before{
     </div>
 
     <div class="h1" id="articleTitle">—</div>
-    <div class="message" id="message" role="status" aria-live="polite">Velg språk og artikkel for å laste timer.</div>
+    <div class="message" id="message">Velg språk og artikkel for å laste timer.</div>
 
     <div class="timeline-wrap">
       <div id="timeline" class="timeline">
@@ -372,7 +342,7 @@ body::before{
 <script>
 /* ===== helpers ===== */
 const TOTAL=3600, INTRO=90, REVIEW=120, OUTRO=90, CONTENT=TOTAL-INTRO-REVIEW-OUTRO;
-const WPM=150, SEC_PER_Q=10, SEC_PER_READ=20, AB_BONUS=30;
+const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
 const $=s=>document.querySelector(s), pct=s=>s/TOTAL*100;
 const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function isoMonday(d=new Date()){ const x=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return x.toISOString().slice(0,10); }
@@ -410,20 +380,9 @@ async function hydrateOptions(){
   useItem(JSON.parse(sel.value));
 }
 function useItem(it){
-  // --- Compact JSON support ---
-  if (!('paragraphs' in it) && Array.isArray(it.words)) it.paragraphs = it.words.length;
-  if (Array.isArray(it.read_paras)) it.reads = it.read_paras.length;
-
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
-  // Hydrate p.les from read_paras (1-based)
-  (Array.isArray(it.read_paras) ? it.read_paras : []).forEach(n=>{
-    const idx=(n|0)-1; if(idx>=0 && idx<paras.length){ paras[idx].les = 1; }
-  });
-  // Update reads pill for UI
-  try{ reads = Array.isArray(it.read_paras) ? it.read_paras.length : (it.reads|0); $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`; }catch(_){}
-
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
@@ -473,38 +432,8 @@ function drawTimeline(){
     const fs = Math.max(9, Math.min(14, Math.floor(slotPx*0.33)));
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
-    // Les-ikon under slotten
-    try{
-      const pData = (typeof paras!=='undefined' && paras[i-1]) ? paras[i-1] : null;
-      if (pData && (pData.les|0) > 0) {
-        const mark = document.createElement('img');
-        mark.className = 'para-read';
-        mark.alt = labelFor('reads',lang);
-        mark.src = 'read-icon.png';
-        mark.onerror = () => {
-          mark.remove();
-          const e = document.createElement('div');
-          e.className = 'para-read-emoji';
-          e.setAttribute('aria-hidden','true');
-          e.textContent = '📖';
-          slot.appendChild(e);
-        };
-        slot.appendChild(mark);
-      }
-    }catch(_){}
 
-
-    slot.addEventListener('click',()=>{
-    if(started && !paused) return;
-    const target=cumulative[i-1];
-    accum=Math.max(0,Math.min(Math.round(target), TOTAL-OUTRO-REVIEW));
-    const pNow=Math.min(accum/TOTAL*100,100);
-    $('#elapsed').style.width=pNow+'%';
-    $('#cursor').style.left=`calc(${pNow}% - 1px)`;
-    $('#clockWT').textContent=fmt(accum);
-    $('#clockWT').classList.toggle('over',accum>=TOTAL);
-    $('#message').textContent=`${labelFor('paras',lang)} ${i}`;
-  });
+    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
@@ -559,7 +488,7 @@ function tickWT(){
   wtLastE = e;
 }
 /* WT controls + hide controls card while running + stop-feedback */
-$('#playWT').addEventListener('click',()=>{
+$('#playWT').addEventListener('click',()=>{ setLogoActive(true);
   if(started && paused){
     paused=false; startTs=Date.now(); startClock();
     $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false;
@@ -571,7 +500,7 @@ $('#playWT').addEventListener('click',()=>{
   }
 });
 $('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage('Pause'); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; });
-$('#stopWT').addEventListener('click',()=>{ 
+$('#stopWT').addEventListener('click',()=>{ setLogoActive(false); 
   if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000);
   started=false; paused=false; stopClock();
   const e=accum;
@@ -599,7 +528,7 @@ function activateView(k){
 $('#tabWT').addEventListener('click',()=>activateView('WT'));
 $('#tabSP').addEventListener('click',()=>activateView('SP'));
 const otherIcon = document.getElementById('otherIcon');
-otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.png'; otherIcon.dataset.triedNg='1'; }});
+otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
 
 /* ===== Språk + uke ===== */
 $('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang);
@@ -685,7 +614,7 @@ function updateSP(){
   drawTimelineSP();
 }
 
-function spStartFn(){
+function spStartFn(){ setLogoActive(true);
   if(spRunning && spPaused){
     spPaused=false; spStart=Date.now();
     spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
@@ -714,7 +643,7 @@ function spStartFn(){
   }
 }
 function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date.now()-spStart)/1000); spPaused=true; spTick&&clearInterval(spTick); spTick=null; $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false; updateSP(); }
-function spStopFn(){
+function spStopFn(){ setLogoActive(false);
   if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000);
   spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null;
   setSPMessage('Godt jobbet! 👏'); showMilestone('milestone-stop.png');
@@ -783,16 +712,41 @@ renderTicks(); positionThumb();
   track.addEventListener('pointerup',()=>{drag=false;});
 })();
 
+
+/* Logo swap helpers */
+let _logoDefaultSrc = null;
+const _logoActiveSrc = 'meeting-timer-logo-active.png';
+(function initLogoSrc(){
+  const img = document.getElementById('logoImg');
+  if (img && !_logoDefaultSrc){ _logoDefaultSrc = img.getAttribute('src') || 'meeting-timer-logo.png'; }
+})();
+
+function _swapLogo(src){
+  const img = document.getElementById('logoImg'); if(!img) return;
+  // fade-out
+  img.style.opacity = '0';
+  const done = ()=>{ img.onload=null; img.onerror=null; img.style.opacity='1'; };
+  img.onload = done;
+  img.onerror = ()=>{
+    // If active image missing, use default src and add a small tint so user still sees a change
+    if(src===_logoActiveSrc){ img.src=_logoDefaultSrc; img.classList.add('logo-active-fallback'); }
+    else { img.classList.remove('logo-active-fallback'); }
+    done();
+  };
+  img.src = src;
+}
+function setLogoActive(on){
+  const img = document.getElementById('logoImg'); if(!img) return;
+  if(on){ _swapLogo(_logoActiveSrc); }
+  else { _swapLogo(_logoDefaultSrc); }
+}
 /* Logo effekt */
 const brandBox=document.getElementById('brandBox'), logoImg=document.getElementById('logoImg');
 logoImg.addEventListener('click',()=>{
-  brandBox.classList.remove('explode');
-  logoImg.classList.remove('shake','spinBoost');
+  brandBox.classList.remove('explode'); logoImg.classList.remove('shake');
   void brandBox.offsetWidth; void logoImg.offsetWidth;
   brandBox.classList.add('explode');
-  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    logoImg.classList.add('spinBoost');
-  }
+  logoImg.classList.add('shake');
 });
 
 /* Pressed-feedback for runde knapper (mobil/desktop) */
