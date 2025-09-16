@@ -219,38 +219,31 @@ body::before{
   #viewWT .select{ min-width:140px; }
 }
 
-.brand img{ transition: opacity .25s ease; transform-origin:50% 50%; }
-.brand img.spinBoost{ animation:logoSpinBoost 2.5s cubic-bezier(.22,.61,.36,1) both; }
-@keyframes logoSpinBoost{
-  0%{ transform: rotate(0deg); }
-  12%{ transform: rotate(120deg); }
-  28%{ transform: rotate(540deg); }
-  52%{ transform: rotate(1260deg); }
-  78%{ transform: rotate(2340deg); }
-  100%{ transform: rotate(3240deg); }
-}
-
-/* === App width lock (WT & SP) === */
-html{ overflow-y: scroll; }
+/* === Responsive base === */
+*{ box-sizing: border-box; }
+html,body{ margin:0; padding:0; }
+:root{ --content-max: 720px; }
+.topbar{ max-width:var(--content-max); margin-inline:auto; padding-inline:14px; display:flex; align-items:center; gap:10px; }
+.topbar .brand{ flex:0 0 auto; }
+.topbar .segmented{ margin-left:auto; }
 #viewSP .h1,#viewSP .message,#viewSP #clockSP,#viewSP .controls,#viewSP .timeline-wrap,
 #viewWT .h1,#viewWT .message,#viewWT #clockWT,#viewWT .controls,#viewWT .timeline-wrap{
-  max-width: var(--content-max);
-  margin-inline: auto;
-  padding-inline: 14px;
+  max-width:var(--content-max); margin-inline:auto; padding-inline:14px; width:100%;
 }
-#viewSP .controls,#viewWT .controls{ justify-content:center; }
-
-
-/* === Image save protections === */
-img{ -webkit-user-drag:none; user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
-a,button,img{ -webkit-tap-highlight-color: transparent; }
-
-
-/* === Responsive tweaks for small phones === */
+img{ max-width:100%; height:auto; }
+/* Intro/Review/Outro tint */
+#introSlot{ background:linear-gradient(to right, rgba(0,120,255,.12), rgba(0,120,255,.06)); }
+#outroSlot{ background:linear-gradient(to right, rgba(0,120,255,.06), rgba(0,120,255,.12)); }
+#reviewSlot{ background:linear-gradient(to right, rgba(255,135,0,.10), rgba(255,135,0,.06)); }
+/* Read markers spacing */
+.para-slot{ overflow:visible; }
+.para-read{ position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); width:16px; height:16px; pointer-events:none; opacity:.95; }
+.timeline-wrap{ margin-bottom:26px; }
+/* Small phones */
 @media (max-width: 420px){
-  .h1{ font-size: clamp(1.2rem, 5.2vw, 1.5rem); }
-  #clockWT, #clockSP{ font-size: clamp(1.6rem, 8vw, 2.2rem); }
-  .controls .btn{ padding:10px 12px; min-width: 44px; min-height: 44px; }
+  .h1{ font-size: clamp(1.1rem, 5vw, 1.5rem); }
+  #clockWT,#clockSP{ font-size: clamp(1.6rem, 8vw, 2.2rem); }
+  .controls .btn{ padding:10px 12px; min-width:44px; min-height:44px; }
   .pill{ font-size:.85rem; }
 }
 
@@ -265,17 +258,17 @@ a,button,img{ -webkit-tap-highlight-color: transparent; }
     </div>
 
     <div class="segmented" role="tablist" aria-label="Modus">
-      <button class="active" id="tabWT" role="tab" aria-selected="true" title="Vakttårn">
-        <img src="watchtower-icon.png" alt="">
-      </button>
-      <button id="tabSP"  role="tab" aria-selected="false" title="Taler">
+      <button id="tabSP" class="active" role="tab" aria-selected="true" title="Taler">
         <img id="otherIcon" src="other-icon.png" alt="">
+      </button>
+      <button id="tabWT" role="tab" aria-selected="false" title="Vakttårn">
+        <img src="watchtower-icon.png" alt="">
       </button>
     </div>
   </div>
 
   <!-- TALER (standard aktiv) -->
-  <div id="viewSP" class="view">
+  <div id="viewSP" class="view active">
     <div class="card" id="spCard">
       <!-- Liten tittel -->
       <div style="font-weight:1000; color:#4a5552; margin:2px 0 8px;">
@@ -324,10 +317,14 @@ a,button,img{ -webkit-tap-highlight-color: transparent; }
   </div>
 
   <!-- VAKTTÅRN -->
-  <div id="viewWT" class="view active">
+  <div id="viewWT" class="view">
     <div id="wtControlsCard" class="card infoband" style="justify-content:space-between; gap:12px">
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
-<select id="weekSel" class="select" aria-label="Artikkel">
+        <select id="langSel" class="select" aria-label="Språk">
+          <option value="no">Norsk</option>
+          <option value="sv">Svenska</option>
+        </select>
+        <select id="weekSel" class="select" aria-label="Artikkel">
           <option>Laster …</option>
         </select>
       </div>
@@ -367,9 +364,11 @@ a,button,img{ -webkit-tap-highlight-color: transparent; }
 </div>
 
 <script>
+let lang='no';
+
 /* ===== helpers ===== */
 const TOTAL=3600, INTRO=90, REVIEW=120, OUTRO=90, CONTENT=TOTAL-INTRO-REVIEW-OUTRO;
-const WPM=150, SEC_PER_Q=10, SEC_PER_READ=20, AB_BONUS=30;
+const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
 const $=s=>document.querySelector(s), pct=s=>s/TOTAL*100;
 const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function isoMonday(d=new Date()){ const x=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return x.toISOString().slice(0,10); }
@@ -408,19 +407,13 @@ async function hydrateOptions(){
 }
 function useItem(it){
   $('#articleTitle').textContent=it.title||'—';
-  if(!('paragraphs' in it) && Array.isArray(it.words)) it.paragraphs = it.words.length;
-  if(Array.isArray(it.read_paras)) it.reads = it.read_paras.length;
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
-  // Hydrate read markers from read_paras (1-based)
-  (Array.isArray(it.read_paras)?it.read_paras:[]).forEach(n=>{ const idx=(n|0)-1; if(idx>=0 && idx<paras.length) paras[idx].les=1; });
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
   computeAllocation(); drawTimeline(); resetClockUI();
-  $('#message').textContent='Klar til start. Trykk ▶ når du er klar.';
-  started=false; paused=false; startTs=null; accum=0; if(tickHandle) cancelAnimationFrame(tickHandle); tickHandle=null;
-  $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
+  $('#message').textContent='Klar til start. Trykk ▶ når du er klar.'; $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
   wtShown10=false; if(wtTenTimer){clearTimeout(wtTenTimer);wtTenTimer=null;}
   if(wtMsgHoldTimer){ clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=null; }
   wtMsgHoldUntil=0; wtLastE=0; wtSmileSeen.clear(); wtCheerSeen.clear();
@@ -455,26 +448,18 @@ function drawTimeline(){
   const tlWidth = t.clientWidth;
   const pxPerSec = tlWidth / TOTAL;
   for(let i=1;i<=totalParagraphs;i++){
-    const slot=document.createElement('div'); slot.className='para-slot';
-    const left=pct(cumulative[i-1]); const right=pct(TOTAL - (i>=totalParagraphs?OUTRO+REVIEW:(cumulative[i]-INTRO)));
-    slot.style.left=left.toFixed(4)+'%'; slot.style.right=right.toFixed(4)+'%';
-    const slotPx=Math.max(8, (TOTAL - (i>=totalParagraphs?OUTRO+REVIEW:(cumulative[i]-INTRO))) * pxPerSec);
-    const lbl=document.createElement('div'); lbl.className='para-label'; lbl.textContent=String(i);
-    const fs=Math.max(9, Math.min(14, Math.floor(slotPx*0.33))); lbl.style.fontSize=fs+'px';
+    const leftP=pct(cumulative[i-1]), widthP=pct(perParagraph[i-1]);
+    const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':'');
+    slot.style.left=leftP+'%'; slot.style.width=widthP+'%';
+
+    const slotPx = perParagraph[i-1]*pxPerSec;
+    const lbl=document.createElement('div');
+    lbl.textContent=String(i);
+    const fs = Math.max(9, Math.min(14, Math.floor(slotPx*0.33)));
+    lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
-    // 📖 read icon if this paragraph has a reading
-    try{ const p=paras[i-1]; if(p && (p.les|0)>0){ const mark=document.createElement('img'); mark.className='para-read'; mark.alt='read'; mark.src='read-icon.png'; slot.appendChild(mark);} }catch(_){}
-    // Click selection: allowed before start or when paused
-    slot.addEventListener('click',()=>{
-      if(started && !paused) return;
-      const target=cumulative[i-1];
-      accum=Math.max(0,Math.min(Math.round(target), TOTAL-OUTRO-REVIEW));
-      const pNow=Math.min(accum/TOTAL*100,100);
-      $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`;
-      $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL);
-      const hasRead=(paras[i-1]&&(paras[i-1].les|0)>0);
-      $('#message').textContent=`${labelFor('paras',lang)} ${i}` + (hasRead?' + '+labelFor('reads',lang):'');
-    });
+
+    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
@@ -572,7 +557,7 @@ const otherIcon = document.getElementById('otherIcon');
 otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
 
 /* ===== Språk + uke ===== */
-localStorage.setItem('meetingTimer.lang',lang);
+$('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang);
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`; });
 $('#weekSel').addEventListener('change',()=>{ const v=$('#weekSel').value; if(!v) return; useItem(JSON.parse(v)); });
@@ -756,12 +741,10 @@ renderTicks(); positionThumb();
 /* Logo effekt */
 const brandBox=document.getElementById('brandBox'), logoImg=document.getElementById('logoImg');
 logoImg.addEventListener('click',()=>{
-  brandBox.classList.remove('explode'); logoImg.classList.remove('spinBoost');
+  brandBox.classList.remove('explode'); logoImg.classList.remove('shake');
   void brandBox.offsetWidth; void logoImg.offsetWidth;
   brandBox.classList.add('explode');
-  if(!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-    logoImg.classList.add('spinBoost');
-  }
+  logoImg.classList.add('shake');
 });
 
 /* Pressed-feedback for runde knapper (mobil/desktop) */
@@ -777,25 +760,26 @@ logoImg.addEventListener('click',()=>{
 })();
 
 /* Init */
-(async async function init(){
+(async function init(){
   // Taler init
   markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
   applyIdleClock();
   updatePlayIcon();
   drawTimelineSP();
 
-  // WT init (Norwegian only)
-  lang='no';
-  try{ await hydrateOptions(); }catch(_){}
+  // WT init
+  const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
+  await hydrateOptions();
 })();
 
-// Block context menu + drag on images
-document.addEventListener('contextmenu', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
-document.addEventListener('dragstart', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
-try{ document.querySelectorAll('img').forEach(img=>img.setAttribute('draggable','false')); }catch(_){}
+// Redraw timelines on resize for responsiveness
+let _rt=0; window.addEventListener('resize', ()=>{
+  clearTimeout(_rt); _rt = setTimeout(()=>{
+    try{ if(typeof drawTimeline==='function') drawTimeline(); }catch(_){}
+    try{ if(typeof drawTimelineSP==='function') drawTimelineSP(); }catch(_){}
+  }, 100);
+});
 
-
-document.addEventListener('DOMContentLoaded', ()=>{ try{ init(); }catch(_){ /* ignore */ } });
 </script>
 </body>
 </html>
