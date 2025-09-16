@@ -63,11 +63,8 @@ body::before{
 
 /* Topbar */
 .topbar{
-  max-width: var(--content-max);
-  margin-inline: auto;
-  padding-inline: 14px;
-  display:flex; align-items:center; gap:10px; padding:8px 0 18px;
-  min-height:72px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0 18px;
+  min-height:72px; /* 🔒 lås høyde så knappene ikke flytter seg */
 }
 .brand{display:flex; align-items:center; gap:12px; position:relative}
 .brand img{height:160px; width:auto; cursor:pointer; filter:drop-shadow(0 8px 24px rgba(70,50,30,.08)); transition:transform .25s,filter .25s}
@@ -222,44 +219,31 @@ body::before{
   #viewWT .select{ min-width:140px; }
 }
 
-/* Language picker pill + full-name dropdown */
-.langpick{ position:relative; }
-.langpick .pill{ pointer-events:none; }
-.langpick select{
-  position:absolute; inset:0; opacity:0; appearance:none; -webkit-appearance:none; cursor:pointer;
-}
+/* Timeline special segments */
+#introSlot, #outroSlot { background: #d7eaff; } /* soft blue */
+#reviewSlot { background: #ffe7c2; }           /* soft orange */
 
+
+/* Align widths for both views and scale down slightly on phones */
+#viewSP .h1, #viewSP .message, #viewSP #clockSP, #viewSP .controls, #viewSP .timeline-wrap,
+#viewWT .h1, #viewWT .message, #viewWT #clockWT, #viewWT .controls, #viewWT .timeline-wrap{
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: 14px;
+}
+html{ overflow-y: scroll; } /* keep scrollbar space to avoid width hop */
+
+@media (max-width: 430px){
+  .h1{ font-size:1.18rem; }
+  .clock{ font-size:2rem; }
+  .round{ width:52px; height:52px; font-size:1.32rem; }
+}
 
 .segmented{ margin-left:auto; }
 
 .langpick{ position:relative; }
 .langpick .pill{ pointer-events:none; }
-.langpick select{
-  position:absolute; inset:0; opacity:0; appearance:none; -webkit-appearance:none; cursor:pointer;
-}
-
-
-img{ -webkit-user-drag:none; user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
-a,button,img{ -webkit-tap-highlight-color: transparent; }
-
-
-.para-read{ position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); width:16px; height:16px; pointer-events:none; opacity:.95; }
-.para-slot{ overflow:visible; }
-.timeline-wrap{ margin-bottom:26px; }
-
-
-/* --- Topbar alignment & language --- */
-.topbar{ display:flex; align-items:center; gap:10px; }
-.topbar .brand{ order:0; flex:0 0 auto; }
-.topbar .segmented{ order:1; margin-left:auto; }
-.topbar .langpick{ order:2; margin-left:10px; position:relative; width:56px; z-index:5; }
-.langpick .pill{ pointer-events:none; display:inline-block; text-align:center; min-width:48px; }
-.langpick select{ position:absolute; inset:0; opacity:0; appearance:none; -webkit-appearance:none; cursor:pointer; z-index:10; }
-
-/* --- Timeline read markers safe spacing --- */
-.para-slot{ overflow:visible; }
-.para-read{ position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); width:16px; height:16px; pointer-events:none; opacity:.95; }
-.timeline-wrap{ margin-bottom:26px; }
+.langpick select{ position:absolute; inset:0; opacity:0; -webkit-appearance:none; appearance:none; cursor:pointer; z-index:10; }
 
 </style>
 </head>
@@ -267,32 +251,22 @@ a,button,img{ -webkit-tap-highlight-color: transparent; }
 <div class="container">
   <div class="topbar">
     <div class="brand" id="brandBox">
-      <div class="burst">
-</div>
+      <div class="burst"></div>
       <img id="logoImg" src="meeting-timer-logo.png" alt="Meeting Timer logo">
     </div>
 
     <div class="segmented" role="tablist" aria-label="Modus">
-      <button id="tabSP" class="active" role="tab" aria-selected="true" title="Taler">
-        <img id="otherIcon" src="other-icon.png" alt="">
-      </button>
-      <button id="tabWT" role="tab" aria-selected="false" title="Vakttårn">
+      <button id="tabWT" class="active" role="tab" aria-selected="true" title="Vakttårn">
         <img src="watchtower-icon.png" alt="">
       </button>
+      <button id="tabSP" role="tab" aria-selected="false" title="Taler">
+        <img id="otherIcon" src="other-icon.png" alt="">
+      </button>
     </div>
-  
-    <div class="langpick">
-      <span id="langAbbr" class="pill">NO</span>
-      <select id="langSelect" aria-label="Språk">
-        <option value="no">Norsk</option>
-        <option value="sv">Svenska</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-</div>
+  </div>
 
-  <!-- TALER (standard aktiv) -->
-  <div id="viewSP" class="view active">
+  <!-- TALER -->
+  <div id="viewSP" class="view">
     <div class="card" id="spCard">
       <!-- Liten tittel -->
       <div style="font-weight:1000; color:#4a5552; margin:2px 0 8px;">
@@ -341,7 +315,7 @@ a,button,img{ -webkit-tap-highlight-color: transparent; }
   </div>
 
   <!-- VAKTTÅRN -->
-  <div id="viewWT" class="view">
+  <div id="viewWT" class="view active">
     <div id="wtControlsCard" class="card infoband" style="justify-content:space-between; gap:12px">
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
         <select id="langSel" class="select" aria-label="Språk">
@@ -395,8 +369,6 @@ const $=s=>document.querySelector(s), pct=s=>s/TOTAL*100;
 const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function isoMonday(d=new Date()){ const x=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return x.toISOString().slice(0,10); }
 function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
-function paraWord(lang){ return lang==='sv'?'Paragraf':(lang==='en'?'Paragraph':'Avsnitt'); }
-function readWord(lang){ return lang==='sv'?'Läs-skriftställe':(lang==='en'?'Read Scripture':'Les-skriftsted'); }
 function labelFor(k,lang){ if(lang==='sv'){ if(k==='paras')return'Paragrafer'; if(k==='reads')return'Läs-skriftställen'; } if(k==='paras')return'Avsnitt'; if(k==='reads')return'Les-skriftsteder'; return k; }
 
 /* ===== WT state ===== */
@@ -430,18 +402,9 @@ async function hydrateOptions(){
   useItem(JSON.parse(sel.value));
 }
 function useItem(it){
-  // --- Compact JSON support + read markers ---
-  if (!('paragraphs' in it) && Array.isArray(it.words)) it.paragraphs = it.words.length;
-  if (Array.isArray(it.read_paras)) it.reads = it.read_paras.length;
-
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
-  (Array.isArray(it.read_paras) ? it.read_paras : []).forEach(n=>{
-    const idx=(n|0)-1; if(idx>=0 && idx<paras.length){ paras[idx].les = 1; }
-  });
-  try{ reads = Array.isArray(it.read_paras) ? it.read_paras.length : (it.reads|0); $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`; }catch(_){}
-
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
@@ -491,14 +454,6 @@ function drawTimeline(){
     const fs = Math.max(9, Math.min(14, Math.floor(slotPx*0.33)));
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
-    try{
-      const pData = paras && paras[i-1] ? paras[i-1] : null;
-      if (pData && (pData.les|0) > 0) {
-        const mark = document.createElement('img'); mark.className='para-read'; mark.alt='read'; mark.src='read-icon.png';
-        slot.appendChild(mark);
-      }
-    }catch(_){}
-
 
     slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`${labelFor('paras',lang)} ${i}`; });
     t.insertBefore(slot,$('#elapsed'));
@@ -548,8 +503,7 @@ function tickWT(){
   else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage('Repetisjonsspørsmål');
   else{
     let idx=0; for(let i=0;i<totalParagraphs;i++){const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1]; if(e>=s&&e<end){idx=i;break}}
-    let hasRead=(paras[idx]&&(paras[idx].les|0)>0);
-    let msg=`${paraWord(lang)} ${idx+1}` + (hasRead?` + ${readWord(lang)}`:``);
+    let msg=`${labelFor('paras',lang)} ${idx+1}`;
     if(e>=1800&&e<1860) msg+=' – du er halvveis';
     setWTMessage(msg);
   }
@@ -814,39 +768,9 @@ logoImg.addEventListener('click',()=>{
   await hydrateOptions();
 })();
 
-// Language picker wiring (abbr pill + full names in menu)
-(function(){
-  const sel = document.getElementById('langSelect');
-  if(!sel) return;
-  const map={no:'NO', sv:'SV', en:'EN'};
-  const ab = document.getElementById('langAbbr');
-  sel.value = (lang==='sv'||lang==='en')?lang:'no';
-  if(ab) ab.textContent = map[sel.value] || 'NO';
-  sel.addEventListener('change', ()=>{
-    lang = sel.value;
-    if(ab) ab.textContent = map[lang] || 'NO';
-    try{ if (typeof drawTimeline==='function') drawTimeline(); }catch(_){}
-    try{ if (typeof drawTimelineSP==='function') drawTimelineSP(); }catch(_){}
-  });
-})();
-
-// Block context menu on images (right-click / long-press save)
-document.addEventListener('contextmenu', (e)=>{
-  const img = e.target && (e.target.closest ? e.target.closest('img') : null);
-  if(img){ e.preventDefault(); }
-}, {capture:true});
-try{ document.querySelectorAll('img').forEach(img=>{ img.setAttribute('draggable','false'); }); }catch(_){}
-
-
-// Image protections: block right-click and drag
-document.addEventListener('contextmenu', (e)=>{
-  if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault();
-}, {capture:true});
-document.addEventListener('dragstart', (e)=>{
-  if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault();
-}, {capture:true});
-try{ document.querySelectorAll('img').forEach(img=>{ img.setAttribute('draggable','false'); }); }catch(_){}
-
+document.addEventListener('contextmenu', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
+document.addEventListener('dragstart', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
+try{ document.querySelectorAll('img').forEach(img=>img.setAttribute('draggable','false')); }catch(_){}
 </script>
 </body>
 </html>
