@@ -162,7 +162,7 @@ body::before{
 .preset{
   border:1px solid var(--border); background:var(--pill); border-radius:999px;
   padding:var(--preset-pad); font-weight:900; cursor:pointer;
-  box-shadow:0 8px 20px rgba(70,50,30,.06); color:var(--green);
+  box-shadow:0 8px 20px rgba(70,50,30,.06); color:#2f5f49;
   font-size:var(--preset-size);
 }
 .preset.active{background:#2f5f49; color:#fff}
@@ -213,11 +213,15 @@ body::before{
   margin-inline: auto;
 }
 
-/* Unngå at select blåser ut bredden på WT */
 #viewWT .select{ min-width:180px; }
 @media (max-width:420px){
   #viewWT .select{ min-width:140px; }
 }
+
+/* Hindre lagring/drag av bilder + logo‑spin */
+img{ -webkit-user-drag:none; user-select:none; -webkit-touch-callout:none; }
+@keyframes spin360{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+.brand img.spin{ animation: spin360 3s linear infinite; }
 </style>
 </head>
 <body>
@@ -225,15 +229,15 @@ body::before{
   <div class="topbar">
     <div class="brand" id="brandBox">
       <div class="burst"></div>
-      <img id="logoImg" src="meeting-timer-logo.png" alt="Meeting Timer logo">
+      <img id="logoImg" src="meeting-timer-logo.png" alt="Meeting Timer logo" draggable="false">
     </div>
 
     <div class="segmented" role="tablist" aria-label="Modus">
       <button id="tabSP" class="active" role="tab" aria-selected="true" title="Taler">
-        <img id="otherIcon" src="other-icon.png" alt="">
+        <img id="otherIcon" src="other-icon.png" alt="" draggable="false">
       </button>
       <button id="tabWT" role="tab" aria-selected="false" title="Vakttårn">
-        <img src="watchtower-icon.png" alt="">
+        <img src="watchtower-icon.png" alt="" draggable="false">
       </button>
     </div>
   </div>
@@ -241,10 +245,7 @@ body::before{
   <!-- TALER (standard aktiv) -->
   <div id="viewSP" class="view active">
     <div class="card" id="spCard">
-      <!-- Liten tittel -->
-      <div style="font-weight:1000; color:#4a5552; margin:2px 0 8px;">
-        TIMER FOR MIDTUKEMØTET
-      </div>
+      <div style="font-weight:1000; color:#4a5552; margin:2px 0 8px;">TIMER FOR MIDTUKEMØTET</div>
 
       <div id="spInputs" style="margin-bottom:6px">
         <div class="preset-row">
@@ -263,7 +264,6 @@ body::before{
         </div>
       </div>
 
-      <!-- TALER tidslinje -->
       <div class="timeline-wrap">
         <div id="timelineSP" class="timeline">
           <div id="elapsedSP" class="elapsed"></div>
@@ -273,14 +273,12 @@ body::before{
 
       <div class="big-clock" id="clockSP" style="margin-top:12px">00:00</div>
 
-      <img id="msImg" class="milestone-img" alt="" style="display:none"/>
+      <img id="msImg" class="milestone-img" alt="" style="display:none" draggable="false"/>
 
       <div class="message" id="msgSP">Start stoppeklokken eller velg en tid og start nedtelling.</div>
 
       <div class="controls" style="justify-content:center; margin-top:12px">
-        <button id="playSP" class="round play" title="Start/Gjenoppta" aria-label="Start">
-          <span id="playSPIcon">▶</span>
-        </button>
+        <button id="playSP" class="round play" title="Start/Gjenoppta" aria-label="Start"><span id="playSPIcon">▶</span></button>
         <button id="pauseSP" class="round pause" title="Pause" aria-label="Pause" disabled>❚❚</button>
         <button id="stopSP"  class="round stop"  title="Stopp/Nullstill" aria-label="Stopp" disabled>■</button>
       </div>
@@ -297,7 +295,7 @@ body::before{
       </div>
       <div style="display:flex; gap:8px; flex-wrap:wrap">
         <div class="pill" id="pillParas">Avsnitt: 0</div>
-        <div class="pill" id="pillReads">Les-skriftsteder: 0</div>
+        <div class="pill" id="pillReads">📖 Les-skriftsteder: 0</div>
       </div>
     </div>
 
@@ -321,7 +319,6 @@ body::before{
       <button id="stopWT"  class="round stop"  title="Stopp" aria-label="Stopp" disabled>■</button>
     </div>
 
-    <!-- Notater -->
     <div class="card" style="margin-top:14px">
       <textarea id="wtNotes" rows="5" style="width:100%; border:1px solid var(--border); border-radius:12px; padding:10px; font:inherit; color:var(--ink); background:var(--pill);" placeholder="Her kan du notere."></textarea>
     </div>
@@ -342,19 +339,18 @@ function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days
 /* ===== WT state ===== */
 let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0, reads=0;
 let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
-let wtShown10=false, wtTenTimer=null;
+let wtShown10=false;
 
 // WT message helpers
 let wtMsgHoldTimer=null, wtMsgHoldUntil=0, wtLastE=0;
-const WT_SMILE_MIN = [5,15,25,40,55];   // min etter start
-const WT_CHEER_MIN = [2,10,20,35,45];   // min etter start
+const WT_SMILE_MIN = [5,15,25,40,55];
+const WT_CHEER_MIN = [2,10,20,35,45];
 const wtSmileSeen = new Set();
 const wtCheerSeen = new Set();
 
 /* ===== data load ===== */
 async function fetchJSON(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw 0; return r.json();}
 async function loadYear(y){
-  // Kun norsk data; støtt datamappenavn med/uten stor D og fil uten .json (for bakoverkomp.)
   for(const p of [`data/no-${y}.json`,`Data/no-${y}.json`,`data/no-${y}`,`Data/no-${y}`]){
     try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{}
   }
@@ -362,10 +358,7 @@ async function loadYear(y){
 }
 async function hydrateOptions(){
   const today=new Date(); const year=today.getFullYear(); let items=[];
-  try{
-    const list=[]; for(const yy of [year,year+1]){ try{ list.push(await loadYear(yy)); }catch{} }
-    items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[]));
-  }catch{}
+  try{ const list=[]; for(const yy of [year,year+1]){ try{ list.push(await loadYear(yy)); }catch{} } items=list.flatMap(p=>Array.isArray(p)?p:(p?.items||[])); }catch{}
   const sel=$('#weekSel'); sel.innerHTML='';
 
   const cur=isoMonday(today), prev=addDaysISO(cur,-7), nexts=[7,14,21].map(d=>addDaysISO(cur,d));
@@ -380,15 +373,15 @@ async function hydrateOptions(){
 }
 function useItem(it){
   $('#articleTitle').textContent=it.title||'—';
-  totalParagraphs=it.paragraphs|0; reads=it.reads|0;
+  totalParagraphs = (it.paragraphs|0) || (Array.isArray(it.words)?it.words.length:0) || (it.paras|0) || 0;
+  reads = it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`Avsnitt: ${totalParagraphs}`;
-  $('#pillReads').textContent=`Les-skriftsteder: ${reads}`;
+  $('#pillReads').textContent=`📖 Les-skriftsteder: ${reads}`;
   computeAllocation(); drawTimeline(); resetClockUI();
   $('#message').textContent='Klar til start. Trykk ▶ når du er klar.'; $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
-  wtShown10=false; if(wtTenTimer){clearTimeout(wtTenTimer);wtTenTimer=null;}
-  if(wtMsgHoldTimer){ clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=null; }
+  wtShown10=false; if(wtMsgHoldTimer){ clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=null; }
   wtMsgHoldUntil=0; wtLastE=0; wtSmileSeen.clear(); wtCheerSeen.clear();
 }
 
@@ -418,7 +411,7 @@ function drawTimeline(){
   $('#reviewSlot').style.right=pct(OUTRO).toFixed(4)+'%'; $('#reviewSlot').style.width=pct(REVIEW).toFixed(4)+'%';
   if(totalParagraphs<=0){$('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return;}
 
-  const tlWidth = t.clientWidth;
+  const tlWidth = t.clientWidth || t.getBoundingClientRect().width || 1;
   const pxPerSec = tlWidth / TOTAL;
   for(let i=1;i<=totalParagraphs;i++){
     const leftP=pct(cumulative[i-1]), widthP=pct(perParagraph[i-1]);
@@ -448,26 +441,17 @@ function relayout(){ if(totalParagraphs>0) drawTimeline(); drawTimelineSP(); }
 
 /* ===== WT clock + meldinger ===== */
 function resetClockUI(){ if(tickHandle)clearInterval(tickHandle); $('#clockWT').textContent='00:00'; $('#clockWT').classList.remove('over')}
-function startClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=setInterval(tickWT,250)}
-function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null}
+function startClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=setInterval(tickWT,250); setLogoSpin(true); }
+function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null; setLogoSpin(false); }
 function nowElapsed(){ if(!started) return accum; if(paused) return accum; return accum+Math.floor((Date.now()-startTs)/1000)}
 function setWTMessage(txt){ $('#message').textContent=txt; }
-function wtFlash(msg, ms=10000){
-  setWTMessage(msg);
-  wtMsgHoldUntil = Date.now() + ms;
-  if(wtMsgHoldTimer) clearTimeout(wtMsgHoldTimer);
-  wtMsgHoldTimer = setTimeout(()=>{ wtMsgHoldTimer=null; }, ms);
-}
+function wtFlash(msg, ms=10000){ setWTMessage(msg); wtMsgHoldUntil = Date.now() + ms; if(wtMsgHoldTimer) clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer = setTimeout(()=>{ wtMsgHoldTimer=null; }, ms); }
 function tickWT(){
   const e=nowElapsed(), remaining = TOTAL - e;
   $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=TOTAL);
   const p=Math.min(e/TOTAL*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`;
 
-  if(!wtShown10 && remaining<=600 && remaining>0){
-    wtShown10 = true;
-    wtFlash('10 min igjen, dette klarer du! 😎', 20000);
-  }
-
+  if(!wtShown10 && remaining<=600 && remaining>0){ wtShown10 = true; wtFlash('10 min igjen, dette klarer du! 😎', 20000); }
   if(wtMsgHoldTimer && Date.now()<wtMsgHoldUntil){ wtLastE = e; return; }
 
   const crossed = (arr, seen, msg)=>{ for(const m of arr){ const s=m*60; if(!seen.has(m) && wtLastE < s && e >= s){ seen.add(m); wtFlash(msg, 10000); break; } } };
@@ -480,49 +464,25 @@ function tickWT(){
   else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage('Repetisjonsspørsmål');
   else{
     let idx=0; for(let i=0;i<totalParagraphs;i++){const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1]; if(e>=s&&e<end){idx=i;break}}
-    let msg=`Avsnitt ${idx+1}`;
-    if(e>=1800&&e<1860) msg+=' – du er halvveis';
-    setWTMessage(msg);
+    let msg=`Avsnitt ${idx+1}`; if(e>=1800&&e<1860) msg+=' – du er halvveis'; setWTMessage(msg);
   }
   wtLastE = e;
 }
-/* WT controls + hide controls card while running + stop-feedback */
+/* WT controls */
 $('#playWT').addEventListener('click',()=>{
-  if(started && paused){
-    paused=false; startTs=Date.now(); startClock();
-    $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false;
-    return;
-  }
-  if(!started){
-    started=true; paused=false; startTs=Date.now(); startClock(); setWTMessage('Introduksjon');
-    $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; $('#wtControlsCard').classList.add('hiddenCard');
-  }
+  if(started && paused){ paused=false; startTs=Date.now(); startClock(); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; return; }
+  if(!started){ started=true; paused=false; startTs=Date.now(); startClock(); setWTMessage('Introduksjon'); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; $('#wtControlsCard').classList.add('hiddenCard'); }
 });
 $('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage('Pause'); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; });
-$('#stopWT').addEventListener('click',()=>{ 
-  if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000);
-  started=false; paused=false; stopClock();
-  const e=accum;
-  if(e>=3300 && e<3600) setWTMessage('Godt jobbet, du klarte det på under en time! 🥳');
-  else if(e>=3600 && e<3720) setWTMessage('Nesten helt perfekt! 🤩');
-  else if(e>=3720 && e<3900) setWTMessage('Litt over, neste gang klarer du enda bedre. 👍');
-  else if(e>=3900 && e<4200) setWTMessage('Aj aj, her har du litt å jobbe med. 😅');
-  else setWTMessage(`Ferdig – totalt ${fmt(e)}`);
-
-  $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true; accum=0; resetClockUI(); $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; $('#wtControlsCard').classList.remove('hiddenCard');
-  wtShown10=false; if(wtTenTimer){clearTimeout(wtTenTimer);wtTenTimer=null;}
-  if(wtMsgHoldTimer){ clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=null; }
-  wtMsgHoldUntil=0; wtLastE=0; wtSmileSeen.clear(); wtCheerSeen.clear();
-});
+$('#stopWT').addEventListener('click',()=>{ if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000); started=false; paused=false; stopClock(); const e=accum; if(e>=3300 && e<3600) setWTMessage('Godt jobbet, du klarte det på under en time! 🥳'); else if(e>=3600 && e<3720) setWTMessage('Nesten helt perfekt! 🤩'); else if(e>=3720 && e<3900) setWTMessage('Litt over, neste gang klarer du enda bedre. 👍'); else if(e>=3900 && e<4200) setWTMessage('Aj aj, her har du litt å jobbe med. 😅'); else setWTMessage(`Ferdig – totalt ${fmt(e)}`);
+  $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true; accum=0; resetClockUI(); $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; $('#wtControlsCard').classList.remove('hiddenCard'); wtShown10=false; if(wtMsgHoldTimer){ clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=null; } wtMsgHoldUntil=0; wtLastE=0; wtSmileSeen.clear(); wtCheerSeen.clear(); });
 
 /* ===== Tabs & icons ===== */
 const views={WT:$('#viewWT'), SP:$('#viewSP')}, tabs={WT:$('#tabWT'), SP:$('#tabSP')};
 function activateView(k){
   Object.entries(views).forEach(([x,el])=>el.classList.toggle('active',x===k));
-  Object.entries(tabs).forEach(([x,b])=>{
-    b.classList.toggle('active',x===k);
-    b.setAttribute('aria-selected',x===k?'true':'false');
-  });
+  Object.entries(tabs).forEach(([x,b])=>{ b.classList.toggle('active',x===k); b.setAttribute('aria-selected',x===k?'true':'false'); });
+  if(k==='WT') requestAnimationFrame(drawTimeline);
 }
 $('#tabWT').addEventListener('click',()=>activateView('WT'));
 $('#tabSP').addEventListener('click',()=>activateView('SP'));
@@ -545,200 +505,53 @@ function isCountUp(){ return SP_TOTAL===0; }
 function spFmt(s){s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; return spAccum+Math.floor((Date.now()-spStart)/1000) }
 function markPreset(s){ spPresets.forEach(b=>b.classList.toggle('active',parseInt(b.dataset.sec,10)===s)) }
-function updatePlayIcon(){
-  const iconEl = document.getElementById('playSPIcon');
-  iconEl.textContent = isCountUp() ? '⏱️' : '▶';
-}
-function applyIdleClock(){
-  $('#clockSP').classList.remove('over');
-  if(isCountUp()) $('#clockSP').textContent='00:00';
-  else $('#clockSP').textContent=spFmt(SP_TOTAL);
-}
-function resetFlags(){
-  shownOneMin=false; shownOver=false; prevRemain=null; spMsgTimers.forEach(t=>clearTimeout(t)); spMsgTimers=[];
-  spShownStartMsg=false; spShown2min=false;
-}
+function updatePlayIcon(){ const iconEl = document.getElementById('playSPIcon'); iconEl.textContent = isCountUp() ? '⏱️' : '▶'; }
+function applyIdleClock(){ $('#clockSP').classList.remove('over'); if(isCountUp()) $('#clockSP').textContent='00:00'; else $('#clockSP').textContent=spFmt(SP_TOTAL); }
+function resetFlags(){ shownOneMin=false; shownOver=false; prevRemain=null; spMsgTimers.forEach(t=>clearTimeout(t)); spMsgTimers=[]; spShownStartMsg=false; spShown2min=false; }
 
-function drawTimelineSP(){
-  // Count-up: 30 min skala. Count-down: valgt tid.
-  const totalScale = isCountUp() ? 1800 : SP_TOTAL; // 1800 = 30 min
-  const e = spElapsed();
-  let progress;
-  if (isCountUp()) progress = Math.min(1, e / totalScale);
-  else { const remain = SP_TOTAL - e; progress = Math.max(0, Math.min(1, remain / totalScale)); }
-  $('#elapsedSP').style.width = (progress*100)+'%';
-  $('#cursorSP').style.left  = `calc(${progress*100}% - 1px)`;
-}
-function showMilestone(name){
-  const el=$('#msImg');
-  if(!name){ el.style.display='none'; el.classList.remove('show'); el.removeAttribute('src'); return; }
-  const onerr=()=>{ el.style.display='none'; el.classList.remove('show'); el.onerror=null; };
-  el.onerror=onerr;
-  el.onload=()=>{ el.style.display='block'; requestAnimationFrame(()=>el.classList.add('show')); };
-  el.src=name;
-}
+function drawTimelineSP(){ const totalScale = isCountUp() ? 1800 : SP_TOTAL; const e = spElapsed(); let progress; if (isCountUp()) progress = Math.min(1, e / totalScale); else { const remain = SP_TOTAL - e; progress = Math.max(0, Math.min(1, remain / totalScale)); } $('#elapsedSP').style.width = (progress*100)+'%'; $('#cursorSP').style.left  = `calc(${progress*100}% - 1px)`; }
+function showMilestone(name){ const el=$('#msImg'); if(!name){ el.style.display='none'; el.classList.remove('show'); el.removeAttribute('src'); return; } const onerr=()=>{ el.style.display='none'; el.classList.remove('show'); el.onerror=null; }; el.onerror=onerr; el.onload=()=>{ el.style.display='block'; requestAnimationFrame(()=>el.classList.add('show')); }; el.src=name; }
 function setSPMessage(txt, ms=null){ $('#msgSP').textContent=txt||''; if(ms){ const id=setTimeout(()=>{$('#msgSP').textContent='';}, ms); spMsgTimers.push(id); } }
 
-function updateSP(){
-  const e=spElapsed();
+function updateSP(){ const e=spElapsed(); if(spRunning && !spPaused){ if(!spShownStartMsg){ setSPMessage('Vi er i gang! ☺️', 10000); spShownStartMsg=true; } if(e>=120 && !spShown2min){ setSPMessage('Wow, du er flink! 😍', 20000); spShown2min=true; } if(!isCountUp()){ const remain = SP_TOTAL - e; if(remain===60 && !shownOneMin){ setSPMessage('Snart ferdig nå! ⏱️'); shownOneMin=true; } if(remain<0 && !shownOver){ setSPMessage('Oj, du har gått over tiden. 😅'); shownOver=true; } const crossed = th => (prevRemain!==null && prevRemain>th && remain<=th); if(crossed(1800)) showMilestone('milestone-30.png'); if(crossed( 900)) showMilestone('milestone-15.png'); if(crossed( 600)) showMilestone('milestone-10.png'); if(crossed( 300)) showMilestone('milestone-5.png'); prevRemain=remain; } }
+  if(isCountUp()){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(e); }else{ const remain=SP_TOTAL-e; if(remain>=0){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(remain); } else{ $('#clockSP').classList.add('over'); $('#clockSP').textContent=spFmt(-remain); } } drawTimelineSP(); }
 
-  if(spRunning && !spPaused){
-    if(!spShownStartMsg){ setSPMessage('Vi er i gang! ☺️', 10000); spShownStartMsg=true; }
-    if(e>=120 && !spShown2min){ setSPMessage('Wow, du er flink! 😍', 20000); spShown2min=true; }
-
-    if(!isCountUp()){
-      const remain = SP_TOTAL - e;
-      if(remain===60 && !shownOneMin){ setSPMessage('Snart ferdig nå! ⏱️'); shownOneMin=true; }
-      if(remain<0 && !shownOver){ setSPMessage('Oj, du har gått over tiden. 😅'); shownOver=true; }
-
-      const crossed = th => (prevRemain!==null && prevRemain>th && remain<=th);
-      if(crossed(1800)) showMilestone('milestone-30.png');
-      if(crossed( 900)) showMilestone('milestone-15.png');
-      if(crossed( 600)) showMilestone('milestone-10.png');
-      if(crossed( 300)) showMilestone('milestone-5.png');
-      prevRemain=remain;
-    }
-  }
-
-  if(isCountUp()){
-    $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(e);
-  }else{
-    const remain=SP_TOTAL-e;
-    if(remain>=0){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(remain); }
-    else{ $('#clockSP').classList.add('over'); $('#clockSP').textContent=spFmt(-remain); }
-  }
-  drawTimelineSP();
-}
-
-function spStartFn(){
-  if(spRunning && spPaused){
-    spPaused=false; spStart=Date.now();
-    spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
-    $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
-    return;
-  }
-  if(!spRunning){
-    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0;
-    setSPMessage('Vi er i gang! ☺️', 10000);
-    resetFlags();
-    $('#spInputs').classList.add('hiddenSoft'); // skjul presets/slider
-    spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
-    $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false;
-
-    if(!isCountUp()){
-      if(SP_TOTAL===1800) showMilestone('milestone-30.png');
-      else if(SP_TOTAL===900) showMilestone('milestone-15.png');
-      else if(SP_TOTAL===600) showMilestone('milestone-10.png');
-      else if(SP_TOTAL===300) showMilestone('milestone-5.png');
-      else showMilestone('milestone-other.png');
-    }else{
-      showMilestone('milestone-other.png');
-    }
-
-    updateSP();
-  }
-}
+function spStartFn(){ if(spRunning && spPaused){ spPaused=false; spStart=Date.now(); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; setLogoSpin(true); return; } if(!spRunning){ spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; setSPMessage('Vi er i gang! ☺️', 10000); resetFlags(); $('#spInputs').classList.add('hiddenSoft'); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; setLogoSpin(true); if(!isCountUp()){ if(SP_TOTAL===1800) showMilestone('milestone-30.png'); else if(SP_TOTAL===900) showMilestone('milestone-15.png'); else if(SP_TOTAL===600) showMilestone('milestone-10.png'); else if(SP_TOTAL===300) showMilestone('milestone-5.png'); else showMilestone('milestone-other.png'); }else{ showMilestone('milestone-other.png'); } updateSP(); } }
 function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date.now()-spStart)/1000); spPaused=true; spTick&&clearInterval(spTick); spTick=null; $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false; updateSP(); }
-function spStopFn(){
-  if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000);
-  spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null;
-  setSPMessage('Godt jobbet! 👏'); showMilestone('milestone-stop.png');
-  $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true;
-  $('#clockSP').classList.remove('over');
-  $('#spInputs').classList.remove('hiddenSoft'); // vis inputs igjen
-}
+function spStopFn(){ if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000); spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null; setSPMessage('Godt jobbet! 👏'); showMilestone('milestone-stop.png'); $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true; $('#clockSP').classList.remove('over'); $('#spInputs').classList.remove('hiddenSoft'); setLogoSpin(false); }
 $('#playSP').addEventListener('click',spStartFn);
 $('#pauseSP').addEventListener('click',spPauseFn);
 $('#stopSP').addEventListener('click',spStopFn);
 
 /* Presets */
-spPresets.forEach(btn=>btn.addEventListener('click',()=>{
-  if(spRunning) return;
-  const s=parseInt(btn.dataset.sec,10)||0;
-  localStorage.setItem(PRESET_KEY,String(s));
-  SP_TOTAL = s;
-  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
-  applyIdleClock();
-  updatePlayIcon();
-  showMilestone(null);
-  drawTimelineSP();
-}));
+spPresets.forEach(btn=>btn.addEventListener('click',()=>{ if(spRunning) return; const s=parseInt(btn.dataset.sec,10)||0; localStorage.setItem(PRESET_KEY,String(s)); SP_TOTAL = s; markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1); applyIdleClock(); updatePlayIcon(); showMilestone(null); drawTimelineSP(); }));
 
 /* Slider-dial */
 let dialValue = Math.min(60, Math.max(0, isNaN(SP_TOTAL)?0:Math.floor(SP_TOTAL/60)));
 const dial = document.querySelector('.dial'), ticks = document.getElementById('ticks'), thumb = document.getElementById('thumb');
-function renderTicks(){
-  ticks.innerHTML = '';
-  const start = Math.max(0, dialValue-3), end = Math.min(60, dialValue+3);
-  for(let m=start; m<=end; m++){
-    const el=document.createElement('span'); el.textContent=String(m);
-    if(m===dialValue) el.className='active';
-    else if(Math.abs(m-dialValue)===1) el.className='near';
-    ticks.appendChild(el);
-  }
-}
-function positionThumb(){
-  const track = dial.querySelector('.track');
-  const pct = dialValue/60; // 0..1
-  thumb.style.left = ((pct*100)) + '%';
-}
-function setDial(val){
-  if(spRunning) return;
-  dialValue = Math.min(60, Math.max(0, val|0));
-  SP_TOTAL = dialValue*60;
-  localStorage.setItem(PRESET_KEY,String(SP_TOTAL));
-  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
-  renderTicks(); positionThumb();
-  applyIdleClock();
-  updatePlayIcon();
-  showMilestone(null); $('#msgSP').textContent='';
-  drawTimelineSP();
-}
+function renderTicks(){ ticks.innerHTML = ''; const start = Math.max(0, dialValue-3), end = Math.min(60, dialValue+3); for(let m=start; m<=end; m++){ const el=document.createElement('span'); el.textContent=String(m); if(m===dialValue) el.className='active'; else if(Math.abs(m-dialValue)===1) el.className='near'; ticks.appendChild(el); } }
+function positionThumb(){ const track = dial.querySelector('.track'); const p = dialValue/60; thumb.style.left = ((p*100)) + '%'; }
+function setDial(val){ if(spRunning) return; dialValue = Math.min(60, Math.max(0, val|0)); SP_TOTAL = dialValue*60; localStorage.setItem(PRESET_KEY,String(SP_TOTAL)); markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1); renderTicks(); positionThumb(); applyIdleClock(); updatePlayIcon(); showMilestone(null); $('#msgSP').textContent=''; drawTimelineSP(); }
 renderTicks(); positionThumb();
+(function(){ const track = dial.querySelector('.track'); let drag=false; function setFromClientX(x){ const r=track.getBoundingClientRect(), p = Math.min(1, Math.max(0, (x-r.left)/r.width)); setDial(Math.round(p*60)); } track.addEventListener('pointerdown',e=>{drag=true; track.setPointerCapture(e.pointerId); setFromClientX(e.clientX);}); track.addEventListener('pointermove',e=>{ if(drag) setFromClientX(e.clientX); }); track.addEventListener('pointerup',()=>{drag=false;}); })();
 
-(function(){
-  const track = dial.querySelector('.track');
-  let drag=false;
-  function setFromClientX(x){
-    const r=track.getBoundingClientRect(), pct = Math.min(1, Math.max(0, (x-r.left)/r.width));
-    setDial(Math.round(pct*60));
-  }
-  track.addEventListener('pointerdown',e=>{drag=true; track.setPointerCapture(e.pointerId); setFromClientX(e.clientX);});
-  track.addEventListener('pointermove',e=>{ if(drag) setFromClientX(e.clientX); });
-  track.addEventListener('pointerup',()=>{drag=false;});
-})();
-
-/* Logo effekt */
+/* Logo effekt + spinning */
 const brandBox=document.getElementById('brandBox'), logoImg=document.getElementById('logoImg');
-logoImg.addEventListener('click',()=>{
-  brandBox.classList.remove('explode'); logoImg.classList.remove('shake');
-  void brandBox.offsetWidth; void logoImg.offsetWidth;
-  brandBox.classList.add('explode');
-  logoImg.classList.add('shake');
-});
+logoImg.addEventListener('click',()=>{ brandBox.classList.remove('explode'); logoImg.classList.remove('shake'); void brandBox.offsetWidth; void logoImg.offsetWidth; brandBox.classList.add('explode'); logoImg.classList.add('shake'); });
+function setLogoSpin(on){ logoImg.classList.toggle('spin', !!on); }
 
 /* Pressed-feedback for runde knapper (mobil/desktop) */
-(function pressFeedback(){
-  const add = e => {
-    const t = e.target.closest('.round'); if(!t) return;
-    t.classList.add('pressed');
-    const up = () => { t.classList.remove('pressed'); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true); };
-    window.addEventListener('pointerup', up, true);
-    window.addEventListener('pointercancel', up, true);
-  };
-  document.addEventListener('pointerdown', add, true);
-})();
+(function pressFeedback(){ const add = e => { const t = e.target.closest('.round'); if(!t) return; t.classList.add('pressed'); const up = () => { t.classList.remove('pressed'); window.removeEventListener('pointerup', up, true); window.removeEventListener('pointercancel', up, true); }; window.addEventListener('pointerup', up, true); window.addEventListener('pointercancel', up, true); }; document.addEventListener('pointerdown', add, true); })();
 
 /* Init (kun norsk) */
 (async function init(){
-  // Taler init
   markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
-  applyIdleClock();
-  updatePlayIcon();
-  drawTimelineSP();
-
-  // WT init – last norske artikler automatisk
+  applyIdleClock(); updatePlayIcon(); drawTimelineSP();
   await hydrateOptions();
+  // Hindre lagring/drag av bilder (best effort)
+  document.addEventListener('contextmenu',e=>{ if(e.target && e.target.tagName==='IMG'){ e.preventDefault(); }});
+  document.addEventListener('dragstart',e=>{ if(e.target && e.target.tagName==='IMG'){ e.preventDefault(); }});
+  [...document.querySelectorAll('img')].forEach(img=>{ img.setAttribute('draggable','false'); });
 })();
 </script>
 </body>
