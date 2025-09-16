@@ -212,22 +212,6 @@ body::before{
   max-width: var(--content-max);
   margin-inline: auto;
 }
-/* WT: make non-card blocks match Speaker width & padding */
-#viewWT .h1,
-#viewWT .message,
-#viewWT #clockWT,
-#viewWT .controls{
-  max-width: var(--content-max);
-  margin-inline: auto;
-  padding-inline: 14px; /* match .card inner padding */
-}
-#viewWT .controls{ justify-content: center; }
-#viewWT .timeline-wrap{
-  max-width: var(--content-max);
-  margin-inline: auto;
-  padding-inline: 14px; /* align timeline with card content width */
-}
-
 
 /* Unngå at selectene blåser ut bredden på WT */
 #viewWT .select{ min-width:180px; }
@@ -235,29 +219,7 @@ body::before{
   #viewWT .select{ min-width:140px; }
 }
 
-/* --- Extra spacing between timeline and book icons (≈ +2mm) --- */
-.para-read,
-.para-read-emoji{ bottom:-24px !important; }
-
-
-/* --- Extra clearance below timeline so icons don't overlap --- */
-.timeline-wrap{ margin-bottom:26px !important; }
-
-
-.brand img.spinBoost{ animation:logoSpinBoost 3s cubic-bezier(.3,0,.7,1) both; }
-
-@keyframes logoSpinBoost{
-  0%   { transform: rotate(0deg); }
-  10%  { transform: rotate(90deg); }
-  25%  { transform: rotate(360deg); }   /* 1 turn */
-  50%  { transform: rotate(1080deg); }  /* 3 turns */
-  75%  { transform: rotate(2880deg); }  /* 8 turns */
-  100% { transform: rotate(6480deg); }  /* 18 turns (superfort mot slutten) */
-}
-
-.brand img{ transform-origin:50% 50%; }
-
-/* --- Read markers under timeline (📖) --- */
+/* --- Read markers under timeline (📖) & spacing --- */
 .para-read,
 .para-read-emoji{
   position:absolute; left:50%; bottom:-22px; transform:translateX(-50%);
@@ -265,7 +227,31 @@ body::before{
   filter: drop-shadow(0 1px 0 rgba(255,255,255,.6));
 }
 .para-read-emoji{ width:auto; height:auto; font-size:14px; line-height:1; }
-.para-slot{ overflow: visible; } /* ensure icons are visible even if slot is narrow */
+.para-slot{ overflow: visible; }
+.timeline-wrap{ margin-bottom:26px; }
+
+/* --- WT: match Speaker width & padding for non-card elements --- */
+#viewWT .h1,
+#viewWT .message,
+#viewWT #clockWT,
+#viewWT .controls,
+#viewWT .timeline-wrap{
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: 14px;
+}
+#viewWT .controls{ justify-content:center; }
+
+/* --- Logo spin boost --- */
+.brand img.spinBoost{ animation:logoSpinBoost 3s cubic-bezier(.3,0,.7,1) both; }
+@keyframes logoSpinBoost{
+  0%   { transform: rotate(0deg); }
+  10%  { transform: rotate(90deg); }
+  25%  { transform: rotate(360deg); }
+  50%  { transform: rotate(1080deg); }
+  75%  { transform: rotate(2880deg); }
+  100% { transform: rotate(6480deg); }
+}
 
 </style>
 </head>
@@ -324,7 +310,7 @@ body::before{
 
       <img id="msImg" class="milestone-img" alt="" style="display:none"/>
 
-      <div class="message" id="msgSP">Start stoppeklokken eller velg en tid og start nedtelling.</div>
+      <div class="message" id="msgSP" role="status" aria-live="polite">Start stoppeklokken eller velg en tid og start nedtelling.</div>
 
       <div class="controls" style="justify-content:center; margin-top:12px">
         <button id="playSP" class="round play" title="Start/Gjenoppta" aria-label="Start">
@@ -355,7 +341,7 @@ body::before{
     </div>
 
     <div class="h1" id="articleTitle">—</div>
-    <div class="message" id="message">Velg språk og artikkel for å laste timer.</div>
+    <div class="message" id="message" role="status" aria-live="polite">Velg språk og artikkel for å laste timer.</div>
 
     <div class="timeline-wrap">
       <div id="timeline" class="timeline">
@@ -424,9 +410,20 @@ async function hydrateOptions(){
   useItem(JSON.parse(sel.value));
 }
 function useItem(it){
+  // --- Compact JSON support ---
+  if (!('paragraphs' in it) && Array.isArray(it.words)) it.paragraphs = it.words.length;
+  if (Array.isArray(it.read_paras)) it.reads = it.read_paras.length;
+
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=it.paragraphs|0; reads=it.reads|0;
   paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
+  // Hydrate p.les from read_paras (1-based)
+  (Array.isArray(it.read_paras) ? it.read_paras : []).forEach(n=>{
+    const idx=(n|0)-1; if(idx>=0 && idx<paras.length){ paras[idx].les = 1; }
+  });
+  // Update reads pill for UI
+  try{ reads = Array.isArray(it.read_paras) ? it.read_paras.length : (it.reads|0); $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads}`; }catch(_){}
+
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`${labelFor('paras',lang)}: ${totalParagraphs}`;
   $('#pillReads').textContent=`${labelFor('reads',lang)}: ${reads}`;
@@ -476,7 +473,6 @@ function drawTimeline(){
     const fs = Math.max(9, Math.min(14, Math.floor(slotPx*0.33)));
     lbl.style.fontSize = fs+'px';
     slot.appendChild(lbl);
-
     // Les-ikon under slotten
     try{
       const pData = (typeof paras!=='undefined' && paras[i-1]) ? paras[i-1] : null;
@@ -497,17 +493,17 @@ function drawTimeline(){
       }
     }catch(_){}
 
+
     slot.addEventListener('click',()=>{
-    // Allow choosing any start paragraph before start, or while paused
     if(started && !paused) return;
-    const target = cumulative[i-1];
-    accum = Math.max(0, Math.min(Math.round(target), TOTAL-OUTRO-REVIEW));
-    const pNow = Math.min(accum/TOTAL*100, 100);
-    $('#elapsed').style.width = pNow + '%';
-    $('#cursor').style.left = `calc(${pNow}% - 1px)`;
-    $('#clockWT').textContent = fmt(accum);
-    $('#clockWT').classList.toggle('over', accum >= TOTAL);
-    $('#message').textContent = `${labelFor('paras',lang)} ${i}`;
+    const target=cumulative[i-1];
+    accum=Math.max(0,Math.min(Math.round(target), TOTAL-OUTRO-REVIEW));
+    const pNow=Math.min(accum/TOTAL*100,100);
+    $('#elapsed').style.width=pNow+'%';
+    $('#cursor').style.left=`calc(${pNow}% - 1px)`;
+    $('#clockWT').textContent=fmt(accum);
+    $('#clockWT').classList.toggle('over',accum>=TOTAL);
+    $('#message').textContent=`${labelFor('paras',lang)} ${i}`;
   });
     t.insertBefore(slot,$('#elapsed'));
   }
@@ -603,7 +599,7 @@ function activateView(k){
 $('#tabWT').addEventListener('click',()=>activateView('WT'));
 $('#tabSP').addEventListener('click',()=>activateView('SP'));
 const otherIcon = document.getElementById('otherIcon');
-otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.ng'; otherIcon.dataset.triedNg='1'; }});
+otherIcon.addEventListener('error', ()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='other-icon.png'; otherIcon.dataset.triedNg='1'; }});
 
 /* ===== Språk + uke ===== */
 $('#langSel').addEventListener('change', async ()=>{ lang=$('#langSel').value||'no'; await hydrateOptions(); localStorage.setItem('meetingTimer.lang',lang);
@@ -790,10 +786,13 @@ renderTicks(); positionThumb();
 /* Logo effekt */
 const brandBox=document.getElementById('brandBox'), logoImg=document.getElementById('logoImg');
 logoImg.addEventListener('click',()=>{
-  brandBox.classList.remove('explode'); logoImg.classList.remove('shake');
+  brandBox.classList.remove('explode');
+  logoImg.classList.remove('shake','spinBoost');
   void brandBox.offsetWidth; void logoImg.offsetWidth;
   brandBox.classList.add('explode');
-  logoImg.classList.add('shake');
+  if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    logoImg.classList.add('spinBoost');
+  }
 });
 
 /* Pressed-feedback for runde knapper (mobil/desktop) */
