@@ -56,7 +56,7 @@ body{display:flex;flex-direction:column;min-height:100%}
 .message{background:var(--pill);border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-height:1.2em;box-shadow:0 8px 24px rgba(70,50,30,.05);margin-bottom:12px;color:#4a5552}
 
 /* Timeline */
-.timeline-wrap{margin-top:22px}
+.timeline-wrap{margin-top:22px; margin-bottom:18px}
 .timeline{position:relative;height:56px;border-radius:14px;overflow:visible;background:linear-gradient(180deg,var(--tl-green-1) 0%,#edf5f0 100%);border:1px solid var(--border);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 12px 36px rgba(70,50,30,.05)}
 .slot{position:absolute;top:0;height:100%;opacity:.22}
 #introSlot{background:var(--phase-intro)}
@@ -66,7 +66,7 @@ body{display:flex;flex-direction:column;min-height:100%}
 .para-slot.alt{background:var(--tl-green-2)}
 .para-slot>div{pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1}
 /* 📖 på les-avsnitt */
-.para-slot[data-has-read]::after{content:" 📖"}
+.read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-14px; width:18px; height:18px; background:url('read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
 .elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2}
 .cursor{position:absolute;top:-10px;width:2px;height:76px;background:#2f5f49;left:0%;z-index:3;box-shadow:0 0 0 2px rgba(58,111,82,.10)}
 .big-clock,.clock{margin-top:16px;font-size:2.2rem;font-weight:900;color:#2f5f49;text-shadow:0 1px 0 rgba(255,255,255,.65)}
@@ -113,17 +113,17 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
       <img id="logoImg" src="meeting-timer-logo.png" alt="Meeting Timer logo">
     </div>
     <div class="segmented" role="tablist" aria-label="Modus">
-      <button id="tabSP" class="active" role="tab" aria-selected="true" title="Taler">
-        <img id="otherIcon" src="other-icon.png" alt="">
-      </button>
-      <button id="tabWT" role="tab" aria-selected="false" title="Vakttårn">
+      <button id="tabWT" class="active" role="tab" aria-selected="true" title="Vakttårn">
         <img src="watchtower-icon.png" alt="">
+      </button>
+      <button id="tabSP" role="tab" aria-selected="false" title="Taler">
+        <img id="otherIcon" src="other-icon.png" alt="">
       </button>
     </div>
   </div>
 
   <!-- TALER -->
-  <div id="viewSP" class="view active">
+  <div id="viewSP" class="view">
     <div class="card" id="spCard">
       <div style="font-weight:1000;color:#4a5552;margin:2px 0 8px">TIMER FOR MIDTUKEMØTET</div>
       <div id="spInputs" style="margin-bottom:6px">
@@ -154,7 +154,7 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
   </div>
 
   <!-- VAKTTÅRN -->
-  <div id="viewWT" class="view">
+  <div id="viewWT" class="view active">
     <div id="wtControlsCard" class="card infoband" style="justify-content:space-between;gap:12px">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <select id="weekSel" class="select" aria-label="Artikkel"><option>Laster …</option></select>
@@ -216,7 +216,7 @@ function useItem(it){ $('#articleTitle').textContent=it.title||'—'; totalParag
 function computeAllocation(){ if(totalParagraphs<=0){perParagraph=[];cumulative=[];return;} const wps=WPM/60; const raw=Array.from({length:totalParagraphs},(_,i)=>{ const p=paras[i]||{words:0,q:1,les:0,hasAB:false}; let s=(p.words||0)/wps + (p.q||0)*SEC_PER_Q + (p.les||0)*SEC_PER_READ + (p.hasAB?AB_BONUS:0); s=Math.max(5,s); const firstN=Math.min(5,totalParagraphs), lastN=Math.min(5,totalParagraphs); if(i<firstN) s*=0.8; if(i>=totalParagraphs-lastN) s*=1.2; return s; }); const scale=CONTENT/((raw.reduce((a,b)=>a+b,0))||1); perParagraph=raw.map(x=>x*scale); cumulative=[]; let acc=INTRO; for(let i=0;i<totalParagraphs;i++){cumulative.push(acc); acc+=perParagraph[i];} }
 
 /* ===== timeline ===== */
-function drawTimeline(){ const t=$('#timeline'); if(!t) return; Array.from(t.querySelectorAll('.para-slot')).forEach(n=>n.remove()); $('#introSlot').style.left='0%'; $('#introSlot').style.width=pct(INTRO).toFixed(4)+'%'; $('#outroSlot').style.right='0%'; $('#outroSlot').style.width=pct(OUTRO).toFixed(4)+'%'; $('#reviewSlot').style.right=pct(OUTRO).toFixed(4)+'%'; $('#reviewSlot').style.width=pct(REVIEW).toFixed(4)+'%'; if(totalParagraphs<=0){$('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return;} const tlWidth=t.clientWidth||t.getBoundingClientRect().width||1; const pxPerSec=tlWidth/TOTAL; for(let i=1;i<=totalParagraphs;i++){ const leftP=pct(cumulative[i-1]), widthP=pct(perParagraph[i-1]); const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':''); slot.style.left=leftP+'%'; slot.style.width=widthP+'%'; const slotPx=perParagraph[i-1]*pxPerSec; const lbl=document.createElement('div'); lbl.textContent=String(i); const fs=Math.max(9,Math.min(14,Math.floor(slotPx*0.33))); lbl.style.fontSize=fs+'px'; slot.appendChild(lbl); if(readSet.has(i)) slot.dataset.hasRead='1'; slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`Avsnitt ${i}`; }); t.insertBefore(slot,$('#elapsed')); } $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; }
+function drawTimeline(){ const t=$('#timeline'); if(!t) return; Array.from(t.querySelectorAll('.para-slot')).forEach(n=>n.remove()); $('#introSlot').style.left='0%'; $('#introSlot').style.width=pct(INTRO).toFixed(4)+'%'; $('#outroSlot').style.right='0%'; $('#outroSlot').style.width=pct(OUTRO).toFixed(4)+'%'; $('#reviewSlot').style.right=pct(OUTRO).toFixed(4)+'%'; $('#reviewSlot').style.width=pct(REVIEW).toFixed(4)+'%'; if(totalParagraphs<=0){$('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return;} const tlWidth=t.clientWidth||t.getBoundingClientRect().width||1; const pxPerSec=tlWidth/TOTAL; for(let i=1;i<=totalParagraphs;i++){ const leftP=pct(cumulative[i-1]), widthP=pct(perParagraph[i-1]); const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':''); slot.style.left=leftP+'%'; slot.style.width=widthP+'%'; const slotPx=perParagraph[i-1]*pxPerSec; const lbl=document.createElement('div'); lbl.textContent=String(i); const fs=Math.max(9,Math.min(14,Math.floor(slotPx*0.33))); lbl.style.fontSize=fs+'px'; slot.appendChild(lbl); if(readSet.has(i)){ const pin=document.createElement('i'); pin.className='read-pin'; slot.appendChild(pin); } slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), TOTAL-OUTRO-REVIEW); const pNow=Math.min(accum/TOTAL*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=TOTAL); $('#message').textContent=`Avsnitt ${i}${readSet.has(i)?' + Les-skriftsted':''}`; }); t.insertBefore(slot,$('#elapsed')); } $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; }
 let _rAF=null; function relayout(){ if(totalParagraphs>0) drawTimeline(); drawTimelineSP(); }
 ['resize','orientationchange'].forEach(ev=>{ window.addEventListener(ev, ()=>{ if(_rAF) cancelAnimationFrame(_rAF); _rAF=requestAnimationFrame(relayout); }); });
 
@@ -227,7 +227,7 @@ function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null }
 function nowElapsed(){ if(!started) return accum; if(paused) return accum; return accum+Math.floor((Date.now()-startTs)/1000)}
 function setWTMessage(txt){ $('#message').textContent=txt }
 function wtFlash(msg,ms=10000){ setWTMessage(msg); wtMsgHoldUntil=Date.now()+ms; if(wtMsgHoldTimer) clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=setTimeout(()=>{ wtMsgHoldTimer=null },ms) }
-function tickWT(){ const e=nowElapsed(), remaining=TOTAL-e; $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=TOTAL); const p=Math.min(e/TOTAL*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`; if(!wtShown10 && remaining<=600 && remaining>0){ wtShown10=true; wtFlash('10 min igjen, dette klarer du! 😎',20000) } if(wtMsgHoldTimer && Date.now()<wtMsgHoldUntil){ wtLastE=e; return } const crossed=(arr,seen,msg)=>{ for(const m of arr){ const s=m*60; if(!seen.has(m) && wtLastE < s && e >= s){ seen.add(m); wtFlash(msg,10000); break } } }; crossed(WT_SMILE_MIN,wtSmileSeen,'Husk å smile! 😁'); crossed(WT_CHEER_MIN,wtCheerSeen,'Jeg heier på deg! 🤩'); if(e<INTRO) setWTMessage('Introduksjon'); else if(e>=TOTAL) setWTMessage('Tiden er brukt – teller over'); else if(e>=TOTAL-OUTRO) setWTMessage('Avslutning'); else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage('Repetisjonsspørsmål'); else{ let idx=0; for(let i=0;i<totalParagraphs;i++){const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1]; if(e>=s&&e<end){idx=i;break}} let msg=`Avsnitt ${idx+1}`; if(e>=1800&&e<1860) msg+=' – du er halvveis'; setWTMessage(msg) } wtLastE=e }
+function tickWT(){ const e=nowElapsed(), remaining=TOTAL-e; $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=TOTAL); const p=Math.min(e/TOTAL*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`; if(!wtShown10 && remaining<=600 && remaining>0){ wtShown10=true; wtFlash('10 min igjen, dette klarer du! 😎',20000) } if(wtMsgHoldTimer && Date.now()<wtMsgHoldUntil){ wtLastE=e; return } const crossed=(arr,seen,msg)=>{ for(const m of arr){ const s=m*60; if(!seen.has(m) && wtLastE < s && e >= s){ seen.add(m); wtFlash(msg,10000); break } } }; crossed(WT_SMILE_MIN,wtSmileSeen,'Husk å smile! 😁'); crossed(WT_CHEER_MIN,wtCheerSeen,'Jeg heier på deg! 🤩'); if(e<INTRO) setWTMessage('Introduksjon'); else if(e>=TOTAL) setWTMessage('Tiden er brukt – teller over'); else if(e>=TOTAL-OUTRO) setWTMessage('Avslutning'); else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage('Repetisjonsspørsmål'); else{ let idx=0; for(let i=0;i<totalParagraphs;i++){const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1]; if(e>=s&&e<end){idx=i;break}} let msg=`Avsnitt ${idx+1}${readSet.has(idx+1)?' + Les-skriftsted':''}`; if(e>=1800&&e<1860) msg+=' – du er halvveis'; setWTMessage(msg) } wtLastE=e }
 $('#playWT').addEventListener('click',()=>{ if(started && paused){ paused=false; startTs=Date.now(); startClock(); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; return } if(!started){ started=true; paused=false; startTs=Date.now(); startClock(); setWTMessage('Introduksjon'); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; $('#wtControlsCard').classList.add('hiddenCard') } });
 $('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage('Pause'); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false });
 $('#stopWT').addEventListener('click',()=>{ if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000); started=false; paused=false; stopClock(); const e=accum; if(e>=3300 && e<3600) setWTMessage('Godt jobbet, du klarte det på under en time! 🥳'); else if(e>=3600 && e<3720) setWTMessage('Nesten helt perfekt! 🤩'); else if(e>=3720 && e<3900) setWTMessage('Litt over, neste gang klarer du enda bedre. 👍'); else if(e>=3900 && e<4200) setWTMessage('Aj aj, her har du litt å jobbe med. 😅'); else setWTMessage(`Ferdig – totalt ${fmt(e)}`); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true; accum=0; resetClockUI(); $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; $('#wtControlsCard').classList.remove('hiddenCard'); wtShown10=false; if(wtMsgHoldTimer){ clearTimeout(wtMsgHoldTimer); wtMsgHoldTimer=null } wtMsgHoldUntil=0; wtLastE=0; wtSmileSeen.clear(); wtCheerSeen.clear(); });
