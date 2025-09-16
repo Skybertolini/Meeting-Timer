@@ -275,6 +275,15 @@ html{ overflow-y: scroll; } /* keep scrollbar space reserved to avoid width jump
 img{ -webkit-user-drag:none; user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
 a, button, img{ -webkit-tap-highlight-color: transparent; }
 
+
+/* Language selector */
+.langpick select{
+  appearance:none; -webkit-appearance:none; background:#fff;
+  border:1px solid rgba(0,0,0,.12); border-radius:999px; padding:6px 10px;
+  font-weight:600; font-size:.9rem; cursor:pointer;
+}
+.topbar{ gap:14px; }
+
 </style>
 </head>
 <body>
@@ -292,7 +301,15 @@ a, button, img{ -webkit-tap-highlight-color: transparent; }
       <button id="tabWT" role="tab" aria-selected="false" title="Vakttårn">
         <img src="watchtower-icon.png" alt="">
       </button>
+    
+    <div class="langpick">
+      <select id="langSelect" aria-label="Språk">
+        <option value="no">NO</option>
+        <option value="sv">SV</option>
+        <option value="en">EN</option>
+      </select>
     </div>
+
   </div>
 
   <!-- TALER (standard aktiv) -->
@@ -399,6 +416,60 @@ const $=s=>document.querySelector(s), pct=s=>s/TOTAL*100;
 const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function isoMonday(d=new Date()){ const x=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const w=(x.getUTCDay()+6)%7; x.setUTCDate(x.getUTCDate()-w); return x.toISOString().slice(0,10); }
 function addDaysISO(iso,days){ const d=new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+
+/* === i18n helpers === */
+function paraWord(lang){ return lang==='sv' ? 'Paragraf' : (lang==='en' ? 'Paragraph' : 'Avsnitt'); }
+function readWord(lang){ return lang==='sv' ? 'Läs-skriftställe' : (lang==='en' ? 'Read Scripture' : 'Les-skriftsted'); }
+function halfwaySuffix(lang){
+  return lang==='sv' ? ' – du är halvvägs' : (lang==='en' ? ' – you are halfway' : ' – du er halvveis');
+}
+/* Fixed messages */
+const MSG = {
+  no: {
+    intro:'Introduksjon', outro:'Avslutning', review:'Repetisjonsspørsmål',
+    overtime_counter:'Vi er på overtid',
+    started:'Vi er i gang! ☺️', pause:'Pause',
+    almost_done:'Snart ferdig nå! ⏱️',
+    smile:'Husk å smile! 😁',
+    cheer:'Jeg heier på deg! 🤩',
+    good:'Godt jobbet! 👏',
+    under_hour:'Godt jobbet, du klarte det på under en time! 🥳',
+    nearly:'Nesten helt perfekt! 🤩',
+    bit_over:'Litt over, neste gang klarer du enda bedre. 👍',
+    oops_over:'Oj, du har gått over tiden. 😅',
+    try_harder:'Aj aj, her har du litt å jobbe med. 😅'
+  },
+  sv: {
+    intro:'Introduktion', outro:'Avslutning', review:'Repetitionsfrågor',
+    overtime_counter:'Vi er på overtid',
+    started:'Nu kör vi! ☺️', pause:'Paus',
+    almost_done:'Snart klar! ⏱️',
+    smile:'Kom ihåg att le! 😁',
+    cheer:'Jag hejar på dig! 🤩',
+    good:'Bra jobbat! 👏',
+    under_hour:'Snyggt, du klarade det på under en timme! 🥳',
+    nearly:'Nästan helt perfekt! 🤩',
+    bit_over:'Lite över, nästa gång går det ännu bättre. 👍',
+    oops_over:'Oj, du gick över tiden. 😅',
+    try_harder:'Oj då, här finns det att jobba på. 😅'
+  },
+  en: {
+    intro:'Introduction', outro:'Conclusion', review:'Review questions',
+    overtime_counter:'Vi er på overtid',
+    started:'We’re live! ☺️', pause:'Pause',
+    almost_done:'Almost done! ⏱️',
+    smile:'Remember to smile! 😁',
+    cheer:'I’m cheering for you! 🤩',
+    good:'Great job! 👏',
+    under_hour:'Nice, you finished in under an hour! 🥳',
+    nearly:'So close to perfect! 🤩',
+    bit_over:'A bit over — next time will be even better. 👍',
+    oops_over:'Oops, you ran over time. 😅',
+    try_harder:'Oops, there’s room for improvement. 😅'
+  }
+};
+function tr(key, lang){ const L = (lang==='sv'||lang==='en')?lang:'no'; return MSG[L][key] || key; }
+
 function labelFor(k,lang){ if(lang==='sv'){ if(k==='paras')return'Paragrafer'; if(k==='reads')return'Läs-skriftställen'; } if(k==='paras')return'Avsnitt'; if(k==='reads')return'Les-skriftsteder'; return k; }
 
 /* ===== WT state ===== */
@@ -500,7 +571,6 @@ function drawTimeline(){
       const pData = (typeof paras!=='undefined' && paras[i-1]) ? paras[i-1] : null;
       if (pData && (pData.les|0) > 0) {
         const mark = document.createElement('img'); mark.className = 'para-read'; mark.alt = labelFor('reads',lang); mark.src = 'read-icon.png';
-        mark.onerror = () => { mark.remove(); const e = document.createElement('div'); e.className = 'para-read-emoji'; e.setAttribute('aria-hidden','true'); e.textContent = '📖'; slot.appendChild(e); };
         slot.appendChild(mark);
       }
     }catch(_){}
@@ -558,14 +628,15 @@ function tickWT(){
   crossed(WT_SMILE_MIN, wtSmileSeen, 'Husk å smile! 😁');
   crossed(WT_CHEER_MIN, wtCheerSeen, 'Jeg heier på deg! 🤩');
 
-  if(e<INTRO) setWTMessage('Introduksjon');
-  else if(e>=TOTAL) setWTMessage('Tiden er brukt – teller over');
-  else if(e>=TOTAL-OUTRO) setWTMessage('Avslutning');
-  else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage('Repetisjonsspørsmål');
+  if(e<INTRO) setWTMessage(tr('intro',lang));
+  else if(e>=TOTAL) setWTMessage(tr('overtime_counter',lang));
+  else if(e>=TOTAL-OUTRO) setWTMessage(tr('outro',lang));
+  else if(e>=TOTAL-OUTRO-REVIEW) setWTMessage(tr('review',lang));
   else{
     let idx=0; for(let i=0;i<totalParagraphs;i++){const s=cumulative[i], end=(i===totalParagraphs-1)?(TOTAL-OUTRO-REVIEW):cumulative[i+1]; if(e>=s&&e<end){idx=i;break}}
-    let msg=`${labelFor('paras',lang)} ${idx+1}`;
-    if(e>=1800&&e<1860) msg+=' – du er halvveis';
+    let hasRead = (paras[idx] && (paras[idx].les|0)>0);
+    let msg = `${paraWord(lang)} ${idx+1}` + (hasRead?` + ${readWord(lang)}`:``);
+    if(e>=1800&&e<1860) msg += halfwaySuffix(lang);
     setWTMessage(msg);
   }
   wtLastE = e;
@@ -578,19 +649,19 @@ $('#playWT').addEventListener('click',()=>{ setLogoActive(true);
     return;
   }
   if(!started){
-    started=true; paused=false; startTs=Date.now(); startClock(); setWTMessage('Introduksjon');
+    started=true; paused=false; startTs=Date.now(); startClock(); setWTMessage(tr('intro',lang));
     $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; $('#wtControlsCard').classList.add('hiddenCard');
   }
 });
-$('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage('Pause'); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; });
+$('#pauseWT').addEventListener('click',()=>{ if(!started||paused) return; accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage(tr('pause',lang)); $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; });
 $('#stopWT').addEventListener('click',()=>{ setLogoActive(false); 
   if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000);
   started=false; paused=false; stopClock();
   const e=accum;
-  if(e>=3300 && e<3600) setWTMessage('Godt jobbet, du klarte det på under en time! 🥳');
-  else if(e>=3600 && e<3720) setWTMessage('Nesten helt perfekt! 🤩');
-  else if(e>=3720 && e<3900) setWTMessage('Litt over, neste gang klarer du enda bedre. 👍');
-  else if(e>=3900 && e<4200) setWTMessage('Aj aj, her har du litt å jobbe med. 😅');
+  if(e>=3300 && e<3600) setWTMessage(tr('under_hour',lang));
+  else if(e>=3600 && e<3720) setWTMessage(tr('nearly',lang));
+  else if(e>=3720 && e<3900) setWTMessage(tr('bit_over',lang));
+  else if(e>=3900 && e<4200) setWTMessage(tr('try_harder',lang));
   else setWTMessage(`Ferdig – totalt ${fmt(e)}`);
 
   $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true; accum=0; resetClockUI(); $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; $('#wtControlsCard').classList.remove('hiddenCard');
@@ -675,7 +746,7 @@ function updateSP(){
 
     if(!isCountUp()){
       const remain = SP_TOTAL - e;
-      if(remain===60 && !shownOneMin){ setSPMessage('Snart ferdig nå! ⏱️'); shownOneMin=true; }
+      if(remain===60 && !shownOneMin){ setSPMessage(tr('almost_done',lang)); shownOneMin=true; }
       if(remain<0 && !shownOver){ setSPMessage('Oj, du har gått over tiden. 😅'); shownOver=true; }
 
       const crossed = th => (prevRemain!==null && prevRemain>th && remain<=th);
@@ -808,14 +879,9 @@ function _swapLogo(src){
   img.style.opacity = '0';
   const done = ()=>{ img.onload=null; img.onerror=null; img.style.opacity='1'; };
   img.onload = done;
-  img.onerror = ()=>{
-    if(src===_logoActiveSrc){ img.src=_logoDefaultSrc; img.classList.add('logo-active-fallback'); }
-    else { img.classList.remove('logo-active-fallback'); }
-    done();
-  };
+  img.onerror = done;
   img.src = src;
-}
-function setLogoActive(on){
+}function setLogoActive(on){
   const img = document.getElementById('logoImg'); if(!img) return;
   if(on){ _swapLogo(_logoActiveSrc); }
   else { _swapLogo(_logoDefaultSrc); }
@@ -864,6 +930,38 @@ document.addEventListener('contextmenu', (e)=>{
 }, {capture:true});
 // iOS: further reduce long-press image actions by disabling gesture callouts
 try{ document.querySelectorAll('img').forEach(img=>{ img.setAttribute('draggable','false'); }); }catch(_){}
+
+
+// Language selector wiring
+(function(){
+  const sel = document.getElementById('langSelect');
+  if(!sel) return;
+  sel.value = (lang==='sv'||lang==='en')?lang:'no';
+  sel.addEventListener('change', ()=>{
+    lang = sel.value;
+    // Update pills if present
+    try{
+      $('#pillReads').textContent = `${labelFor('reads',lang)}: ${reads|0}`;
+      $('#pillParas').textContent = `${labelFor('paras',lang)}: ${totalParagraphs|0}`;
+    }catch(_){}
+    // Re-render timeline labels and refresh current message
+    try{ drawTimeline(); }catch(_){}
+    try{
+      const e = (typeof wtLastE!=='undefined' && wtLastE!==null) ? wtLastE : 0;
+      if(totalParagraphs>0){
+        let idx=0;
+        for(let i=0;i<totalParagraphs;i++){
+          const s=cumulative[i], end=(i>=totalParagraphs-1?(TOTAL-OUTRO-REVIEW):cumulative[i+1]);
+          if(e>=s&&e<end){idx=i;break}
+        }
+        let hasRead=(paras[idx]&&(paras[idx].les|0)>0);
+        let msg=`${paraWord(lang)} ${idx+1}` + (hasRead?` + ${readWord(lang)}`:``);
+        if(e>=1800&&e<1860) msg += halfwaySuffix(lang);
+        setWTMessage(msg);
+      }
+    }catch(_){}
+  });
+})();
 
 </script>
 </body>
