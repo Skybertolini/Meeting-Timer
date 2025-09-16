@@ -5,7 +5,7 @@
       "title": "Hva vi kan lære av Jakobs profeti om sønnene sine – del 2",
       "paragraphs": 19,
       "questions": 19,
-      "reads": 8,
+      "reads": 0,
       "words": [
         91,
         153,
@@ -26,14 +26,15 @@
         149,
         93,
         130
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-09-01",
       "title": "Aksepter ydmykt at det er ting du ikke vet",
       "paragraphs": 20,
       "questions": 20,
-      "reads": 5,
+      "reads": 0,
       "words": [
         62,
         178,
@@ -55,14 +56,15 @@
         186,
         129,
         250
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-09-08",
       "title": "Hjelp den du studerer med, til å tjene Jehova",
       "paragraphs": 21,
       "questions": 21,
-      "reads": 4,
+      "reads": 0,
       "words": [
         100,
         108,
@@ -85,7 +87,8 @@
         120,
         189,
         248
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-09-15",
@@ -151,38 +154,21 @@
       ],
       "reads": 4
     },
-    {
-      "week_start": "2025-09-29",
-      "title": "Kan du fortsatt lære noe av de grunnleggende sannhetene i Bibelen?",
-      "paragraphs": 17,
-      "questions": 17,
-      "reads": 3,
-      "words": [
-        110,
-        127,
-        176,
-        93,
-        100,
-        163,
-        162,
-        127,
-        134,
-        110,
-        182,
-        74,
-        178,
-        199,
-        239,
-        185,
-        319
-      ]
-    },
+{
+  "week_start": "2025-09-29",
+  "title": "Kan du fortsatt lære noe av de grunnleggende sannhetene i Bibelen?",
+  "paragraphs": 17,
+  "questions": 17,
+  "words": [110,127,176,93,100,163,162,127,134,110,182,74,178,199,239,185,319],
+  "read_paras": [2,5,13],
+  "reads": 3
+},
     {
       "week_start": "2025-10-06",
       "title": "Har du «lært hemmeligheten» med å være fornøyd?",
       "paragraphs": 17,
       "questions": 17,
-      "reads": 3,
+      "reads": 0,
       "words": [
         112,
         150,
@@ -201,14 +187,15 @@
         110,
         137,
         172
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-10-13",
       "title": "Hvordan Jehova hjelper deg til å holde ut",
       "paragraphs": 19,
       "questions": 19,
-      "reads": 4,
+      "reads": 0,
       "words": [
         76,
         94,
@@ -229,14 +216,15 @@
         181,
         203,
         150
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-10-20",
       "title": "Du kan være sikker på at Jehova elsker deg!",
       "paragraphs": 18,
       "questions": 18,
-      "reads": 2,
+      "reads": 0,
       "words": [
         165,
         101,
@@ -256,14 +244,15 @@
         295,
         86,
         221
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-10-27",
       "title": "Du kan være sikker på at Jehova har tilgitt deg!",
       "paragraphs": 18,
       "questions": 18,
-      "reads": 5,
+      "reads": 0,
       "words": [
         70,
         119,
@@ -283,14 +272,15 @@
         210,
         98,
         218
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-11-03",
       "title": "Du kan vinne kampen mot gale ønsker",
       "paragraphs": 20,
       "questions": 20,
-      "reads": 4,
+      "reads": 0,
       "words": [
         78,
         167,
@@ -312,14 +302,15 @@
         169,
         180,
         259
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-11-10",
       "title": "Snakk med de eldste når du trenger hjelp",
       "paragraphs": 17,
       "questions": 17,
-      "reads": 4,
+      "reads": 0,
       "words": [
         84,
         88,
@@ -338,14 +329,15 @@
         190,
         121,
         207
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-11-17",
       "title": "Ha riktig fokus når du eller andre blir urettferdig behandlet",
       "paragraphs": 17,
       "questions": 17,
-      "reads": 4,
+      "reads": 0,
       "words": [
         76,
         167,
@@ -364,14 +356,15 @@
         142,
         132,
         226
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-11-24",
       "title": "Vis andre respekt",
       "paragraphs": 18,
       "questions": 18,
-      "reads": 4,
+      "reads": 0,
       "words": [
         59,
         86,
@@ -391,14 +384,15 @@
         140,
         185,
         178
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-12-01",
       "title": "De som har «den rette innstillingen», vil reagere positivt",
       "paragraphs": 17,
       "questions": 17,
-      "reads": 5,
+      "reads": 0,
       "words": [
         84,
         181,
@@ -417,14 +411,15 @@
         210,
         99,
         175
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-12-08",
       "title": "Jehova er vår «største glede»",
       "paragraphs": 17,
       "questions": 17,
-      "reads": 3,
+      "reads": 0,
       "words": [
         87,
         40,
@@ -443,14 +438,15 @@
         97,
         290,
         206
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-12-15",
       "title": "Jehovas kjærlighet varer evig",
       "paragraphs": 16,
       "questions": 16,
-      "reads": 4,
+      "reads": 0,
       "words": [
         50,
         135,
@@ -468,14 +464,15 @@
         298,
         84,
         199
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-12-22",
       "title": "Åpne deg for Jehova i bønn",
       "paragraphs": 21,
       "questions": 21,
-      "reads": 6,
+      "reads": 0,
       "words": [
         108,
         56,
@@ -498,14 +495,15 @@
         82,
         94,
         308
-      ]
+      ],
+      "read_paras": []
     },
     {
       "week_start": "2025-12-29",
       "title": "Husk å be for andre",
       "paragraphs": 18,
       "questions": 18,
-      "reads": 4,
+      "reads": 0,
       "words": [
         66,
         111,
@@ -525,7 +523,8 @@
         167,
         149,
         187
-      ]
+      ],
+      "read_paras": []
     }
   ]
 }
