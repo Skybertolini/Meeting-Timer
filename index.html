@@ -245,6 +245,15 @@ html{ overflow-y: scroll; }
 img{ -webkit-user-drag:none; user-drag:none; -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
 a,button,img{ -webkit-tap-highlight-color: transparent; }
 
+
+/* === Responsive tweaks for small phones === */
+@media (max-width: 420px){
+  .h1{ font-size: clamp(1.2rem, 5.2vw, 1.5rem); }
+  #clockWT, #clockSP{ font-size: clamp(1.6rem, 8vw, 2.2rem); }
+  .controls .btn{ padding:10px 12px; min-width: 44px; min-height: 44px; }
+  .pill{ font-size:.85rem; }
+}
+
 </style>
 </head>
 <body>
@@ -768,16 +777,16 @@ logoImg.addEventListener('click',()=>{
 })();
 
 /* Init */
-(async function init(){
+(async async function init(){
   // Taler init
   markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
   applyIdleClock();
   updatePlayIcon();
   drawTimelineSP();
 
-  // WT init
-  const savedLang=localStorage.getItem('meetingTimer.lang'); if(savedLang) $('#langSel').value=savedLang; lang=$('#langSel').value||'no';
-  await hydrateOptions();
+  // WT init (Norwegian only)
+  lang='no';
+  try{ await hydrateOptions(); }catch(_){}
 })();
 
 // Block context menu + drag on images
@@ -785,6 +794,8 @@ document.addEventListener('contextmenu', (e)=>{ if(e.target && e.target.closest 
 document.addEventListener('dragstart', (e)=>{ if(e.target && e.target.closest && e.target.closest('img')) e.preventDefault(); }, {capture:true});
 try{ document.querySelectorAll('img').forEach(img=>img.setAttribute('draggable','false')); }catch(_){}
 
+
+document.addEventListener('DOMContentLoaded', ()=>{ try{ init(); }catch(_){ /* ignore */ } });
 </script>
 </body>
 </html>
