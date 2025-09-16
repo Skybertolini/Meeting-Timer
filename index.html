@@ -14,7 +14,9 @@
   --bg-top:#f8f7f5; --bg-bot:#f3f2ef; --ink:#2b3432; --muted:#8b827a;
   --card:rgba(255,255,252,.98); --border:rgba(40,30,20,.10);
   --green:#2f5f49; --pause:#e7dfd2; --stop:#7b6b5e; --press:#cfc7bd; --pill:#fffefb; --radius:16px;
-  --tl-green-1:#e9f3ec; --tl-green-2:#deefe4; --phase-intro:#f2e2cf; --phase-review:#f3edc8; --phase-outro:#f2e2cf;
+  --tl-green-1:#e9f3ec; --tl-green-2:#deefe4; --phase-intro:#cfe3ff; /* blå – intro */
+  --phase-review:#ffd9a8; /* lys oransje – repetisjonsspørsmål */
+  --phase-outro:#cfe3ff; /* blå – avslutning */
   --content-max:640px; --preset-gap:8px; --preset-pad:10px 14px; --preset-size:1.05rem; --dial-width:min(440px,78vw);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -56,7 +58,7 @@ body{display:flex;flex-direction:column;min-height:100%}
 .message{background:var(--pill);border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-height:1.2em;box-shadow:0 8px 24px rgba(70,50,30,.05);margin-bottom:12px;color:#4a5552}
 
 /* Timeline */
-.timeline-wrap{margin-top:22px; margin-bottom:18px}
+.timeline-wrap{margin-top:22px; margin-bottom:26px}
 .timeline{position:relative;height:56px;border-radius:14px;overflow:visible;background:linear-gradient(180deg,var(--tl-green-1) 0%,#edf5f0 100%);border:1px solid var(--border);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 12px 36px rgba(70,50,30,.05)}
 .slot{position:absolute;top:0;height:100%;opacity:.22}
 #introSlot{background:var(--phase-intro)}
@@ -66,7 +68,7 @@ body{display:flex;flex-direction:column;min-height:100%}
 .para-slot.alt{background:var(--tl-green-2)}
 .para-slot>div{pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1}
 /* 📖 på les-avsnitt */
-.read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-14px; width:18px; height:18px; background:url('read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-24px; width:18px; height:18px; background:url('read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
 .elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2}
 .cursor{position:absolute;top:-10px;width:2px;height:76px;background:#2f5f49;left:0%;z-index:3;box-shadow:0 0 0 2px rgba(58,111,82,.10)}
 .big-clock,.clock{margin-top:16px;font-size:2.2rem;font-weight:900;color:#2f5f49;text-shadow:0 1px 0 rgba(255,255,255,.65)}
