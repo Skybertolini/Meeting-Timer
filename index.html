@@ -6,7 +6,7 @@
 <title>Meeting Timer</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f8f7f5">
-<link rel="icon" href="./img/favicon.png?v=2">
+<link rel="icon" href="./img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -69,9 +69,8 @@ body{display:flex;flex-direction:column;min-height:100%}
 .para-slot.alt{background:var(--tl-green-2)}
 .para-slot>div{pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1}
 /* 📖 på les-avsnitt */
-.read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-24px; width:18px; height:18px; background:url('./img/read-icon.png?v=2') center/contain no-repeat; pointer-events:none; opacity:0.95}
-/* Viktig: la klikk passere gjennom progress-laget slik at man kan klikke bakover */
-.elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2;pointer-events:none}
+.read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-24px; width:18px; height:18px; background:url('./img/read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2}
 .cursor{position:absolute;top:-10px;width:2px;height:76px;background:#2f5f49;left:0%;z-index:3;box-shadow:0 0 0 2px rgba(58,111,82,.10)}
 .big-clock,.clock{margin-top:16px;font-size:2.2rem;font-weight:900;color:#2f5f49;text-shadow:0 1px 0 rgba(255,255,255,.65)}
 #clockWT{font-size:2.75rem; margin-top:40px}
@@ -123,14 +122,14 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
   <div class="topbar">
     <div class="brand" id="brandBox">
       <div class="burst"></div>
-      <img id="logoImg" src="./img/meeting-timer-logo.png?v=2" alt="Meeting Timer logo">
+      <img id="logoImg" src="./img/meeting-timer-logo.png" alt="Meeting Timer logo">
     </div>
     <div class="segmented" role="tablist" aria-label="Modus">
       <button id="tabWT" class="active" role="tab" aria-selected="true" title="Vakttårn">
-        <img src="./img/watchtower-icon.png?v=2" alt="">
+        <img src="./img/watchtower-icon.png" alt="">
       </button>
       <button id="tabSP" role="tab" aria-selected="false" title="Taler">
-        <img id="otherIcon" src="./img/other-icon.png?v=2" alt="">
+        <img id="otherIcon" src="./img/other-icon.png" alt="">
       </button>
     </div>
   </div>
@@ -250,7 +249,7 @@ const views={WT:$('#viewWT'), SP:$('#viewSP')}, tabs={WT:$('#tabWT'), SP:$('#tab
 function activateView(k){ Object.entries(views).forEach(([x,el])=>el.classList.toggle('active',x===k)); Object.entries(tabs).forEach(([x,b])=>{b.classList.toggle('active',x===k); b.setAttribute('aria-selected',x===k?'true':'false')}); if(k==='WT') requestAnimationFrame(drawTimeline) }
 $('#tabWT').addEventListener('click',()=>activateView('WT'));
 $('#tabSP').addEventListener('click',()=>activateView('SP'));
-const otherIcon=document.getElementById('otherIcon'); otherIcon.addEventListener('error',()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='./img/other-icon.ng?v=2'; otherIcon.dataset.triedNg='1' } });
+const otherIcon=document.getElementById('otherIcon'); otherIcon.addEventListener('error',()=>{ if(!otherIcon.dataset.triedNg){ otherIcon.src='./img/other-icon.ng'; otherIcon.dataset.triedNg='1' } });
 $('#weekSel').addEventListener('change',()=>{ const v=$('#weekSel').value; if(!v) return; useItem(JSON.parse(v)) });
 
 /* ===== TALER ===== */
@@ -265,14 +264,14 @@ function markPreset(s){ spPresets.forEach(b=>b.classList.toggle('active',parseIn
 function updatePlayIcon(){ const iconEl=document.getElementById('playSPIcon'); iconEl.textContent=isCountUp()?'⏱️':'▶' }
 function applyIdleClock(){ $('#clockSP').classList.remove('over'); if(isCountUp()) $('#clockSP').textContent='00:00'; else $('#clockSP').textContent=spFmt(SP_TOTAL) }
 function resetFlags(){ shownOneMin=false; shownOver=false; prevRemain=null; spMsgTimers.forEach(t=>clearTimeout(t)); spMsgTimers=[]; spShownStartMsg=false; spShown2min=false }
-function drawTimelineSP(){ const totalScale=isCountUp()?1800:SP_TOTAL; const e=spElapsed(); let progress; if(isCountUp()) progress=Math.min(1,e/totalScale); else { const remain=SP_TOTAL-e; progress=Math.max(0,Math.min(1,remain/totalScale)); } $('#elapsedSP').style.width=(progress*100)+'%'; $('#cursorSP').style.left=`calc(${progress*100}% - 1px)`;}
+function drawTimelineSP(){ const totalScale=isCountUp()?1800:SP_TOTAL; const e=spElapsed(); let progress; if(isCountUp()) progress=Math.min(1,e/totalScale); else { const remain=SP_TOTAL-e; progress=Math.max(0,Math.min(1,remain/totalScale)) } $('#elapsedSP').style.width=(progress*100)+'%'; $('#cursorSP').style.left=`calc(${progress*100}% - 1px)` }
 function showMilestone(name){ const el=$('#msImg'); if(!name){ el.style.display='none'; el.classList.remove('show'); el.removeAttribute('src'); return } const onerr=()=>{ el.style.display='none'; el.classList.remove('show'); el.onerror=null }; el.onerror=onerr; el.onload=()=>{ el.style.display='block'; requestAnimationFrame(()=>el.classList.add('show')) }; el.src=name }
 function setSPMessage(txt,ms=null){ $('#msgSP').textContent=txt||''; if(ms){ const id=setTimeout(()=>{$('#msgSP').textContent='';}, ms); spMsgTimers.push(id) } }
-function updateSP(){ const e=spElapsed(); if(spRunning && !spPaused){ if(!spShownStartMsg){ setSPMessage('Vi er i gang! ☺️',10000); spShownStartMsg=true } if(e>=120 && !spShown2min){ setSPMessage('Wow, du er flink! 😍',20000); spShown2min=true } if(!isCountUp()){ const remain=SP_TOTAL-e; if(remain===60 && !shownOneMin){ setSPMessage('Snart ferdig nå! ⏱️'); shownOneMin=true } if(remain<0 && !shownOver){ setSPMessage('Oj, du har gått over tiden. 😅'); shownOver=true } const crossed=th=>(prevRemain!==null && prevRemain>th && remain<=th); if(crossed(1800)) showMilestone('./img/milestone-30.png?v=2'); if(crossed(900)) showMilestone('./img/milestone-15.png?v=2'); if(crossed(600)) showMilestone('./img/milestone-10.png?v=2'); if(crossed(300)) showMilestone('./img/milestone-5.png?v=2'); prevRemain=remain } }
+function updateSP(){ const e=spElapsed(); if(spRunning && !spPaused){ if(!spShownStartMsg){ setSPMessage('Vi er i gang! ☺️',10000); spShownStartMsg=true } if(e>=120 && !spShown2min){ setSPMessage('Wow, du er flink! 😍',20000); spShown2min=true } if(!isCountUp()){ const remain=SP_TOTAL-e; if(remain===60 && !shownOneMin){ setSPMessage('Snart ferdig nå! ⏱️'); shownOneMin=true } if(remain<0 && !shownOver){ setSPMessage('Oj, du har gått over tiden. 😅'); shownOver=true } const crossed=th=>(prevRemain!==null && prevRemain>th && remain<=th); if(crossed(1800)) showMilestone('./img/milestone-30.png'); if(crossed(900)) showMilestone('./img/milestone-15.png'); if(crossed(600)) showMilestone('./img/milestone-10.png'); if(crossed(300)) showMilestone('./img/milestone-5.png'); prevRemain=remain } }
   if(isCountUp()){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(e) } else { const remain=SP_TOTAL-e; if(remain>=0){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(remain) } else { $('#clockSP').classList.add('over'); $('#clockSP').textContent=spFmt(-remain) } } drawTimelineSP() }
-function spStartFn(){ if(spRunning && spPaused){ spPaused=false; spStart=Date.now(); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; return } if(!spRunning){ spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; setSPMessage('Vi er i gang! ☺️',10000); resetFlags(); $('#spInputs').classList.add('hiddenSoft'); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; if(!isCountUp()){ if(SP_TOTAL===1800) showMilestone('./img/milestone-30.png?v=2'); else if(SP_TOTAL===900) showMilestone('./img/milestone-15.png?v=2'); else if(SP_TOTAL===600) showMilestone('./img/milestone-10.png?v=2'); else if(SP_TOTAL===300) showMilestone('./img/milestone-5.png?v=2'); else showMilestone('./img/milestone-other.png?v=2') } else { showMilestone('./img/milestone-other.png?v=2') } updateSP() } }
+function spStartFn(){ if(spRunning && spPaused){ spPaused=false; spStart=Date.now(); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; return } if(!spRunning){ spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0; setSPMessage('Vi er i gang! ☺️',10000); resetFlags(); $('#spInputs').classList.add('hiddenSoft'); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250); $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; if(!isCountUp()){ if(SP_TOTAL===1800) showMilestone('./img/milestone-30.png'); else if(SP_TOTAL===900) showMilestone('./img/milestone-15.png'); else if(SP_TOTAL===600) showMilestone('./img/milestone-10.png'); else if(SP_TOTAL===300) showMilestone('./img/milestone-5.png'); else showMilestone('./img/milestone-other.png') } else { showMilestone('./img/milestone-other.png') } updateSP() } }
 function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date.now()-spStart)/1000); spPaused=true; spTick&&clearInterval(spTick); spTick=null; $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false; updateSP() }
-function spStopFn(){ if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000); spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null; setSPMessage('Godt jobbet! 👏'); showMilestone('./img/milestone-stop.png?v=2'); $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true; $('#clockSP').classList.remove('over'); $('#spInputs').classList.remove('hiddenSoft') }
+function spStopFn(){ if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000); spRunning=false; spPaused=false; spStart=null; spAccum=0; prevRemain=null; spTick&&clearInterval(spTick); spTick=null; setSPMessage('Godt jobbet! 👏'); showMilestone('./img/milestone-stop.png'); $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true; $('#clockSP').classList.remove('over'); $('#spInputs').classList.remove('hiddenSoft') }
 $('#playSP').addEventListener('click',spStartFn); $('#pauseSP').addEventListener('click',spPauseFn); $('#stopSP').addEventListener('click',spStopFn);
 spPresets.forEach(btn=>btn.addEventListener('click',()=>{ if(spRunning) return; const s=parseInt(btn.dataset.sec,10)||0; localStorage.setItem(PRESET_KEY,String(s)); SP_TOTAL=s; markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1); applyIdleClock(); updatePlayIcon(); showMilestone(null); drawTimelineSP() }));
 let dialValue=Math.min(60,Math.max(0,isNaN(SP_TOTAL)?0:Math.floor(SP_TOTAL/60))); const dial=document.querySelector('.dial'), ticks=document.getElementById('ticks'), thumb=document.getElementById('thumb');
