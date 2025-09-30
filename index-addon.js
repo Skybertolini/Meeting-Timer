@@ -23,9 +23,12 @@
         background:url('./img/read-icon.png') center/contain no-repeat;
       }
       #timeline .para-slot i.frame-pin{
-        width:12px; height:12px;
+        width:15px; height:15px;
         background:url('./img/box-icon.png')  center/contain no-repeat;
       }
+      #timeline .para-slot i.frame-pin{
+        width:15px; height:15px;
+        background:url('./img/image-icon.png')  center/contain no-repeat;
 
       /* Remove any white text-shadow on slot numbers */
       #timeline .para-slot{ text-shadow:none !important; }
