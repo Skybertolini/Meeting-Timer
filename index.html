@@ -128,6 +128,15 @@ textarea{resize:vertical;}
 
 /* Spacing between notes and timer section */
 #timerSection{margin-top:25px}
+
+/* --- addon: image pin --- */
+#timeline .para-slot i.image-pin{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-20px; width:16px; height:16px;
+  background:url('./img/image-icon.png') center/contain no-repeat;
+  pointer-events:none; opacity:.95;
+}
+
 </style>
 </head>
 <body>
@@ -630,5 +639,112 @@ document.getElementById('incSP').addEventListener('click',()=> setTargetSeconds(
   
   <!-- Add-on med trygge UI-tilpasninger -->
   <script src="./index-addon.js"></script>
+
+<script>
+(function(){
+  // Utility: parse images array (supports numbers and "12a"/"5b"/"3c")
+  function expandWithOrder(refs){
+    const set = new Set(), ord = new Map();
+    if (!Array.isArray(refs)) return {set, ord};
+    const pri = c => c ? ({a:1,b:2,c:3}[String(c).toLowerCase()]||null) : null;
+    for (const v of refs){
+      if (typeof v === 'number'){ set.add(v); continue; }
+      const m = String(v).trim().match(/^(\d+)([abc])?$/i);
+      if (m){ const n=+m[1], o=pri(m[2]); set.add(n); if(o) ord.set(n,o); }
+    }
+    return {set, ord};
+  }
+
+  // Ensure the "Bilder:" pill is inside the article-info row (not bottom of page)
+  function ensureImagesPill(){
+    const row = document.getElementById('article-info');
+    if (!row) return;
+    let pill = document.getElementById('pillImages');
+    if (!pill){
+      pill = document.createElement('div');
+      pill.id = 'pillImages';
+      pill.className = 'pill';
+      pill.style.marginLeft = '8px';
+      pill.innerHTML = '<img src="./img/image-icon.png" alt="" style="height:14px;vertical-align:-2px;margin-right:4px">Bilder: <strong id="imageCount">0</strong>';
+      row.appendChild(pill);
+    } else if (!row.contains(pill)){
+      row.appendChild(pill);
+    }
+  }
+
+  // Update counters from globals or current item
+  function updateImagesCount(){
+    ensureImagesPill();
+    const strong = document.getElementById('imageCount');
+    if (!strong) return;
+    let count = 0;
+    if (window.__VT_IMAGE_SET instanceof Set){
+      count = window.__VT_IMAGE_SET.size;
+    } else {
+      const it = window.currentItem || window.ITEM || null;
+      const {set} = expandWithOrder(it && it.images ? it.images : []);
+      count = set.size;
+    }
+    strong.textContent = String(count);
+  }
+
+  // Add image pins under the timeline slots
+  function applyImagePins(){
+    const tl = document.getElementById('timeline'); if (!tl) return;
+    const slots = tl.querySelectorAll('.para-slot'); if (!slots.length) return;
+
+    // Determine images set + order
+    let set = new Set(), ord = new Map();
+    if (window.__VT_IMAGE_SET instanceof Set){
+      set = window.__VT_IMAGE_SET;
+      // order is usually in window.__VT_ORD.image
+      const O = window.__VT_ORD instanceof Map ? window.__VT_ORD : new Map();
+      for (const p of set){
+        const o = O.get(p)||{};
+        if (o.image != null) ord.set(p, o.image);
+      }
+    } else {
+      const it = window.currentItem || window.ITEM || null;
+      const e = expandWithOrder(it && it.images ? it.images : []);
+      set = e.set; ord = e.ord;
+    }
+
+    slots.forEach((slot, idx)=>{
+      const p = idx+1;
+      slot.querySelectorAll('.image-pin').forEach(n=>n.remove());
+      if (!set.has(p)) return;
+      const el = document.createElement('i');
+      el.className = 'image-pin';
+      // sitte sammen med read/frame i orden: A(1) nærmest boksen, så B, så C
+      const order = ord.get(p) ?? 3;
+      el.style.zIndex = String(100 - order);
+      // let other pins sit slightly offset; we trust existing layout, so keep center
+      slot.appendChild(el);
+    });
+  }
+
+  function applyAll(){
+    updateImagesCount();
+    applyImagePins();
+  }
+
+  // Observe timeline changes so pins re-render
+  const tl = document.getElementById('timeline');
+  if (tl){
+    const mo = new MutationObserver(()=> requestAnimationFrame(applyAll));
+    mo.observe(tl, {childList:true, subtree:true});
+  }
+  // Also update when selection changes if select exists
+  const sel = document.getElementById('weekSel');
+  if (sel){ sel.addEventListener('change', ()=> setTimeout(applyAll, 0)); }
+
+  // Initial run
+  document.addEventListener('DOMContentLoaded', applyAll);
+  window.addEventListener('load', applyAll);
+  // Expose manual trigger if needed
+  window.__VT_APPLY_IMAGES = applyAll;
+})();
+</script>
+
 </body>
 </html>
