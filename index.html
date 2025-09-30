@@ -67,6 +67,7 @@ body{
 .para-slot.alt{background:var(--tl-green-2)}
 .para-slot>div{pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1}
 .read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-24px; width:18px; height:18px; background:url('./img/read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.frame-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-24px; width:18px; height:18px; background:url('./img/box-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
 .elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2;pointer-events:none}
 /* Rød tone for SP sin elapsed */
 #elapsedSP{background:rgba(210,60,60,.28)}
@@ -275,6 +276,38 @@ async function hydrateOptions(){
   sel.addEventListener('change', (e)=>{ try{ useItem(JSON.parse(e.target.value)); }catch(err){} });
 }
 function useItem(it){
+// VT 1.48 backfill & mapping
+try{
+  if (Array.isArray(it.para_lengths) && (!Array.isArray(it.words) || !it.words.length)) {
+    it.words = it.para_lengths.slice();
+  }
+  // parse groups
+  window.__VT_GROUPS_RAW = (typeof it.groups === 'string') ? it.groups : "";
+  // parse reads/frames with a/b
+  (function(){
+    function parse(e){ const m=String(e).match(/^(\d+)([ab])?$/i); return m? {n:Number(m[1]), o:(m[2]? (m[2].toLowerCase()==='a'?1:2): null)} : null; }
+    const FR = Array.isArray(it.frames) ? it.frames.map(parse).filter(Boolean) : [];
+    const RD = Array.isArray(it.reads)  ? it.reads.map(parse).filter(Boolean)  : [];
+    window.__VT_FRAME_SET = new Set(FR.map(x=>x.n));
+    window.__VT_READ_SET2 = new Set(RD.map(x=>x.n));
+    if (!Array.isArray(it.readParas) && !Array.isArray(it.read_paras) && RD.length){
+      it.readParas = Array.from(new Set(RD.map(x=>x.n)));
+    }
+    const ORD = new Map();
+    RD.forEach(x=>{ const m = ORD.get(x.n)||{}; if (x.o!=null) m.read = x.o; ORD.set(x.n,m); });
+    FR.forEach(x=>{ const m = ORD.get(x.n)||{}; if (x.o!=null) m.frame = x.o; ORD.set(x.n,m); });
+    window.__VT_ORD = ORD;
+    window.__VT_GROUPS = (function(str){
+      if (!str || typeof str!=='string') return [];
+      return str.split(',').map(s=>s.trim()).flatMap(token=>{
+        const m = token.match(/^(\d+)(?:-(\d+))?$/); if(!m) return [];
+        const a = Number(m[1]), b = m[2] ? Number(m[2]) : a;
+        const g=[]; for(let k=a;k<=b;k++) g.push(k); return [g];
+      });
+    })(window.__VT_GROUPS_RAW);
+  })();
+}catch(e){}
+
   $('#articleTitle').textContent=it.title||'—';
   totalParagraphs=(it.paragraphs|0)||(Array.isArray(it.words)?it.words.length:0)||(it.paras|0)||0;
   reads = it.reads|0;
@@ -284,6 +317,16 @@ function useItem(it){
   if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
   $('#pillParas').textContent=`Avsnitt: ${totalParagraphs}`;
   $('#pillReads').textContent=`📖 Les-skriftsteder: ${readSet.size}`;
+  (function(){ 
+    var el=document.getElementById('pillFrames');
+    if(!el){
+      var readsEl=document.getElementById('pillReads')||document.querySelector('[id*=pillReads]');
+      el=document.createElement('div'); el.id='pillFrames'; el.className=readsEl?readsEl.className:'pill'; el.style.marginLeft='8px';
+      el.innerHTML='<img src="./img/box-icon.png" alt="" style="height:14px;vertical-align:-2px;margin-right:4px">Rammer: <strong>0</strong>';
+      if(readsEl && readsEl.parentElement) readsEl.insertAdjacentElement('afterend', el); else document.body.appendChild(el);
+    }
+    var s=el.querySelector('strong'); if(s) s.textContent=String((window.__VT_FRAME_SET? new Set(Array.from(window.__VT_FRAME_SET)).size : 0));
+  })();
   computeAllocation(); drawTimeline(); resetWTUI();
 }
 
@@ -329,6 +372,43 @@ function drawTimeline(){
     t.insertBefore(slot,$('#elapsed'));
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
+
+  // VT 1.48 enhance: group colors and ordered pins (frame/read with a/b)
+  try{
+    const t = document.getElementById('timeline'); if(t){
+      // map para -> group id
+      const groups = window.__VT_GROUPS || [];
+      const paraToGroupId = new Map(); groups.forEach((g,i)=> g.forEach(p=>paraToGroupId.set(p,i)));
+      const slots = Array.from(t.querySelectorAll('.para-slot'));
+      // define color function
+      function groupColor(gid){ if(gid===null || gid===undefined) return null; const baseHue=150; const l=66 - (gid % 3) * 8; return `hsl(${baseHue} 40% ${l}%)`; }
+      const ord = window.__VT_ORD || new Map();
+      const frameSet = window.__VT_FRAME_SET || new Set();
+      const numericReads = (window.__VT_READ_SET2 instanceof Set) ? window.__VT_READ_SET2 : (window.readSet || new Set());
+      slots.forEach((slot, idx)=>{
+        const p = idx+1;
+        const gid = paraToGroupId.has(p) ? paraToGroupId.get(p) : null;
+        const col = groupColor(gid);
+        if (col) slot.style.background = col;
+        // rebuild pins in correct order
+        slot.querySelectorAll('.read-pin,.frame-pin').forEach(n=>n.remove());
+        const hasRead = numericReads.has ? numericReads.has(p) : false;
+        const hasFrame = frameSet.has ? frameSet.has(p) : false;
+        if (!hasRead && !hasFrame) return;
+        const items = [];
+        if (hasFrame) items.push({type:'frame', order:(ord.get(p)||{}).frame ?? 1});
+        if (hasRead)  items.push({type:'read',  order:(ord.get(p)||{}).read  ?? 2});
+        items.sort((a,b)=>(a.order??99)-(b.order??99));
+        const gap=12, base = -((items.length-1)/2)*gap;
+        items.forEach((it, j)=>{
+          const pin = document.createElement('i');
+          pin.className = it.type==='frame' ? 'frame-pin' : 'read-pin';
+          pin.style.left = `calc(50% + ${base + j*gap}px)`;
+          slot.appendChild(pin);
+        });
+      });
+    }
+  }catch(e){}
 }
 // Klikk på introfeltet: hopp til 00:00 når ikke spiller (eller pauset)
 (function(){
@@ -546,5 +626,9 @@ document.getElementById('incSP').addEventListener('click',()=> setTargetSeconds(
 
 }); // DOMContentLoaded
 </script>
+
+  
+  <!-- Add-on med trygge UI-tilpasninger -->
+  <script src="./index-addon.js"></script>
 </body>
 </html>
