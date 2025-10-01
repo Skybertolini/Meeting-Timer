@@ -21,7 +21,7 @@
         width:16px;height:16px;background:url('./img/read-icon.png') center/contain no-repeat;
       }
       #timeline .para-slot i.frame-pin{
-        width:12px;height:12px;background:url('./img/box-icon.png') center/contain no-repeat;
+        width:15px;height:15px;background:url('./img/box-icon.png') center/contain no-repeat;
       }
       #timeline .para-slot i.image-pin{
         width:14px;height:14px;background:url('./img/image-icon.png') center/contain no-repeat;
