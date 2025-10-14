@@ -647,10 +647,21 @@ document.getElementById('incSP').addEventListener('click',()=> setTargetSeconds(
     const set = new Set(), ord = new Map();
     if (!Array.isArray(refs)) return {set, ord};
     const pri = c => c ? ({a:1,b:2,c:3}[String(c).toLowerCase()]||null) : null;
+    const addRange = (from, to, order)=>{
+      const a = Number(from), b = Number(to);
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return;
+      const lo = Math.min(a,b), hi = Math.max(a,b);
+      for (let i=lo; i<=hi; i++){ set.add(i); if(order!=null) ord.set(i, order); }
+    };
     for (const v of refs){
       if (typeof v === 'number'){ set.add(v); continue; }
-      const m = String(v).trim().match(/^(\d+)([abc])?$/i);
-      if (m){ const n=+m[1], o=pri(m[2]); set.add(n); if(o) ord.set(n,o); }
+      const s = String(v).trim();
+      const range = s.match(/^(\d+)\s*[\-–]\s*(\d+)([abc])?$/i);
+      if (range){ addRange(range[1], range[2], pri(range[3])); continue; }
+      const pair = s.match(/^(\d+)\s*&\s*(\d+)([abc])?$/i);
+      if (pair){ addRange(pair[1], pair[1], pri(pair[3])); addRange(pair[2], pair[2], pri(pair[3])); continue; }
+      const single = s.match(/^(\d+)([abc])?$/i);
+      if (single){ const n=Number(single[1]), o=pri(single[2]); set.add(n); if(o!=null) ord.set(n,o); }
     }
     return {set, ord};
   }
