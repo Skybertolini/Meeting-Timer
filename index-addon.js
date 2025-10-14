@@ -21,7 +21,7 @@
         width:16px;height:16px;background:url('./img/read-icon.png') center/contain no-repeat;
       }
       #timeline .para-slot i.frame-pin{
-        width:15px;height:15px;background:url('./img/box-icon.png') center/contain no-repeat;
+        width:12px;height:12px;background:url('./img/box-icon.png') center/contain no-repeat;
       }
       #timeline .para-slot i.image-pin{
         width:14px;height:14px;background:url('./img/image-icon.png') center/contain no-repeat;
@@ -277,7 +277,16 @@
 
   function startObservers(){
     const tl=$('#timeline'); if (!tl) return;
-    const mo=new MutationObserver(()=> requestAnimationFrame(applyAll));
+    const ignoreIds=new Set(['elapsed','cursor','elapsedSP','cursorSP']);
+    const mo=new MutationObserver(records=>{
+      const relevant=records.some(rec=>{
+        if(rec.type!=='attributes') return true;
+        const id=rec.target && rec.target.id;
+        if(ignoreIds.has(id)) return false;
+        return true;
+      });
+      if(relevant) requestAnimationFrame(applyAll);
+    });
     mo.observe(tl,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class']});
   }
 
