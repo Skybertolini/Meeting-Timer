@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Meeting Timer</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f8f7f5">
+<link rel="icon" href="./img/favicon.png">
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon='{"token": "9e80768d4f6c41f69cb40367aebcc56b"}'></script>
+<!-- End Cloudflare Web Analytics -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f7f5; --ink:#2b3432; --muted:#8b827a;
+  --card:#fff; --border:rgba(40,30,20,.10);
+  --green:#6ecf9e; /* Play */
+  --phase-intro:#87b9ff; /* Pause */
+  --phase-review:#ffb766; /* Stop */
+  --phase-outro:#87b9ff; /* blå avslutning (samme som intro) */
+  --press:#cfc7bd; --pill:#fffefb; --radius:16px;
+  --tl-green-1:#e9f3ec; --tl-green-2:#deefe4;
+  --content-max:min(640px, 94vw);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  color:var(--ink);
+  font-family:"Nunito",ui-rounded,-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  letter-spacing:.01em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; min-height:100%;
+  background-color:var(--bg);
+  background-image: linear-gradient(rgba(255,255,255,.72), rgba(255,255,255,.72)), url('./img/paper-texture.png');
+  background-size: auto, 300px 300px; background-repeat: repeat, repeat; background-attachment: fixed, fixed;
+}
+.container{flex:1 0 auto;max-width:980px;margin:0 auto;padding:16px 16px 28px;min-width:320px}
+.footer{flex:0 0 auto;text-align:center;color:var(--muted);font-size:.9rem;padding:10px 0 14px}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0 18px;min-height:72px}
+.brand{display:flex;align-items:center;gap:12px;position:relative}
+.brand img{height:160px;width:auto;cursor:pointer;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 8px 24px rgba(70,50,30,.08));transition:transform .25s,filter .25s}
+@media (min-width:768px){ .brand img{height:200px} }
+@media (max-width:400px){ .brand img{height:120px} }
+
+@keyframes spin2s{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-2px)}40%{transform:translateX(2px)}60%{transform:translateX(-1px)}80%{transform:translateX(1px)}}
+.logo-spin{animation:spin2s 2s linear}
+.logo-shake{animation:shake .4s ease-in-out}
+
+.card{background:var(--card);background-image:linear-gradient(rgba(255,255,255,.9),rgba(255,255,255,.9)), url('./img/paper-texture.png'); background-size:auto,300px 300px; background-repeat:repeat; border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 12px 40px rgba(70,50,30,.06);padding:14px}
+
+.h1{font-size:clamp(1.1rem, 2.8vw, 1.38rem);font-weight:900;margin:18px auto 10px;max-width:var(--content-max);text-transform:uppercase}
+.message{background:var(--pill);border:2px solid var(--border);border-radius:12px;padding:20px 22px;min-height:56px;box-shadow:0 8px 24px rgba(70,50,30,.05);margin:0 auto 20px;max-width:var(--content-max);color:#4a5552;font-size:clamp(1.1rem, 3.2vw, 1.62rem);line-height:1.3;display:flex;align-items:center;font-weight:700}
+
+/* Timeline */
+.timeline-wrap{margin-top:22px; margin-bottom:40px; max-width:var(--content-max); margin-inline:auto; position:relative}
+.timeline{position:relative;height:56px;border-radius:14px;overflow:visible;background:linear-gradient(180deg,var(--tl-green-1) 0%,#edf5f0 100%);border:1px solid var(--border)}
+.slot{position:absolute;top:0;height:100%;opacity:.22}
+#introSlot{background:var(--phase-intro)}
+#reviewSlot{background:var(--phase-review)}
+#outroSlot{background:var(--phase-outro)}
+.para-slot{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;border-left:1px solid rgba(50,35,25,.06);border-right:1px solid rgba(255,255,255,.55);font-weight:900;color:#2f3b34;text-shadow:0 1px 0 rgba(255,255,255,.55);cursor:pointer;box-sizing:border-box;min-width:14px;background:var(--tl-green-1)}
+.para-slot.alt{background:var(--tl-green-2)}
+.para-slot>div{pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1}
+.read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-2px; width:18px; height:18px; background:url('./img/read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.image-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-2px; width:18px; height:18px; background:url('./img/image-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.frame-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-2px; width:12px; height:12px; background:url('./img/box-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2;pointer-events:none}
+/* Rød tone for SP sin elapsed */
+#elapsedSP{background:rgba(210,60,60,.28)}
+.cursor{position:absolute;top:-10px;width:2px;height:76px;background:#2f3f49;left:0%;z-index:3}
+/* Minuttstreker for SP */
+#ticksSP{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none}
+.tick{position:absolute;bottom:6px;width:2px;height:8px;background:rgba(30,40,35,.45);transform:translateX(-1px);}
+.tick.major{height:12px;background:rgba(30,40,35,.65);}
+.tick.xmajor{height:16px;background:rgba(30,40,35,.85);}
+
+.big-clock,.clock{margin-top:16px;font-size:clamp(1.6rem, 9vw, 2.75rem);font-weight:900;color:#2f3b34;max-width:var(--content-max);margin-inline:auto;word-wrap:break-word}
+#clockWT{margin-top:40px}
+#clockSP{margin-top:40px}
+
+.controls{display:flex;gap:12px;margin-top:12px;max-width:var(--content-max);margin-inline:auto;justify-content:flex-start;flex-wrap:wrap}
+.round{width:58px;height:58px;border-radius:999px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;box-shadow:0 10px 24px rgba(70,50,30,.08);transition:box-shadow .15s ease, filter .15s ease, transform .05s ease}
+.round.pressed, .round.pressed:disabled{
+  filter:brightness(.92) saturate(1.05);
+  box-shadow:inset 0 4px 12px rgba(0,0,0,.22),0 6px 18px rgba(70,50,30,.12);
+}
+
+
+.play{background:var(--green)}
+.pause{background:var(--phase-intro); color:#ffffff}
+.stop{background:var(--phase-review); color:#ffffff}
+.round:active{transform:translateY(1px); box-shadow:inset 0 4px 10px rgba(0,0,0,.2),0 6px 18px rgba(70,50,30,.1)}
+
+
+
+
+/* Presets */
+.preset-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;margin-top:22px}
+.preset{border:1px solid var(--border);background:var(--pill);border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(70,50,30,.06);color:#2f3b34;font-size:1.05rem}
+.preset.active{background:#2f3b34;color:#fff}
+
+/* Target time adjuster */
+.target-row{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px auto 8px; max-width:var(--content-max)}
+.round.small{width:42px;height:42px;font-size:1.25rem; color:#2b3432; background:#ffffff; border:1px solid var(--border)}
+.target-box{min-width:140px; text-align:center; font-weight:900; border-radius:999px; padding:8px 16px; border:1px solid var(--border);
+  background:linear-gradient(180deg,var(--tl-green-1) 0%, #edf5f0 100%); color:#2f3b34; box-shadow:0 8px 20px rgba(70,50,30,.06)}
+
+/* Milestone-bilde */
+.milestone-img{max-width:56%;height:auto;margin:10px auto 0;display:block;opacity:1}
+
+img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+#wtControlsCard{max-width:var(--content-max);margin-inline:auto}
+.select{appearance:none;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--pill);font-weight:900;color:#2f3b4;box-shadow:0 4px 14px rgba(70,50,30,.05);min-width:180px;max-width:100%}
+textarea{resize:vertical;}
+
+/* Top row (select only) */
+.wt-toprow{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap}
+.select-article{flex:1 1 auto; max-width:100%; height:42px; line-height:42px; padding:0 12px; margin:0}
+@media (max-width:560px){ .wt-toprow{flex-wrap:wrap} }
+
+/* Stats row: avsnitt/les/bilder + studietid */
+.stats-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.stats-row .pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 12px;
+  background:var(--pill);
+  border:1px solid var(--border);
+  border-radius:999px;
+  font-weight:800;
+  font-size:.95rem;
+  color:#2f3b34;
+  box-shadow:0 4px 12px rgba(70,50,30,.05);
+  min-height:46px;
+  text-align:center;
+  line-height:1.25;
+  flex-wrap:wrap;
+}
+.stats-row .pill .pill-icon{width:16px; height:16px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,.12));}
+.stats-row .pill .pill-label{white-space:normal;}
+.stats-row .pill .pill-value{font-weight:900; white-space:nowrap;}
+
+.stats-row .modepill{
+  display:flex;
+  gap:6px;
+  background:var(--pill);
+  border:1px solid var(--border);
+  border-radius:999px;
+  box-shadow:0 4px 12px rgba(70,50,30,.05);
+  padding:4px;
+  min-height:46px;
+}
+.stats-row .modepill button{
+  flex:1 1 50%;
+  min-width:0;
+  height:38px;
+  line-height:38px;
+  padding:0 12px;
+  background:transparent;
+  color:#2f3b34;
+  border:0;
+  border-radius:999px;
+  font-weight:800;
+  font-size:.95rem;
+  transition:background .2s ease, color .2s ease;
+}
+.stats-row .modepill button:hover{background:rgba(0,0,0,.05);}
+.stats-row .modepill button:focus-visible{
+  outline:2px solid #2f3b34;
+  outline-offset:2px;
+}
+.stats-row .modepill button.active{
+  background:#2f3b34;
+  color:#fff;
+}
+.stats-row 
+
+@media (min-width:720px){
+  .stats-row .modepill{justify-self:end; width:auto; min-width:fit-content;}
+}
+
+@media (max-width:480px){
+  .stats-row{grid-template-columns:1fr;}
+  .stats-row .modepill{width:100%;}
+}
+
+/* Locked state when study started */
+#wtControlsCard.locked{opacity:.55; filter:grayscale(25%);}
+#wtControlsCard.locked .select, 
+#wtControlsCard.locked .modepill button{pointer-events:none}
+
+/* Spacing between notes and timer section */
+#timerSection{margin-top:25px}
+
+/* --- addon: image pin --- */
+#timeline .para-slot i.image-pin{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-2px; width:16px; height:16px;
+  background:url('./img/image-icon.png') center/contain no-repeat;
+  pointer-events:none; opacity:.95;
+}
+</style>
+
+<style>
+/* --- Kollaps av informasjonsvinduet når avspilling pågår --- */
+#wtControlsCard.collapsed { display:none; }                           /* skjul hele kortet når kollapset */
+#wtControlsCard.collapsed .wt-toprow { display:none; }                /* skjul uke-velger */
+#wtControlsCard.collapsed .pill { display:none; }                     /* skjul Avsnitt/Les/Bilder/Rammer */
+#wtControlsCard.collapsed .stats-row { justify-content:flex-start; }  /* juster layout når skjult */
+#wtControlsCard.collapsed .modepill { display:none; }                 /* skjul 60/30-modusknapper i kollapset visning */
+</style>
+<style>
+/* --- Touch-vennlig nedover-resize for notatfelt --- */
+#wtNotes { min-height: 72px; max-height: 75vh; }
+#wtNotesGrip {
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 8px;
+  background: repeating-linear-gradient(to right, rgba(0,0,0,.25) 0 8px, rgba(0,0,0,0) 8px 16px);
+  cursor: ns-resize;
+  touch-action: none; /* nødvendig for iOS Safari */
+}
+.dark #wtNotesGrip {
+  background: repeating-linear-gradient(to right, rgba(255,255,255,.35) 0 8px, rgba(255,255,255,0) 8px 16px);
+}
+</style>
+<style>
+.timerTitle {
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 6px;
+  opacity: .85;
+}
+.dark .timerTitle { opacity: .9; }
+</style>
+
+<style>
+/* --- Kollapsbare seksjoner --- */
+.collapsible { max-width: var(--content-max); margin: 0 auto 18px; }
+
+/* Cupertino-lignende tittelramme for seksjonene */
+.section-title {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  cursor:pointer;
+  user-select:none;
+  padding:10px 16px;
+  border-radius:18px;
+  background:#4b4039; /* brungrå ramme inspirert av logoen */
+  color:#fdfaf6;
+  box-shadow:0 10px 26px rgba(40,30,20,.18);
+}
+.section-title::before{
+  content:"";
+  display:inline-block;
+  width:14px;
+  height:2px;
+  border-radius:999px;
+  background:rgba(253,250,246,.95);
+  box-shadow:0 4px 0 rgba(253,250,246,.95),
+             0 -4px 0 rgba(253,250,246,.95);
+  margin-right:6px;
+  opacity:.95;
+}
+.section-title:focus-visible {
+  outline: 2px solid #fdfaf6;
+  outline-offset: 3px;
+}
+.dark .section-title{
+  background:#3a342f;
+  color:#fdfaf6;
+}
+
+.collapsible .section-body { display:block; }
+.collapsible.collapsed .section-body { display:none; }
+
+/* Skjul den gamle pil-indikatoren ▸/▾ */
+.section-title .caret { display:none; }
+
+/* Skjul den gamle h1-tittelen inne i SP-kortet (vi har ny seksjonstittel) */
+.hide-in-card { display:none !important; }
+</style>
+<style>
+#timeline .para-slot .pin-stack{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  top:calc(100% + 10px); /* below the bar */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 2px;
+  pointer-events:none;
+}
+#timeline .para-slot .pin-stack .pin{
+  width:18px; height:18px;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:contain;
+  opacity:.98;
+}
+#timeline .para-slot .pin-stack .pin.read{  background-image:url('./img/read-icon.png'); }
+#timeline .para-slot .pin-stack .pin.image{ background-image:url('./img/image-icon.png'); }
+#timeline .para-slot .pin-stack .pin.frame{ background-image:url('./img/box-icon.png'); }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <div class="brand" id="brandBox">
+      <img id="logoImg" src="./img/meeting-timer-logo.png" alt="Meeting Timer logo">
+    </div>
+  </div>
+
+  <section id="wtSection" class="collapsible">
+<!-- VAKTTÅRN -->
+  <h2 id="wtStudyTitle" class="timerTitle section-title" role="button" tabindex="0" aria-expanded="true" class="timerTitle">Vakttårnstudiet</h2>
+<div class="section-body" id="wtSectionBody">
+<div id="wtControlsCard" class="card" style="max-width:var(--content-max);margin-inline:auto">
+    <div class="wt-toprow">
+      <select id="weekSel" class="select select-article" aria-label="Artikkel"><option>Laster …</option></select>
+    </div>
+
+    <div class="stats-row" style="margin-top:10px">
+      <div class="pill" id="pillParas">
+        <span class="pill-label">Avsnitt:</span>
+        <span class="pill-value" id="pillParasValue">0</span>
+      </div>
+      <div class="pill" id="pillReads">
+        <img class="pill-icon" src="./img/read-icon.png" alt="" aria-hidden="true">
+        <span class="pill-label">Les-skriftsteder:</span>
+        <span class="pill-value" id="pillReadsValue">0</span>
+      </div>
+      <div class="pill" id="pillImages">
+        <img class="pill-icon" src="./img/image-icon.png" alt="" aria-hidden="true">
+        <span class="pill-label">Bilder:</span>
+        <span class="pill-value" id="pillImagesValue">0</span>
+      </div>
+      <div class="modepill" aria-label="Studietid">
+        <button id="mode60" type="button" class="active">60 min</button>
+        <button id="mode30" type="button">30 min</button>
+      </div>
+    </div>
+  </div>
+  <div class="h1" id="articleTitle">—</div>
+  <div class="message" id="message" aria-live="polite">Velg artikkel for å laste timer.</div>
+  <div class="timeline-wrap">
+    <div id="timeline" class="timeline">
+      <div id="introSlot" class="slot"></div>
+      <div id="reviewSlot" class="slot"></div>
+      <div id="outroSlot" class="slot"></div>
+      <div id="elapsed" class="elapsed"></div>
+      <div id="cursor" class="cursor"></div>
+    </div>
+    <div class="clock" id="clockWT">00:00</div>
+  </div>
+  <div class="controls">
+    <button id="playWT" class="round play">▶</button>
+    <button id="pauseWT" class="round pause" disabled>❚❚</button>
+    <button id="stopWT" class="round stop" disabled>■</button>
+  </div>
+  <div class="card" style="margin-top:14px;max-width:var(--content-max);margin-inline:auto">
+    <textarea id="wtNotes" rows="3" style="width:100%;border:1px solid var(--border);border-radius:12px;padding:10px;font:inherit;color:#2b2a32;background:transparent;font-size:90%" placeholder="Her kan du notere."></textarea>
+<div id="wtNotesGrip" role="separator" aria-orientation="vertical" title="Dra for å endre høyde"></div>
+  </div>
+</div>
+
+</section>
+<section id="spSection" class="collapsible collapsed">
+  <h2 id="speechTimerTitle" class="timerTitle section-title" role="button" tabindex="0" aria-expanded="false">Taler-timer <span class="caret" aria-hidden="true"></span></h2>
+  <div id="spSectionBody" class="section-body">
+
+  <section id="timerSection">
+    <div class="card" style="max-width:var(--content-max);margin-inline:auto">
+      <div class="h1 hide-in-card">Taler-timer</div>
+      <div id="spInputs">
+        <div class="preset-row">
+          <button class="preset" data-sec="0">0</button>
+          <button class="preset" data-sec="300">5</button>
+          <button class="preset" data-sec="600">10</button>
+          <button class="preset" data-sec="900">15</button>
+          <button class="preset" data-sec="1800">30</button>
+        </div>
+        <div class="target-row">
+          <button id="decSP" class="round small" aria-label="Minus ett minutt">–</button>
+          <div id="spTarget" class="target-box"><span id="spTargetDisplay">10:00</span></div>
+          <button id="incSP" class="round small" aria-label="Pluss ett minutt">+</button>
+        </div>
+      </div>
+      <div class="timeline-wrap">
+        <div id="timelineSP" class="timeline">
+          <div id="elapsedSP" class="elapsed"></div>
+          <div id="cursorSP" class="cursor"></div>
+          <div id="ticksSP"></div>
+        </div>
+      </div>
+      <div class="big-clock" id="clockSP">00:00</div>
+      <img id="msImg" class="milestone-img" alt="Milestone" src="./img/pick-milestone.png"/>
+      <div class="controls">
+        <button id="playSP" class="round play"><span id="playSPIcon">▶</span></button>
+        <button id="pauseSP" class="round pause" disabled>❚❚</button>
+        <button id="stopSP" class="round stop" disabled>■</button>
+      </div>
+    </div>
+  </section>
+
+  
+  </div>
+</section>
+<div class="footer">Meeting Timer © 2025</div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+/* ===== Logo animasjon ===== */
+(function(){ const logo=document.getElementById('logoImg'); if(!logo) return; logo.addEventListener('click',()=>{ logo.classList.remove('logo-spin','logo-shake'); void logo.offsetWidth; logo.classList.add('logo-spin'); setTimeout(()=>{ logo.classList.remove('logo-spin'); logo.classList.add('logo-shake'); setTimeout(()=>logo.classList.remove('logo-shake'),450); },2000); });})();
+
+/* ===== Hjelpere ===== */
+const $=s=>document.querySelector(s);
+const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
+function isoMondayLocal(d=new Date()){
+  const day=d.getDay(); const diff=(day===0?-6:1-day);
+  const monday=new Date(d.getFullYear(), d.getMonth(), d.getDate()+diff);
+  const y=monday.getFullYear(), m=String(monday.getMonth()+1).padStart(2,'0'), dd=String(monday.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
+/* ===== WT konfig/modus ===== */
+const WT_MODE_KEY='meetingTimer.wtMode'; // '60' | '30'
+function getMode(){ return localStorage.getItem(WT_MODE_KEY) || '60'; }
+function setMode(m){ localStorage.setItem(WT_MODE_KEY, m); }
+function slots(){
+  const total = (getMode()==='30') ? 1800 : 3600;
+  const intro=90, review=90, outro=90; // 90s i begge moduser
+  return { total, intro, review, outro, content: total - (intro+review+outro) };
+}
+
+/* ===== WT state ===== */
+let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0;
+let reads=0, readSet=new Set();
+let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
+
+
+/* ===== Laste artikkeldata ===== */
+async function fetchJSON(u){ const r=await fetch(u,{cache:'no-store'}); if(!r.ok) throw 0; return r.json();}
+async function loadYear(y){ for(const p of [`data/no-${y}.json`,`Data/no-${y}.json`,`data/no-${y}`,`Data/no-${y}`]){ try{ return await fetchJSON(p+`?v=${Date.now().toString().slice(7)}`);}catch{} } throw 0; }
+async function hydrateOptions(){
+  const year=(new Date()).getFullYear();
+  let items=[];
+  try{
+    const bundles=[];
+    for(const yy of [year-1,year,year+1]){ try{ bundles.push(await loadYear(yy)); }catch{} }
+    items=bundles.flatMap(p=>Array.isArray(p)?p:(p?.items||[])).filter(Boolean);
+  }catch{ items=[]; }
+
+  const curMon=isoMondayLocal(new Date());
+  const parse=(s)=> new Date(s+"T00:00:00");
+
+  // Filtrer bort artikler som er eldre enn to uker fra i dag
+  const today = new Date();
+  const cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
+  let sorted=[...items].filter(it=>it.week_start).sort((a,b)=>parse(a.week_start)-parse(b.week_start));
+  const recent = sorted.filter(it=>parse(it.week_start) >= cutoff);
+  if (recent.length) {
+    sorted = recent;
+  }
+
+  let current = sorted.find(it=>it.week_start===curMon);
+  if(!current){
+    const past = sorted.filter(it=>parse(it.week_start) <= parse(curMon));
+    if(past.length){ current=past[past.length-1]; }
+    else if(sorted.length){ current=sorted[0]; }
+  }
+
+  const sel=$('#weekSel'); sel.innerHTML='';
+  let idx = sorted.indexOf(current);
+  const start=Math.max(0, idx-6), end=Math.min(sorted.length, idx+6);
+  const window=sorted.slice(start,end);
+  window.forEach(it=>{ const o=document.createElement('option'); o.value=JSON.stringify(it); o.textContent=it.title||'(uten tittel)'; sel.appendChild(o); });
+  sel.selectedIndex = window.indexOf(current);
+  useItem(current);
+
+  sel.addEventListener('change', (e)=>{ try{ useItem(JSON.parse(e.target.value)); }catch(err){} });
+}
+function useItem(it){
+// VT 1.48 backfill & mapping
+try{
+  if (Array.isArray(it.para_lengths) && (!Array.isArray(it.words) || !it.words.length)) {
+    it.words = it.para_lengths.slice();
+  }
+  // parse groups
+  window.__VT_GROUPS_RAW = (typeof it.groups === 'string') ? it.groups : "";
+  // parse reads/frames with a/b
+  (function(){
+    function parse(e){ const m=String(e).match(/^(\d+)([ab])?$/i); return m? {n:Number(m[1]), o:(m[2]? (m[2].toLowerCase()==='a'?1:2): null)} : null; }
+    const FR = Array.isArray(it.frames) ? it.frames.map(parse).filter(Boolean) : [];
+    const RD = Array.isArray(it.reads)  ? it.reads.map(parse).filter(Boolean)  : [];
+    window.__VT_FRAME_SET = new Set(FR.map(x=>x.n));
+    window.__VT_READ_SET2 = new Set(RD.map(x=>x.n));
+    if (!Array.isArray(it.readParas) && !Array.isArray(it.read_paras) && RD.length){
+      it.readParas = Array.from(new Set(RD.map(x=>x.n)));
+    }
+    const ORD = new Map();
+    RD.forEach(x=>{ const m = ORD.get(x)||{}; if (x.o!=null) m.read = x.o; ORD.set(x.n,m); });
+    FR.forEach(x=>{ const m = ORD.get(x)||{}; if (x.o!=null) m.frame = x.o; ORD.set(x.n,m); });
+    window.__VT_ORD = ORD;
+    window.__VT_GROUPS = (function(str){
+      if (!str || typeof str!=='string') return [];
+      return str.split(',').map(s=>s.trim()).flatMap(token=>{
+        const m = token.match(/^(\d+)(?:-(\d+))?$/); if(!m) return [];
+        const a = Number(m[1]), b = m[2] ? Number(m[2]) : a;
+        const g=[]; for(let k=a;k<=b;k++) g.push(k); return [g];
+      });
+    })(window.__VT_GROUPS_RAW);
+  })();
+}catch(e){}
+
+  window.currentItem = it;
+  window.ITEM = it;
+
+  $('#articleTitle').textContent=it.title||'—';
+  totalParagraphs=(it.paragraphs|0)||(Array.isArray(it.words)?it.words.length:0)||(it.paras|0)||0;
+  reads = it.reads|0;
+  const rp = Array.isArray(it.readParas) ? it.readParas : (Array.isArray(it.read_paras) ? it.read_paras : null);
+  readSet = new Set(rp || ((Number.isFinite(reads) && reads>0) ? Array.from({length:reads},(_,i)=>i+1) : []));
+  paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
+  if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
+  const setPillValue = (id, value)=>{ const el=document.getElementById(id); if(el) el.textContent=String(value); };
+  setPillValue('pillParasValue', totalParagraphs);
+  setPillValue('pillReadsValue', readSet.size);
+  (function(){
+    let el=document.getElementById('pillFrames');
+    if(!el){
+      const anchor=document.getElementById('pillImages')||document.getElementById('pillReads')||document.querySelector('[id*=pillReads]');
+      el=document.createElement('div');
+      el.id='pillFrames';
+      el.className='pill';
+      el.innerHTML='<img class="pill-icon" src="./img/box-icon.png" alt="" aria-hidden="true"><span class="pill-label">Rammer:</span><span class="pill-value" id="pillFramesValue">0</span>';
+      if(anchor && anchor.parentElement){ anchor.insertAdjacentElement('afterend', el); }
+      else { document.body.appendChild(el); }
+    } else if (!document.getElementById('pillFramesValue')){
+      el.innerHTML='<img class="pill-icon" src="./img/box-icon.png" alt="" aria-hidden="true"><span class="pill-label">Rammer:</span><span class="pill-value" id="pillFramesValue">0</span>';
+    }
+    setPillValue('pillFramesValue', (window.__VT_FRAME_SET instanceof Set) ? window.__VT_FRAME_SET.size : 0);
+  })();
+  computeAllocation(); drawTimeline(); resetWTUI();
+  if (typeof window.__VT_APPLY_IMAGES === 'function'){
+    try{ window.__VT_APPLY_IMAGES(); }catch(e){}
+  }
+}
+
+/* ===== Fordele tid (WT) ===== */
+const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
+function computeAllocation(){
+  const S=slots();
+  if(totalParagraphs<=0){perParagraph=[];cumulative=[];return;}
+  const wps=WPM/60;
+  const raw=Array.from({length:totalParagraphs},(_,i)=>{
+    const p=paras[i]||{words:0,q:1,les:0,hasAB:false};
+    let s=(p.words||0)/wps + (p.q||0)*SEC_PER_Q + (p.les||0)*SEC_PER_READ + (p.hasAB?AB_BONUS:0);
+    s=Math.max(5,s);
+    // +10% for de siste 5 avsnittene
+    const lastN=Math.min(5,totalParagraphs);
+    if(i>=totalParagraphs-lastN) s*=1.10;
+    return s;
+  });
+  const scale=S.content/((raw.reduce((a,b)=>a+b,0))||1);
+  perParagraph=raw.map(x=>x*scale);
+  cumulative=[]; let acc=S.intro; for(let i=0;i<totalParagraphs;i++){cumulative.push(acc); acc+=perParagraph[i];}
+}
+
+function formatGroupMessage(p){
+  const groups = window.__VT_GROUPS || [];
+  for(const g of groups){
+    if(g.includes(p)){
+      if(g.length === 1) return `Avsnitt ${p}`;
+      if(g.length === 2) return `Avsnittene ${g[0]} og ${g[1]}`;
+      return `Avsnittene ${g[0]}–${g[g.length-1]}`;
+    }
+  }
+  return `Avsnitt ${p}`;
+}
+
+/* ===== Tegn WT-tidslinje ===== */
+function drawTimeline(){
+  const S=slots();
+  const t=$('#timeline'); if(!t) return;
+  Array.from(t.querySelectorAll('.para-slot')).forEach(n=>n.remove());
+  const pct=v=> (v/S.total*100).toFixed(4)+'%';
+  $('#introSlot').style.left='0%'; $('#introSlot').style.width=pct(S.intro);
+  $('#outroSlot').style.right='0%'; $('#outroSlot').style.width=pct(S.outro);
+  $('#reviewSlot').style.right=pct(S.outro); $('#reviewSlot').style.width=pct(S.review);
+  if(totalParagraphs<=0){$('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return;}
+  const tlWidth=t.clientWidth||t.getBoundingClientRect().width||1; const pxPerSec=tlWidth/S.total;
+  for(let i=1;i<=totalParagraphs;i++){
+    const leftP=(cumulative[i-1]/S.total)*100, widthP=(perParagraph[i-1]/S.total)*100;
+    const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':''); slot.style.left=leftP+'%'; slot.style.width=widthP+'%';
+    const lbl=document.createElement('div'); const slotPx=perParagraph[i-1]*pxPerSec; const fs=Math.max(9,Math.min(14,Math.floor(slotPx*0.33)));
+    lbl.style.fontSize=fs+'px'; lbl.textContent=String(i); slot.appendChild(lbl);
+    if(readSet.has(i)){ const pin=document.createElement('i'); pin.className='read-pin'; slot.appendChild(pin); }
+    // Klikk for å hoppe (når ikke spiller)
+    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), S.total-S.outro-S.review); const pNow=Math.min(accum/S.total*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=S.total); $('#message').textContent = formatGroupMessage(i); });
+    t.insertBefore(slot,$('#elapsed'));
+  }
+  $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
+
+  // VT 1.48 enhance: group-aware zebra colors and ordered pins (frame/read with a/b)
+  try{
+    const t = document.getElementById('timeline'); if(t){
+      const groups = window.__VT_GROUPS || [];
+      const slots = Array.from(t.querySelectorAll('.para-slot'));
+
+      const paraToGroupId = new Map();
+      groups.forEach((g,i)=> g.forEach(p=>paraToGroupId.set(p,i)));
+
+      const blockIndexByPara = new Map();
+      const seen = new Set();
+      let block = 0;
+
+      for(let p=1; p<=slots.length; p++){
+        if(seen.has(p)) continue;
+        const gid = paraToGroupId.has(p) ? paraToGroupId.get(p) : null;
+        const members = [];
+        if(gid !== null && gid !== undefined){
+          const g = groups[gid] || [];
+          g.forEach(q=>{
+            if(q>=1 && q<=slots.length){
+              members.push(q);
+            }
+          });
+        }else{
+          members.push(p);
+        }
+        block++;
+        members.forEach(q=>{
+          seen.add(q);
+          blockIndexByPara.set(q, block);
+        });
+      }
+
+      function blockColor(b){
+        if(!b) return null;
+        return (b % 2 === 1) ? 'var(--tl-green-1)' : 'var(--tl-green-2)';
+      }
+
+      const ord = window.__VT_ORD || new Map();
+      const frameSet = window.__VT_FRAME_SET || new Set();
+      const numericReads = (window.__VT_READ_SET2 instanceof Set) ? window.__VT_READ_SET2 : (window.readSet || new Set());
+
+      slots.forEach((slot, idx)=>{
+        const p = idx+1;
+
+        const b = blockIndexByPara.get(p);
+        const col = blockColor(b);
+        if (col) slot.style.background = col;
+
+        slot.querySelectorAll('.read-pin,.frame-pin').forEach(n=>n.remove());
+        const hasRead = numericReads.has ? numericReads.has(p) : false;
+        const hasFrame = frameSet.has ? frameSet.has(p) : false;
+        if (!hasRead && !hasFrame) return;
+
+        const items = [];
+        if (hasFrame) items.push({type:'frame', order:(ord.get(p)||{}).frame ?? 1});
+        if (hasRead)  items.push({type:'read',  order:(ord.get(p)||{}).read  ?? 2});
+        items.sort((a,b)=>(a.order??99)-(b.order??99));
+
+        items.forEach((it, j)=>{
+          const pin = document.createElement('i');
+          pin.className = it.type==='frame' ? 'frame-pin' : 'read-pin';
+          pin.style.bottom = `${-24 - j*12}px`;
+          slot.appendChild(pin);
+        });
+      });
+    }
+  }catch(e){}
+}
+// Klikk på introfeltet: hopp til 00:00 når ikke spiller (eller pauset)
+(function(){
+  const intro = document.getElementById('introSlot');
+  if(intro){
+    intro.style.cursor = 'pointer';
+    intro.addEventListener('click', ()=>{
+      if(!started || paused){
+        accum = 0;
+        document.getElementById('elapsed').style.width = '0%';
+        document.getElementById('cursor').style.left = '0%';
+        document.getElementById('clockWT').textContent = '00:00';
+        document.getElementById('clockWT').classList.remove('over');
+        document.getElementById('message').textContent = 'Tilbake til start (00:00)';
+      }
+    });
+  }
+})();
+
+let _rAF=null; function relayout(){ drawTimeline(); drawTimelineSP(); }
+['resize','orientationchange'].forEach(ev=>{ window.addEventListener(ev, ()=>{ if(_rAF) cancelAnimationFrame(_rAF); _rAF=requestAnimationFrame(relayout); }); });
+
+/* ===== WT klokke og meldinger ===== */
+function lockWTControls(){
+  const card = document.getElementById('wtControlsCard');
+  const sel = document.getElementById('weekSel');
+  const m60 = document.getElementById('mode60');
+  const m30 = document.getElementById('mode30');
+  if(card){
+    card.classList.add('locked');
+    card.classList.add('collapsed'); // skjuler infofeltet under avspilling
+  }
+  if(sel){ sel.setAttribute('disabled','disabled'); }
+  if(m60){ m60.setAttribute('disabled','disabled'); }
+  if(m30){ m30.setAttribute('disabled','disabled'); }
+}
+function unlockWTControls(){
+  const card = document.getElementById('wtControlsCard');
+  const sel = document.getElementById('weekSel');
+  const m60 = document.getElementById('mode60');
+  const m30 = document.getElementById('mode30');
+  if(card){
+    card.classList.remove('locked');
+    card.classList.remove('collapsed');
+  }
+  if(sel){ sel.removeAttribute('disabled'); }
+  if(m60){ m60.removeAttribute('disabled'); }
+  if(m30){ m30.removeAttribute('disabled'); }
+}
+
+function resetWTUI(){
+  if(tickHandle)clearInterval(tickHandle);
+  $('#clockWT').textContent='00:00'; $('#clockWT').classList.remove('over');
+  $('#message').textContent='Klar til start. Trykk ▶ når du er klar.';
+  started=false; paused=false; startTs=null; accum=0;
+  $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
+  unlockWTControls();
+}
+function startClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=setInterval(tickWT,250) }
+function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null }
+function nowElapsed(){ if(!started) return accum; if(paused) return accum; return accum+Math.floor((Date.now()-startTs)/1000)}
+function setWTMessage(txt){ $('#message').textContent=txt }
+function tickWT(){
+  const S=slots();
+  const e=nowElapsed();
+  $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=S.total);
+  const p=Math.min(e/S.total*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`;
+  if(e<S.intro) setWTMessage('Introduksjon');
+  else if(e>=S.total) setWTMessage('Tiden er brukt – teller over');
+  else if(e>=S.total-S.outro) setWTMessage('Avslutning');
+  else if(e>=S.total-S.outro-S.review) setWTMessage('Repetisjonsspørsmål');
+  else{
+    let idx=0;
+    for(let i=0;i<totalParagraphs;i++){
+      const s=cumulative[i], end=(i===totalParagraphs-1)?(S.total-S.outro-S.review):cumulative[i+1];
+      if(e>=s&&e<end){idx=i;break}
+    }
+    let msg = formatGroupMessage(idx+1);
+    setWTMessage(msg);
+  }
+}
+function setPressedWT(id){ ['playWT','pauseWT','stopWT'].forEach(x=>{ const el=document.getElementById(x); if(el) el.classList.toggle('pressed', x===id); }); }
+$('#playWT').addEventListener('click',()=>{
+  if(started && paused){ paused=false; startTs=Date.now(); startClock(); tickWT(); setWTMessage('Fortsetter'); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; setPressedWT('playWT'); lockWTControls(); return }
+  if(!started){ started=true; paused=false; startTs=Date.now(); startClock(); tickWT(); setWTMessage('Introduksjon'); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; setPressedWT('playWT'); lockWTControls(); }
+});
+$('#pauseWT').addEventListener('click',()=>{
+  if(!started||paused) return;
+  accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage('Pause');
+  $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; setPressedWT('pauseWT');
+});
+$('#stopWT').addEventListener('click',()=>{
+  if(started&&!paused) accum+=Math.floor((Date.now()-startTs)/1000);
+  started=false; paused=false; stopClock();
+  const e=accum;
+  setWTMessage(`Ferdig – totalt ${fmt(e)}`);
+  $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=true;
+  accum=0; $('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; setPressedWT('stopWT'); unlockWTControls();
+});
+
+/* ===== WT modus-bryter ===== */
+(function(){
+  const m60=$('#mode60'), m30=$('#mode30');
+  // Marker UI for gjeldende modus (default 60 dersom ikke satt)
+  const cur=getMode();
+  if(cur==='60'){ m60.classList.add('active'); m30.classList.remove('active'); }
+  else { m30.classList.add('active'); m60.classList.remove('active'); }
+  m60.addEventListener('click',()=>{ if(getMode()==='60') return; setMode('60'); m60.classList.add('active'); m30.classList.remove('active'); computeAllocation(); drawTimeline(); resetWTUI(); });
+  m30.addEventListener('click',()=>{ if(getMode()==='30') return; setMode('30'); m30.classList.add('active'); m60.classList.remove('active'); computeAllocation(); drawTimeline(); resetWTUI(); setWTMessage('Klar for å starte et forkortet vakttårnstudium.'); });
+})();
+
+/* ===== TIMER (SP) ===== */
+const PRESET_KEY='meetingTimer.annetSeconds';
+const spPresets=[...document.querySelectorAll('#spInputs .preset')];
+let spRunning=false, spPaused=false, spStart=null, spAccum=0, spTick=null;
+let SP_TOTAL=parseInt(localStorage.getItem(PRESET_KEY),10); if(isNaN(SP_TOTAL)) SP_TOTAL=600; // default 10 min
+function isCountUp(){ return SP_TOTAL===0 }
+function spFmt(s){s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
+function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; return spAccum+Math.floor((Date.now()-spStart)/1000) }
+function markPreset(s){ spPresets.forEach(b=>b.classList.toggle('active',parseInt(b.dataset.sec,10)===s)) }
+function updatePlayIcon(){ const iconEl=document.getElementById('playSPIcon'); if(iconEl) iconEl.textContent=isCountUp()?'⏱️':'▶' }
+function applyIdleClock(){ const el=$('#clockSP'); if(!el) return; el.classList.remove('over'); el.textContent=isCountUp()?'00:00':spFmt(SP_TOTAL) }
+function drawTimelineSP(){
+  const totalScale=isCountUp()?Math.max(1800,spElapsed()+1):SP_TOTAL;
+  const e=spElapsed();
+  const progress=Math.min(1, totalScale ? (e/totalScale) : 0);
+  $('#elapsedSP').style.width=(progress*100)+'%'; $('#cursorSP').style.left=`calc(${progress*100}% - 1px)`;
+  // Minuttstreker (1 / 5 / 10)
+  const ticksC = $('#ticksSP'); if(!ticksC) return;
+  ticksC.innerHTML='';
+  const minutes = Math.floor(totalScale/60);
+  for(let m=0; m<=minutes; m++){
+    const x = (m*60/totalScale)*100;
+    const i = document.createElement('i');
+    i.className = 'tick' + (m%10===0 ? ' xmajor' : (m%5===0 ? ' major' : ''));
+    i.style.left = x+'%';
+    ticksC.appendChild(i);
+  }
+}
+function showMilestone(name){ const el=$('#msImg'); if(!el) return; if(!name){ el.style.display='none'; el.removeAttribute('src'); return } el.style.display='block'; el.src=name }
+function updateSP(){
+  const e=spElapsed();
+  if(isCountUp()){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(e) }
+  else { const remain=SP_TOTAL-e; if(remain>=0){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(remain) } else { $('#clockSP').classList.add('over'); $('#clockSP').textContent=spFmt(-remain) } }
+  drawTimelineSP();
+}
+function setPressedSP(id){ ['playSP','pauseSP','stopSP'].forEach(x=>{ const el=document.getElementById(x); if(el) el.classList.toggle('pressed', x===id); }); }
+function spStartFn(){
+  if(spRunning && spPaused){
+    spPaused=false; spStart=Date.now(); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
+    $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; setPressedSP('playSP'); return;
+  }
+  if(!spRunning){
+    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0;
+    spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
+    $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; setPressedSP('playSP');
+    // LÅS milestone ved start (bytter ikke underveis)
+    if(!isCountUp()){
+      if(SP_TOTAL===1800) showMilestone('./img/milestone-30.png');
+      else if(SP_TOTAL===900) showMilestone('./img/milestone-15.png');
+      else if(SP_TOTAL===600) showMilestone('./img/milestone-10.png');
+      else if(SP_TOTAL===300) showMilestone('./img/milestone-5.png');
+      else showMilestone('./img/milestone-other.png');
+    }else{
+      showMilestone('./img/start-stopwatch.png');
+    }
+    updateSP();
+  }
+}
+function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date.now()-spStart)/1000); spPaused=true; spTick&&clearInterval(spTick); spTick=null; $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false; setPressedSP('pauseSP'); updateSP() }
+function spStopFn(){ if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000); spRunning=false; spPaused=false; spStart=null; spAccum=0; spTick&&clearInterval(spTick); spTick=null; showMilestone('./img/milestone-stop.png'); $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true; $('#clockSP').classList.remove('over'); setPressedSP('stopSP'); drawTimelineSP(); applyIdleClock(); }
+$('#playSP').addEventListener('click',spStartFn); $('#pauseSP').addEventListener('click',spPauseFn); $('#stopSP').addEventListener('click',spStopFn);
+
+/* Preset clicks */
+spPresets.forEach(btn=>btn.addEventListener('click',()=>{
+  if(spRunning) return;
+  const s=parseInt(btn.dataset.sec,10)||0;
+  localStorage.setItem(PRESET_KEY,String(s));
+  SP_TOTAL=s;
+  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
+  applyIdleClock(); updatePlayIcon(); showMilestone('./img/pick-milestone.png'); drawTimelineSP(); updateSP(); updateTargetBox();
+}));
+
+/* +/- justering av mål-tid */
+function clampTarget(v){ return Math.max(0, Math.min(3600, v)); }
+function setTargetSeconds(sec){
+  if(spRunning) return;
+  SP_TOTAL=clampTarget(sec);
+  localStorage.setItem(PRESET_KEY,String(SP_TOTAL));
+  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
+  applyIdleClock(); updatePlayIcon(); drawTimelineSP(); updateSP(); updateTargetBox();
+}
+function updateTargetBox(){ const box=document.getElementById('spTargetDisplay'); if(box) box.textContent= isCountUp() ? '00:00' : fmt(SP_TOTAL); }
+document.getElementById('decSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL - 60));
+document.getElementById('incSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL + 60));
+
+/* ===== Init ===== */
+(async function init(){
+  // Sett default til 60 min dersom ikke satt
+  try{ if(!localStorage.getItem('meetingTimer.wtMode')) localStorage.setItem('meetingTimer.wtMode','60'); }catch(e){}
+  // Presets/klokker
+  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
+  applyIdleClock(); updatePlayIcon(); drawTimelineSP(); updateTargetBox();
+
+  // Hydrate article list
+  try{ await hydrateOptions(); }catch(e){ console.warn('hydrate failed', e); const sel=document.getElementById('weekSel'); if(sel){ sel.innerHTML='<option>Ingen data</option>'; } }
+
+  // Deaktiver høyreklikk på alle bilder
+  document.addEventListener('contextmenu', (e)=>{ if(e.target && e.target.closest('img')) { e.preventDefault(); } }, {capture:true});
+
+  // Legg til tannhjul for å vise/skjule artikkelvalg og info
+  (function(){
+    const card = document.getElementById('wtControlsCard');
+    const title = document.getElementById('articleTitle');
+    if(!card || !title) return;
+
+    // Pakk tittel og tannhjul i en wrapper
+    let wrapper = document.createElement('div');
+    wrapper.id = 'wtArticleHeader';
+    wrapper.style.maxWidth = getComputedStyle(card).maxWidth || 'var(--content-max)';
+    wrapper.style.margin = '0 auto 6px';
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.justifyContent = 'space-between';
+    // Flytt tittel inn i wrapper
+    title.parentNode.insertBefore(wrapper, title);
+    wrapper.appendChild(title);
+
+    const btn = document.createElement('button');
+    btn.id = 'wtGearBtn';
+    btn.type = 'button';
+    btn.setAttribute('aria-label','Vis eller skjul artikkelinnstillinger');
+    btn.style.border = '0';
+    btn.style.borderRadius = '999px';
+    btn.style.width = '34px';
+    btn.style.height = '34px';
+    btn.style.marginLeft = '10px';
+    btn.style.display = 'flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.background = 'var(--pill)';
+    btn.style.boxShadow = '0 6px 18px rgba(70,50,30,.12)';
+    btn.style.cursor = 'pointer';
+    btn.style.flex = '0 0 auto';
+    btn.innerHTML = '⚙️';
+    btn.style.fontSize = '1.6rem';
+
+    wrapper.appendChild(btn);
+
+    // Start med artikkelinformasjon skjult
+    card.classList.add('collapsed');
+
+    btn.addEventListener('click', ()=>{
+      if(card.classList.contains('locked')) return; // ikke åpne mens timeren er låst
+      card.classList.toggle('collapsed');
+    });
+  })();
+})();
+
+}); // DOMContentLoaded
+</script>
+
+  
+  <!-- Add-on med trygge UI-tilpasninger -->
+  <script src="./index_addon.js"></script>
+
+<script>
+(function(){
+  // Utility: parse images array (supports numbers and "12a"/"5b"/"3c")
+  function expandWithOrder(refs){
+    const set = new Set(), ord = new Map();
+    if (!Array.isArray(refs)) return {set, ord};
+    const pri = c => c ? ({a:1,b:2,c:3}[String(c).toLowerCase()]||null) : null;
+    const addRange = (from, to, order)=>{
+      const a = Number(from), b = Number(to);
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return;
+      const lo = Math.min(a,b), hi = Math.max(a,b);
+      for (let i=lo; i<=hi; i++){ set.add(i); if(order!=null) ord.set(i, order); }
+    };
+    for (const v of refs){
+      if (typeof v === 'number'){ set.add(v); continue; }
+      const s = String(v).trim();
+      const range = s.match(/^(\d+)\s*[\-–]\s*(\d+)([abc])?$/i);
+      if (range){ addRange(range[1], range[2], pri(range[3])); continue; }
+      const pair = s.match(/^(\d+)\s*&\s*(\d+)([abc])?$/i);
+      if (pair){ addRange(pair[1], pair[1], pri(pair[3])); addRange(pair[2], pair[2], pri(pair[3])); continue; }
+      const single = s.match(/^(\d+)([abc])?$/i);
+      if (single){ const n=Number(single[1]), o=pri(single[2]); set.add(n); if(o!=null) ord.set(n,o); }
+    }
+    return {set, ord};
+  }
+
+  // Update counters from globals or current item
+  function updateImagesCount(){
+    const valueEl = document.getElementById('pillImagesValue');
+    if (!valueEl) return;
+    let count = 0;
+    if (window.__VT_IMAGE_SET instanceof Set){
+      count = window.__VT_IMAGE_SET.size;
+    } else {
+      const it = window.currentItem || window.ITEM || null;
+      const {set} = expandWithOrder(it && it.images ? it.images : []);
+      count = set.size;
+    }
+    valueEl.textContent = String(count);
+  }
+
+  // Add image pins under the timeline slots
+  function applyImagePins(){
+    const tl = document.getElementById('timeline'); if (!tl) return;
+    const slots = tl.querySelectorAll('.para-slot'); if (!slots.length) return;
+
+    // Determine images set + order
+    let set = new Set(), ord = new Map();
+    if (window.__VT_IMAGE_SET instanceof Set){
+      set = window.__VT_IMAGE_SET;
+      // order is usually in window.__VT_ORD.image
+      const O = window.__VT_ORD instanceof Map ? window.__VT_ORD : new Map();
+      for (const p of set){
+        const o = O.get(p)||{};
+        if (o.image != null) ord.set(p, o.image);
+      }
+    } else {
+      const it = window.currentItem || window.ITEM || null;
+      const e = expandWithOrder(it && it.images ? it.images : []);
+      set = e.set; ord = e.ord;
+    }
+
+    slots.forEach((slot, idx)=>{
+      const p = idx+1;
+      slot.querySelectorAll('.image-pin').forEach(n=>n.remove());
+      if (!set.has(p)) return;
+      
+      // Count existing read/frame pins to stack below them
+      const existingPins = slot.querySelectorAll('.read-pin, .frame-pin').length;
+      
+      const el = document.createElement('i');
+      el.className = 'image-pin';
+      // Position below any existing pins
+      el.style.bottom = `${-24 - existingPins*12}px`;
+      slot.appendChild(el);
+    });
+  }
+
+  function applyAll(){
+    updateImagesCount();
+    applyImagePins();
+  }
+
+  // Observe timeline changes so pins re-render
+  const tl = document.getElementById('timeline');
+  if (tl){
+    const mo = new MutationObserver(()=> requestAnimationFrame(applyAll));
+    mo.observe(tl, {childList:true, subtree:true});
+  }
+  // Also update when selection changes if select exists
+  const sel = document.getElementById('weekSel');
+  if (sel){ sel.addEventListener('change', ()=> setTimeout(applyAll, 0)); }
+
+  // Initial run – kjør én gang, ikke både DOMContentLoaded og load
+  document.addEventListener('DOMContentLoaded', applyAll);
+  // Expose manual trigger if needed
+  window.__VT_APPLY_IMAGES = applyAll;
+})();
+</script>
+<script src="./index_article_window_1.0.js"></script>
+<script>
+// --- Touch/mus-resize for wtNotes nedover ---
+(function(){
+  const ta = document.getElementById('wtNotes');
+  const grip = document.getElementById('wtNotesGrip');
+  if(!ta || !grip) return;
+  let startY = 0, startH = 0, active = false;
+  function px(v){ return Number(String(v).replace('px',''))||0; }
+  const cs = getComputedStyle(ta);
+  const minH = Math.max(72, px(cs.minHeight));
+  function maxH(){
+    // 75vh som øvre grense, men aldri mindre enn nåværende høyde
+    return Math.max(ta.offsetHeight, Math.round(window.innerHeight * 0.75));
+  }
+  function down(e){
+    active = true;
+    startY = (e.touches ? e.touches[0].clientY : e.clientY);
+    startH = ta.offsetHeight;
+    document.addEventListener('mousemove', move, {passive:false});
+    document.addEventListener('touchmove', move, {passive:false});
+    document.addEventListener('mouseup', up, {passive:false});
+    document.addEventListener('touchend', up, {passive:false});
+    e.preventDefault();
+  }
+  function move(e){
+    if(!active) return;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY);
+    const dy = y - startY;
+    let h = Math.min(Math.max(startH + dy, minH), maxH());
+    ta.style.height = h + 'px';
+    e.preventDefault();
+  }
+  function up(e){
+    active = false;
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('touchmove', move);
+    document.removeEventListener('mouseup', up);
+    document.removeEventListener('touchend', up);
+  }
+  grip.addEventListener('mousedown', down);
+  grip.addEventListener('touchstart', down, {passive:false});
+})();
+</script>
+<script>
+(function(){
+  function setup(sectionId, storageKey, defaultCollapsed){
+    const sec = document.getElementById(sectionId);
+    if(!sec) return;
+    const title = sec.querySelector('.section-title');
+    const body = sec.querySelector('.section-body');
+    if(!title || !body) return;
+
+    // initial state: localStorage if present, else defaultCollapsed
+    try{
+      const saved = localStorage.getItem(storageKey);
+      if(saved!==null){
+        if(saved==='1') sec.classList.add('collapsed'); else sec.classList.remove('collapsed');
+      }else{
+        if(defaultCollapsed) sec.classList.add('collapsed'); else sec.classList.remove('collapsed');
+      }
+    }catch(e){ if(defaultCollapsed) sec.classList.add('collapsed'); }
+
+    function syncAria(){
+      const collapsed = sec.classList.contains('collapsed');
+      title.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }
+    syncAria();
+
+    function toggle(){
+      sec.classList.toggle('collapsed');
+      syncAria();
+      try{ localStorage.setItem(storageKey, sec.classList.contains('collapsed') ? '1' : '0'); }catch(e){}
+    }
+
+    title.addEventListener('click', toggle);
+    title.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggle(); }
+    });
+  }
+
+  // WT: default åpen (defaultCollapsed=false)
+  setup('wtSection', 'meetingTimer.section.wt', false);
+  // SP: default kollapset (defaultCollapsed=true)
+  setup('spSection', 'meetingTimer.section.sp', true);
+})();
+</script>
+</body>
+</html>
