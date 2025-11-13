@@ -37,7 +37,7 @@ body{
   background-size: auto, 300px 300px; background-repeat: repeat, repeat; background-attachment: fixed, fixed;
 }
 .container{flex:1 0 auto;max-width:980px;margin:0 auto;padding:16px 16px 28px;min-width:320px}
-.footer{flex:0 0 auto;text-align:center;color:var(--muted);font-size:.9rem;padding:10px 0 14px}
+.footer{flex:0 0 auto;text-align:center;color:var(--muted);font-size:.9rem;padding:10px 0 14px;display:flex;align-items:center;justify-content:center;gap:12px}
 
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0 18px;min-height:72px}
 .brand{display:flex;align-items:center;gap:12px;position:relative}
@@ -209,6 +209,70 @@ textarea{resize:vertical;}
   background:url('./img/image-icon.png') center/contain no-repeat;
   pointer-events:none; opacity:.95;
 }
+
+.theme-toggle{
+  padding:4px 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--pill);
+  color:var(--ink);
+  font-size:1.1rem;
+  box-shadow:0 3px 8px rgba(0,0,0,0.12);
+  cursor:pointer;
+  opacity:0.95;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.theme-toggle span{
+  font-size:.85rem;
+  font-weight:800;
+}
+.theme-toggle:hover{
+  opacity:1;
+}
+
+body.dark{
+  --bg:#25292d;
+  --ink:#f5f5f6;
+  --muted:#a2aab3;
+  --card:#2f3439;
+  --border:rgba(0,0,0,.6);
+  --press:#3b4147;
+  --pill:#383e45;
+  --tl-green-1:#32463a;
+  --tl-green-2:#293a32;
+  background-color:#25292d;
+  background-image:none;
+  color:var(--ink);
+}
+.dark .cursor{ background:#f5f5f6; }
+.dark .elapsed{ background:rgba(142,214,170,0.38); }
+.dark #elapsedSP{ background:rgba(240,120,120,0.42); }
+
+.dark .para-slot{ color:#f9fafb; text-shadow:0 1px 0 rgba(0,0,0,.6); }
+
+.dark .message{ color:var(--ink); }
+.dark #message{ color:var(--ink); }
+
+.dark .clock,
+.dark .big-clock{ color:#f9fafb; }
+
+.dark .select{ background:var(--pill); color:var(--ink); }
+.dark .select option{ color:#f5f5f6; }
+
+.dark #wtControlsCard,
+.dark #wtControlsCard *{ color:var(--ink); }
+
+.dark .stats-row .modepill{ background:var(--pill); }
+.dark .stats-row .modepill button{ color:var(--ink); }
+.dark .stats-row .modepill button.active{ background:#111827; color:#f9fafb; }
+
+.dark .round.small{ background:#1f2933; color:#f9fafb; }
+.dark #wtNotes{ background:rgba(0,0,0,0.16); color:var(--ink); }
+
+.dark .section-title{ background:#111827; color:#f9fafb; }
+.dark .card{ box-shadow:0 10px 32px rgba(0,0,0,.6); }
 </style>
 
 <style>
@@ -420,11 +484,33 @@ textarea{resize:vertical;}
   
   </div>
 </section>
-<div class="footer">Meeting Timer © 2025</div>
+<div class="footer">
+  <span>Meeting Timer © 2025</span>
+  <button id="themeToggle" class="theme-toggle" type="button" aria-label="Bytt mellom lys og mørk modus">🌙</button>
+</div>
 </div>
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
+/* ===== Tema (lys/mørk) ===== */
+const THEME_KEY='meetingTimer.theme';
+function applyTheme(mode){
+  const body=document.body;
+  const btn=document.getElementById('themeToggle');
+  if(mode==='dark'){
+    body.classList.add('dark');
+    if(btn) btn.textContent='☀️';
+  }else{
+    body.classList.remove('dark');
+    if(btn) btn.textContent='🌙';
+  }
+}
+try{
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if(savedTheme){ applyTheme(savedTheme); }
+}catch(e){ applyTheme('light'); }
+
+
 /* ===== Logo animasjon ===== */
 (function(){ const logo=document.getElementById('logoImg'); if(!logo) return; logo.addEventListener('click',()=>{ logo.classList.remove('logo-spin','logo-shake'); void logo.offsetWidth; logo.classList.add('logo-spin'); setTimeout(()=>{ logo.classList.remove('logo-spin'); logo.classList.add('logo-shake'); setTimeout(()=>logo.classList.remove('logo-shake'),450); },2000); });})();
 
@@ -617,66 +703,32 @@ function drawTimeline(){
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
 
-  // VT 1.48 enhance: group-aware zebra colors and ordered pins (frame/read with a/b)
+  // VT 1.48 enhance: group colors and ordered pins (frame/read with a/b)
   try{
     const t = document.getElementById('timeline'); if(t){
+      // map para -> group id
       const groups = window.__VT_GROUPS || [];
+      const paraToGroupId = new Map(); groups.forEach((g,i)=> g.forEach(p=>paraToGroupId.set(p,i)));
       const slots = Array.from(t.querySelectorAll('.para-slot'));
-
-      const paraToGroupId = new Map();
-      groups.forEach((g,i)=> g.forEach(p=>paraToGroupId.set(p,i)));
-
-      const blockIndexByPara = new Map();
-      const seen = new Set();
-      let block = 0;
-
-      for(let p=1; p<=slots.length; p++){
-        if(seen.has(p)) continue;
-        const gid = paraToGroupId.has(p) ? paraToGroupId.get(p) : null;
-        const members = [];
-        if(gid !== null && gid !== undefined){
-          const g = groups[gid] || [];
-          g.forEach(q=>{
-            if(q>=1 && q<=slots.length){
-              members.push(q);
-            }
-          });
-        }else{
-          members.push(p);
-        }
-        block++;
-        members.forEach(q=>{
-          seen.add(q);
-          blockIndexByPara.set(q, block);
-        });
-      }
-
-      function blockColor(b){
-        if(!b) return null;
-        return (b % 2 === 1) ? 'var(--tl-green-1)' : 'var(--tl-green-2)';
-      }
-
+      // define color function
+      function groupColor(gid){ if(gid===null || gid===undefined) return null; const baseHue=150; const l=66 - (gid % 3) * 8; return `hsl(${baseHue} 40% ${l}%)`; }
       const ord = window.__VT_ORD || new Map();
       const frameSet = window.__VT_FRAME_SET || new Set();
       const numericReads = (window.__VT_READ_SET2 instanceof Set) ? window.__VT_READ_SET2 : (window.readSet || new Set());
-
       slots.forEach((slot, idx)=>{
         const p = idx+1;
-
-        const b = blockIndexByPara.get(p);
-        const col = blockColor(b);
+        const gid = paraToGroupId.has(p) ? paraToGroupId.get(p) : null;
+        const col = groupColor(gid);
         if (col) slot.style.background = col;
-
+        // rebuild pins in correct order
         slot.querySelectorAll('.read-pin,.frame-pin').forEach(n=>n.remove());
         const hasRead = numericReads.has ? numericReads.has(p) : false;
         const hasFrame = frameSet.has ? frameSet.has(p) : false;
         if (!hasRead && !hasFrame) return;
-
         const items = [];
         if (hasFrame) items.push({type:'frame', order:(ord.get(p)||{}).frame ?? 1});
         if (hasRead)  items.push({type:'read',  order:(ord.get(p)||{}).read  ?? 2});
         items.sort((a,b)=>(a.order??99)-(b.order??99));
-
         items.forEach((it, j)=>{
           const pin = document.createElement('i');
           pin.className = it.type==='frame' ? 'frame-pin' : 'read-pin';
@@ -729,7 +781,7 @@ function unlockWTControls(){
   const m30 = document.getElementById('mode30');
   if(card){
     card.classList.remove('locked');
-    card.classList.remove('collapsed');
+    // Ikke åpne/lukke her – bruker styrer 'collapsed' med tannhjulet
   }
   if(sel){ sel.removeAttribute('disabled'); }
   if(m60){ m60.removeAttribute('disabled'); }
@@ -881,6 +933,17 @@ function setTargetSeconds(sec){
 function updateTargetBox(){ const box=document.getElementById('spTargetDisplay'); if(box) box.textContent= isCountUp() ? '00:00' : fmt(SP_TOTAL); }
 document.getElementById('decSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL - 60));
 document.getElementById('incSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL + 60));
+
+
+  const themeBtn = document.getElementById('themeToggle');
+  if(themeBtn){
+    themeBtn.addEventListener('click', ()=>{
+      const body = document.body;
+      const nowDark = !body.classList.contains('dark');
+      applyTheme(nowDark ? 'dark' : 'light');
+      try{ localStorage.setItem(THEME_KEY, nowDark ? 'dark' : 'light'); }catch(e){}
+    });
+  }
 
 /* ===== Init ===== */
 (async function init(){
