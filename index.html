@@ -273,6 +273,24 @@ body.dark{
 
 .dark .section-title{ background:#111827; color:#f9fafb; }
 .dark .card{ box-shadow:0 10px 32px rgba(0,0,0,.6); }
+
+/* Presets i mørk modus (taler-timer) */
+.dark .preset{
+  color:#f9fafb !important;
+  background:var(--pill);
+}
+.dark .preset.active{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#ffffff !important;
+}
+
+/* Taler-timer-kortet i mørk modus */
+.dark #spSectionBody .card{
+  background:#1f2225 !important;
+  border-color:rgba(0,0,0,0.55) !important;
+  box-shadow:0 8px 24px rgba(0,0,0,0.55) !important;
+}
 </style>
 
 <style>
@@ -703,32 +721,66 @@ function drawTimeline(){
   }
   $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
 
-  // VT 1.48 enhance: group colors and ordered pins (frame/read with a/b)
+  // VT 1.48 enhance: group-aware zebra colors and ordered pins (frame/read with a/b)
   try{
     const t = document.getElementById('timeline'); if(t){
-      // map para -> group id
       const groups = window.__VT_GROUPS || [];
-      const paraToGroupId = new Map(); groups.forEach((g,i)=> g.forEach(p=>paraToGroupId.set(p,i)));
       const slots = Array.from(t.querySelectorAll('.para-slot'));
-      // define color function
-      function groupColor(gid){ if(gid===null || gid===undefined) return null; const baseHue=150; const l=66 - (gid % 3) * 8; return `hsl(${baseHue} 40% ${l}%)`; }
+
+      const paraToGroupId = new Map();
+      groups.forEach((g,i)=> g.forEach(p=>paraToGroupId.set(p,i)));
+
+      const blockIndexByPara = new Map();
+      const seen = new Set();
+      let block = 0;
+
+      for(let p=1; p<=slots.length; p++){
+        if(seen.has(p)) continue;
+        const gid = paraToGroupId.has(p) ? paraToGroupId.get(p) : null;
+        const members = [];
+        if(gid !== null && gid !== undefined){
+          const g = groups[gid] || [];
+          g.forEach(q=>{
+            if(q>=1 && q<=slots.length){
+              members.push(q);
+            }
+          });
+        }else{
+          members.push(p);
+        }
+        block++;
+        members.forEach(q=>{
+          seen.add(q);
+          blockIndexByPara.set(q, block);
+        });
+      }
+
+      function blockColor(b){
+        if(!b) return null;
+        return (b % 2 === 1) ? 'var(--tl-green-1)' : 'var(--tl-green-2)';
+      }
+
       const ord = window.__VT_ORD || new Map();
       const frameSet = window.__VT_FRAME_SET || new Set();
       const numericReads = (window.__VT_READ_SET2 instanceof Set) ? window.__VT_READ_SET2 : (window.readSet || new Set());
+
       slots.forEach((slot, idx)=>{
         const p = idx+1;
-        const gid = paraToGroupId.has(p) ? paraToGroupId.get(p) : null;
-        const col = groupColor(gid);
+
+        const b = blockIndexByPara.get(p);
+        const col = blockColor(b);
         if (col) slot.style.background = col;
-        // rebuild pins in correct order
+
         slot.querySelectorAll('.read-pin,.frame-pin').forEach(n=>n.remove());
         const hasRead = numericReads.has ? numericReads.has(p) : false;
         const hasFrame = frameSet.has ? frameSet.has(p) : false;
         if (!hasRead && !hasFrame) return;
+
         const items = [];
         if (hasFrame) items.push({type:'frame', order:(ord.get(p)||{}).frame ?? 1});
         if (hasRead)  items.push({type:'read',  order:(ord.get(p)||{}).read  ?? 2});
         items.sort((a,b)=>(a.order??99)-(b.order??99));
+
         items.forEach((it, j)=>{
           const pin = document.createElement('i');
           pin.className = it.type==='frame' ? 'frame-pin' : 'read-pin';
