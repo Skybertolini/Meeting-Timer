@@ -40,10 +40,37 @@ body{
 .footer{flex:0 0 auto;text-align:center;color:var(--muted);font-size:.9rem;padding:10px 0 14px;display:flex;align-items:center;justify-content:center;gap:12px}
 
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0 18px;min-height:72px;position:relative}
-.lang-switcher{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:48px}
-.lang-btn{border-radius:999px;border:1px solid var(--border);background:var(--pill);padding:4px 10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.18);}
+.lang-switcher{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  min-width:48px;
+  margin-left:auto;
+  margin-right:calc((100% - var(--content-max))/2);
+}
+.lang-theme-toggle{
+  display:inline-flex;
+  border-radius:999px;
+  overflow:hidden;
+  box-shadow:0 3px 12px rgba(0,0,0,0.18);
+  border:1px solid rgba(0,0,0,0.10);
+  background:#ffffff;
+}
+
+.lang-btn{
+  border:0;
+  background:transparent;
+  padding:6px 10px 6px 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border-right:1px solid rgba(0,0,0,0.08);
+}
+
 .lang-btn img{width:18px;height:18px;display:block;}
-.lang-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.22);}
+.lang-btn:hover{background:rgba(0,0,0,0.03);}
 .lang-popover{position:absolute;top:56px;right:0;min-width:220px;border-radius:16px;border:1px solid rgba(0,0,0,0.06);background:rgba(248,247,245,0.94);backdrop-filter:blur(18px);box-shadow:0 18px 45px rgba(0,0,0,0.18);padding:6px 0;z-index:900;display:none;}
 .lang-popover.open{display:block;}
 .lang-popover ul{list-style:none;margin:0;padding:0;}
@@ -51,6 +78,10 @@ body{
 .lang-popover li:hover{background:rgba(0,0,0,0.04);}
 .lang-popover li.active::after{content:'✓';font-size:.9rem;opacity:.9;}
 body.dark .lang-popover{background:rgba(31,35,39,0.96);border-color:rgba(0,0,0,0.6);box-shadow:0 22px 50px rgba(0,0,0,0.7);}
+/* Lighten VT timeline in dark mode */
+.dark #timeline{background:linear-gradient(180deg,#3e5643 0%, #465f4c 100%);}
+.dark #timeline .slot{opacity:.16;}
+
 body.dark .lang-popover li:hover{background:rgba(255,255,255,0.04);}
 
 .brand{display:flex;align-items:center;gap:12px;position:relative}
@@ -132,8 +163,7 @@ body.dark .preset.active{
 .target-box{min-width:140px; text-align:center; font-weight:900; border-radius:999px; padding:8px 16px; border:1px solid var(--border);
   background:linear-gradient(180deg,var(--tl-green-1) 0%, #edf5f0 100%); color:#2f3b34; box-shadow:0 8px 20px rgba(70,50,30,.06)}
 
-/* Milestone-bilde */
-.milestone-img{max-width:56%;height:auto;margin:10px auto 0;display:block;opacity:1}
+
 
 img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 #wtControlsCard{max-width:var(--content-max);margin-inline:auto}
@@ -234,29 +264,22 @@ textarea{resize:vertical;}
 }
 
 .theme-toggle{
-  padding:4px 14px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  background:var(--pill);
+  padding:6px 12px 6px 10px;
+  border:0;
+  background:transparent;
   color:var(--ink);
   font-size:1.1rem;
-  box-shadow:0 3px 8px rgba(0,0,0,0.12);
   cursor:pointer;
-  opacity:0.95;
   display:inline-flex;
   align-items:center;
-  gap:6px;
-}
-.theme-toggle span{
-  font-size:.85rem;
-  font-weight:800;
+  justify-content:center;
 }
 .theme-toggle:hover{
-  opacity:1;
+  background:rgba(0,0,0,0.03);
 }
 
 body.dark{
-  --bg:#25292d;
+  --bg:#3c3f38;
   --ink:#f5f5f6;
   --muted:#a2aab3;
   --card:#2f3439;
@@ -265,7 +288,7 @@ body.dark{
   --pill:#383e45;
   --tl-green-1:#32463a;
   --tl-green-2:#293a32;
-  background-color:#25292d;
+  background-color:#3c3f38;
   background-image:none;
   color:var(--ink);
 }
@@ -294,7 +317,6 @@ body.dark{
 .dark .round.small{ background:#1f2933; color:#f9fafb; }
 .dark #wtNotes{ background:rgba(0,0,0,0.16); color:var(--ink); }
 
-.dark .section-title{ background:#111827; color:#f9fafb; }
 .dark .card{ box-shadow:0 10px 32px rgba(0,0,0,.6); }
 
 /* Mørkere kortbakgrunn for Taler-timer i mørk modus */
@@ -353,7 +375,7 @@ body.dark{
   user-select:none;
   padding:10px 16px;
   border-radius:18px;
-  background:#4b4039; /* brungrå ramme inspirert av logoen */
+  background:#b6aa73; /* litt mer sandfarget, som logoen */
   color:#fdfaf6;
   box-shadow:0 10px 26px rgba(40,30,20,.18);
 }
@@ -372,10 +394,6 @@ body.dark{
 .section-title:focus-visible {
   outline: 2px solid #fdfaf6;
   outline-offset: 3px;
-}
-.dark .section-title{
-  background:#3a342f;
-  color:#fdfaf6;
 }
 
 .collapsible .section-body { display:block; }
@@ -418,9 +436,12 @@ body.dark{
       <img id="logoImg" src="./img/meeting-timer-logo.png" alt="Meeting Timer logo">
     </div>
     <div class="lang-switcher">
-     <button id="langBtn" class="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
-  <img src="./img/language-icon.png" alt="">
-</button>
+      <div class="lang-theme-toggle">
+        <button id="langBtn" class="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
+          <img src="./img/language-icon.png" alt="">
+        </button>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Bytt mellom lys og mørk modus">🌙</button>
+      </div>
       <div id="langPopover" class="lang-popover" role="menu" aria-label="Choose language">
         <ul>
           <li data-lang="en">English</li>
@@ -519,7 +540,7 @@ body.dark{
         </div>
       </div>
       <div class="big-clock" id="clockSP">00:00</div>
-      <img id="msImg" class="milestone-img" alt="Milestone" src="./img/pick-milestone.png"/>
+      
       <div class="controls">
         <button id="playSP" class="round play"><span id="playSPIcon">▶</span></button>
         <button id="pauseSP" class="round pause" disabled>❚❚</button>
@@ -533,7 +554,6 @@ body.dark{
 </section>
 <div class="footer">
   <span>Meeting Timer © 2025</span>
-  <button id="themeToggle" class="theme-toggle" type="button" aria-label="Bytt mellom lys og mørk modus">🌙</button>
 </div>
 </div>
 
@@ -548,7 +568,7 @@ function applyTheme(mode){
   if(mode==='dark'){
     body.classList.add('dark');
     if(btn) btn.textContent='☀️';
-    if(langImg) langImg.src='./img/language-icon-dark.png';
+    if(langImg) langImg.src='./img/language-icon.png';
   }else{
     body.classList.remove('dark');
     if(btn) btn.textContent='🌙';
@@ -562,17 +582,8 @@ try{
 
 /* ===== Språk (language) ===== */
 const LANG_KEY='meetingTimer.lang';
-const DEFAULT_LANG='no';
-let LANGS={
-  en:{code:'en',label:'English',WTStudy:'Watchtower Study',SpeakerTimer:'Speaker Timer',Intro:'Introduction',TimeUsed:'Time used – overtime',Conclusion:'Conclusion',Review:'Review questions',Paragraph:'Paragraph',Paragraphs:'Paragraphs',And:'and'},
-  no:{code:'no',label:'Norsk',WTStudy:'Vakttårnstudiet',SpeakerTimer:'Talertimer',Intro:'Introduksjon',TimeUsed:'Tiden er brukt – teller over',Conclusion:'Avslutning',Review:'Repetisjonsspørsmål',Paragraph:'Avsnitt',Paragraphs:'Avsnittene',And:'og'},
-  sv:{code:'sv',label:'Svenska',WTStudy:'Vakttorns-studiet',SpeakerTimer:'Talartimer',Intro:'Introduktion',TimeUsed:'Tiden är använd – övertid',Conclusion:'Avslutning',Review:'Repetitionsfrågor',Paragraph:'Stycke',Paragraphs:'Styckena',And:'och'},
-  da:{code:'da',label:'Dansk',WTStudy:'Vagttårnsstudiet',SpeakerTimer:'Talertimer',Intro:'Introduktion',TimeUsed:'Tiden er brugt – overtid',Conclusion:'Afslutning',Review:'Repetitionsspørgsmål',Paragraph:'Afsnit',Paragraphs:'Afsnittene',And:'og'},
-  de:{code:'de',label:'Deutsch',WTStudy:'Wachtturm-Studium',SpeakerTimer:'Redner-Timer',Intro:'Einleitung',TimeUsed:'Die Zeit ist aufgebraucht – Überzeit',Conclusion:'Schlussfolgerung',Review:'Wiederholungsfragen',Paragraph:'Abschnitt',Paragraphs:'Abschnitte',And:'und'},
-  es:{code:'es',label:'Español',WTStudy:'Estudio de La Atalaya',SpeakerTimer:'Temporizador de discurso',Intro:'Introducción',TimeUsed:'Se ha usado todo el tiempo',Conclusion:'Conclusión',Review:'Preguntas de repaso',Paragraph:'Párrafo',Paragraphs:'Párrafos',And:'y'},
-  fr:{code:'fr',label:'Français',WTStudy:'Étude de la Tour de Garde',SpeakerTimer:'Minuteur de discours',Intro:'Introduction',TimeUsed:'Le temps est écoulé – dépassement',Conclusion:'Conclusion',Review:'Questions de révision',Paragraph:'Paragraphe',Paragraphs:'Paragraphes',And:'et'},
-  it:{code:'it',label:'Italiano',WTStudy:'Studio della Torre di Guardia',SpeakerTimer:'Timer del discorso',Intro:'Introduzione',TimeUsed:'Il tempo è stato usato – oltre il limite',Conclusion:'Conclusione',Review:'Domande di ripasso',Paragraph:'Paragrafo',Paragraphs:'Paragrafi',And:'e'}
-};
+const DEFAULT_LANG='en';
+let LANGS={};
 
 async function loadLanguages(){
   try{
@@ -591,13 +602,13 @@ function setLang(code){ try{localStorage.setItem(LANG_KEY,code);}catch(e){} }
 await loadLanguages();
 
 window.currentLang=getLang();
-window.L=LANGS[window.currentLang] || LANGS[DEFAULT_LANG];
+window.L=LANGS[window.currentLang] || LANGS[DEFAULT_LANG] || {};
 
 function updateStaticTexts(){
   const wtTitle=document.getElementById('wtStudyTitle');
-  if(wtTitle && window.L){ wtTitle.textContent=window.L.WTStudy; }
+  if(wtTitle && window.L && window.L.WTStudy){ wtTitle.textContent=window.L.WTStudy; }
   const spTitle=document.getElementById('speechTimerTitle');
-  if(spTitle && window.L){
+  if(spTitle && window.L && window.L.SpeakerTimer){
     const caret=spTitle.querySelector('.caret');
     if(caret){ spTitle.innerHTML=window.L.SpeakerTimer+' '+caret.outerHTML; }
     else{ spTitle.textContent=window.L.SpeakerTimer; }
@@ -1002,7 +1013,7 @@ function drawTimeline(){
         document.getElementById('cursor').style.left = '0%';
         document.getElementById('clockWT').textContent = '00:00';
         document.getElementById('clockWT').classList.remove('over');
-        document.getElementById('message').textContent = 'Tilbake til start (00:00)';
+        document.getElementById('message').textContent = ((window.L && window.L.BackToStart) ? window.L.BackToStart : 'Tilbake til start') + ' (00:00)';
       }
     });
   }
@@ -1049,7 +1060,8 @@ function resetWTUI(){
   $('#cursor').style.left = '0%';
 
   // standardmelding etter reset
-  $('#message').textContent = 'Klar for å starte. Trykk ▶ når du er klar.';
+  const L = window.L || {};
+  $('#message').textContent = L.Ready || 'Klar for å starte. Trykk ▶ når du er klar.';
 
   started = false;
   paused = false;
