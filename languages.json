@@ -17,7 +17,15 @@
     "Info_Images": "Images",
     "Info_Frames": "Boxes",
     "Info_Notes": "You can take notes here.",
-    "Ready": "Ready to start. Press ▶ when you’re ready."
+    "Ready": "Ready to start. Press ▶ when you’re ready.",
+    "BackToStart": "Back to start",
+    "SelectArticle": "Select an article to load timers.",
+    "WTLoaded": "Article loaded.",
+    "NotesPlaceholder": "Write your notes here.",
+    "ThemeLight": "Light mode",
+    "ThemeDark": "Dark mode",
+    "Error_Articles": "Could not load article data.",
+    "Error_Languages": "Could not load language file."
   },
   "no": {
     "code": "no",
@@ -37,7 +45,15 @@
     "Info_Images": "Bilder",
     "Info_Frames": "Rammer",
     "Info_Notes": "Her kan du notere.",
-    "Ready": "Klar til start. Trykk ▶ når du er klar."
+    "Ready": "Klar til start. Trykk ▶ når du er klar.",
+    "BackToStart": "Tilbake til start",
+    "SelectArticle": "Velg en artikkel for å laste timer.",
+    "WTLoaded": "Artikkel lastet.",
+    "NotesPlaceholder": "Skriv notatene dine her.",
+    "ThemeLight": "Lyst modus",
+    "ThemeDark": "Mørkt modus",
+    "Error_Articles": "Kunne ikke laste artikkeldata.",
+    "Error_Languages": "Kunne ikke laste språkfilen."
   },
   "sv": {
     "code": "sv",
@@ -53,17 +69,25 @@
     "And": "och",
     "Min": "min",
     "Info_Paragraph": "Paragrafer",
-    "Info_Reads": "Läs‑skriftställen",
+    "Info_Reads": "Läs-skriftställen",
     "Info_Images": "Bilder",
     "Info_Frames": "Rutor",
     "Info_Notes": "Här kan du anteckna.",
-    "Ready": "Klar att starta. Tryck ▶ när du är redo."
+    "Ready": "Klar att starta. Tryck ▶ när du är redo.",
+    "BackToStart": "Tillbaka till start",
+    "SelectArticle": "Välj en artikel för att läsa in timers.",
+    "WTLoaded": "Artikel inläst.",
+    "NotesPlaceholder": "Skriv dina anteckningar här.",
+    "ThemeLight": "Ljust läge",
+    "ThemeDark": "Mörkt läge",
+    "Error_Articles": "Det gick inte att läsa in artikeldata.",
+    "Error_Languages": "Det gick inte att läsa in språkfilen."
   },
   "da": {
     "code": "da",
     "label": "Dansk",
     "WTStudy": "Vagttårnsstudiet",
-    "SpeakerTimer": "Taler‑timer",
+    "SpeakerTimer": "Taler-timer",
     "Intro": "Introduktion",
     "TimeUsed": "Tiden er brugt – overtid",
     "Conclusion": "Afslutning",
@@ -73,17 +97,25 @@
     "And": "og",
     "Min": "min",
     "Info_Paragraph": "Paragraffer",
-    "Info_Reads": "Læse‑skriftsteder",
+    "Info_Reads": "Læse-skriftsteder",
     "Info_Images": "Billeder",
     "Info_Frames": "Bokse",
     "Info_Notes": "Her kan du notere.",
-    "Ready": "Klar til start. Tryk ▶ når du er klar."
+    "Ready": "Klar til start. Tryk ▶ når du er klar.",
+    "BackToStart": "Tilbage til start",
+    "SelectArticle": "Vælg en artikel for at indlæse timere.",
+    "WTLoaded": "Artikel indlæst.",
+    "NotesPlaceholder": "Skriv dine noter her.",
+    "ThemeLight": "Lyst tema",
+    "ThemeDark": "Mørkt tema",
+    "Error_Articles": "Kunne ikke indlæse artikeldata.",
+    "Error_Languages": "Kunne ikke indlæse sprogfilen."
   },
   "de": {
     "code": "de",
     "label": "Deutsch",
-    "WTStudy": "Wachtturm‑Studium",
-    "SpeakerTimer": "Redner‑Timer",
+    "WTStudy": "Wachtturm-Studium",
+    "SpeakerTimer": "Redner-Timer",
     "Intro": "Einleitung",
     "TimeUsed": "Die Zeit ist aufgebraucht – Überzeit",
     "Conclusion": "Schlussfolgerung",
@@ -97,7 +129,15 @@
     "Info_Images": "Bilder",
     "Info_Frames": "Kästen",
     "Info_Notes": "Hier können Sie Notizen machen.",
-    "Ready": "Bereit zum Start. Drücken Sie ▶ wenn Sie bereit sind."
+    "Ready": "Bereit zum Start. Drücken Sie ▶ wenn Sie bereit sind.",
+    "BackToStart": "Zurück zum Anfang",
+    "SelectArticle": "Wähle einen Artikel, um Timer zu laden.",
+    "WTLoaded": "Artikel geladen.",
+    "NotesPlaceholder": "Schreiben Sie Ihre Notizen hier.",
+    "ThemeLight": "Helles Design",
+    "ThemeDark": "Dunkles Design",
+    "Error_Articles": "Artikeldaten konnten nicht geladen werden.",
+    "Error_Languages": "Sprachdatei konnte nicht geladen werden."
   },
   "es": {
     "code": "es",
@@ -117,7 +157,15 @@
     "Info_Images": "Imágenes",
     "Info_Frames": "Recuadros",
     "Info_Notes": "Aquí puedes tomar notas.",
-    "Ready": "Listo para comenzar. Pulsa ▶ cuando estés listo."
+    "Ready": "Listo para comenzar. Pulsa ▶ cuando estés listo.",
+    "BackToStart": "Volver al inicio",
+    "SelectArticle": "Elige un artículo para cargar los temporizadores.",
+    "WTLoaded": "Artículo cargado.",
+    "NotesPlaceholder": "Escribe aquí tus notas.",
+    "ThemeLight": "Modo claro",
+    "ThemeDark": "Modo oscuro",
+    "Error_Articles": "No se pudieron cargar los datos del artículo.",
+    "Error_Languages": "No se pudo cargar el archivo de idioma."
   },
   "fr": {
     "code": "fr",
@@ -137,7 +185,15 @@
     "Info_Images": "Images",
     "Info_Frames": "Encadrés",
     "Info_Notes": "Vous pouvez prendre des notes ici.",
-    "Ready": "Prêt à commencer. Appuyez sur ▶ quand vous êtes prêt."
+    "Ready": "Prêt à commencer. Appuyez sur ▶ quand vous êtes prêt.",
+    "BackToStart": "Retour au début",
+    "SelectArticle": "Choisissez un article pour charger les minuteries.",
+    "WTLoaded": "Article chargé.",
+    "NotesPlaceholder": "Écrivez vos notes ici.",
+    "ThemeLight": "Mode clair",
+    "ThemeDark": "Mode sombre",
+    "Error_Articles": "Impossible de charger les données de l’article.",
+    "Error_Languages": "Impossible de charger le fichier de langue."
   },
   "it": {
     "code": "it",
@@ -157,6 +213,14 @@
     "Info_Images": "Immagini",
     "Info_Frames": "Riquadri",
     "Info_Notes": "Qui puoi prendere appunti.",
-    "Ready": "Pronto per iniziare. Premi ▶ quando sei pronto."
+    "Ready": "Pronto per iniziare. Premi ▶ quando sei pronto.",
+    "BackToStart": "Torna all’inizio",
+    "SelectArticle": "Scegli un articolo per caricare i timer.",
+    "WTLoaded": "Articolo caricato.",
+    "NotesPlaceholder": "Scrivi qui i tuoi appunti.",
+    "ThemeLight": "Tema chiaro",
+    "ThemeDark": "Tema scuro",
+    "Error_Articles": "Impossibile caricare i dati dell’articolo.",
+    "Error_Languages": "Impossibile caricare il file di lingua."
   }
 }
