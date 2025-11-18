@@ -113,6 +113,8 @@ body.dark .lang-popover li:hover{background:rgba(255,255,255,0.04);}
 .image-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-2px; width:18px; height:18px; background:url('./img/image-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
 .frame-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-2px; width:12px; height:12px; background:url('./img/box-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
 .elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2;pointer-events:none}
+#elapsed.overrun{background:rgba(210,60,60,.28) !important;}
+
 /* Rød tone for SP sin elapsed */
 #elapsedSP{background:rgba(210,60,60,.28)}
 .cursor{position:absolute;top:-10px;width:2px;height:76px;background:#2f3f49;left:0%;z-index:3}
@@ -171,6 +173,20 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 textarea{resize:vertical;}
 
 /* Top row (select only) */
+
+.wt-article-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.wt-menu-icon{
+  font-size:1.2rem;
+  line-height:1;
+  opacity:.95;
+  display:inline-block;
+  cursor:pointer;
+}
 .wt-toprow{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap}
 .select-article{flex:1 1 auto; max-width:100%; height:42px; line-height:42px; padding:0 12px; margin:0}
 @media (max-width:560px){ .wt-toprow{flex-wrap:wrap} }
@@ -225,6 +241,7 @@ textarea{resize:vertical;}
   border-radius:999px;
   font-weight:800;
   font-size:.95rem;
+  white-space:nowrap;
   transition:background .2s ease, color .2s ease;
 }
 .stats-row .modepill button:hover{background:rgba(0,0,0,.05);}
@@ -249,6 +266,18 @@ textarea{resize:vertical;}
 
 /* Locked state when study started */
 #wtControlsCard.locked{opacity:.55; filter:grayscale(25%);}
+#wtGearBtn.locked{
+  opacity:.4;
+  filter:grayscale(40%);
+  cursor:default;
+}
+#langBtn.locked{
+  opacity:.4;
+  filter:grayscale(40%);
+  cursor:default;
+}
+
+
 #wtControlsCard.locked .select, 
 #wtControlsCard.locked .modepill button{pointer-events:none}
 
@@ -463,7 +492,10 @@ body.dark{
 <div class="section-body" id="wtSectionBody">
 <div id="wtControlsCard" class="card" style="max-width:var(--content-max);margin-inline:auto">
     <div class="wt-toprow">
-      <select id="weekSel" class="select select-article" aria-label="Artikkel"><option>Laster …</option></select>
+      <div class="wt-article-row">
+        <span class="wt-menu-icon" aria-hidden="true">≡</span>
+        <select id="weekSel" class="select select-article" aria-label="Artikkel"><option>Laster …</option></select>
+      </div>
     </div>
 
     <div class="stats-row" style="margin-top:10px">
@@ -612,6 +644,10 @@ function updateStaticTexts(){
     const caret=spTitle.querySelector('.caret');
     if(caret){ spTitle.innerHTML=window.L.SpeakerTimer+' '+caret.outerHTML; }
     else{ spTitle.textContent=window.L.SpeakerTimer; }
+  }
+  const wtNotes=document.getElementById('wtNotes');
+  if(wtNotes && window.L && window.L.NotesPlaceholder){
+    wtNotes.placeholder = window.L.NotesPlaceholder;
   }
 }
 
@@ -874,17 +910,35 @@ try{
 
 /* ===== Fordele tid (WT) ===== */
 const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
+const READ_BONUS=15, IMAGE_BONUS=15;
 function computeAllocation(){
   const S=slots();
   if(totalParagraphs<=0){perParagraph=[];cumulative=[];return;}
   const wps=WPM/60;
+  const imageSet = (window.__VT_IMAGE_SET instanceof Set) ? window.__VT_IMAGE_SET : new Set();
   const raw=Array.from({length:totalParagraphs},(_,i)=>{
     const p=paras[i]||{words:0,q:1,les:0,hasAB:false};
+    const paraNum = i+1;
     let s=(p.words||0)/wps + (p.q||0)*SEC_PER_Q + (p.les||0)*SEC_PER_READ + (p.hasAB?AB_BONUS:0);
+
+    // Ekstra tid for les-skriftsteder og bilder
+    if(readSet && typeof readSet.has==='function' && readSet.has(paraNum)){
+      s += READ_BONUS;
+    }
+    if(imageSet && typeof imageSet.has==='function' && imageSet.has(paraNum)){
+      s += IMAGE_BONUS;
+    }
+
     s=Math.max(5,s);
-    // +10% for de siste 5 avsnittene
-    const lastN=Math.min(5,totalParagraphs);
-    if(i>=totalParagraphs-lastN) s*=1.10;
+
+    // De første 4 avsnittene går 10% raskere
+    const firstN = Math.min(4,totalParagraphs);
+    if(i < firstN) s *= 0.90;
+
+    // De siste 4 avsnittene går 10% saktere
+    const lastN = Math.min(4,totalParagraphs);
+    if(i >= totalParagraphs-lastN) s *= 1.10;
+
     return s;
   });
   const scale=S.content/((raw.reduce((a,b)=>a+b,0))||1);
@@ -1022,12 +1076,32 @@ function drawTimeline(){
 let _rAF=null; function relayout(){ drawTimeline(); drawTimelineSP(); }
 ['resize','orientationchange'].forEach(ev=>{ window.addEventListener(ev, ()=>{ if(_rAF) cancelAnimationFrame(_rAF); _rAF=requestAnimationFrame(relayout); }); });
 
+
+// Klikk på menyikonet (tre streker) for å åpne artikkel-listen
+(function(){
+  const icon = document.querySelector('.wt-article-row .wt-menu-icon');
+  const sel = document.getElementById('weekSel');
+  if(!icon || !sel) return;
+  icon.addEventListener('click', ()=>{
+    if(sel.disabled) return;
+    sel.focus();
+    try{
+      const ev = new MouseEvent('mousedown', {bubbles:true, cancelable:true, view:window});
+      sel.dispatchEvent(ev);
+    }catch(e){
+      // Fallback: noen nettlesere blokkerer syntetisk mousedown – bruk bare fokus
+    }
+  });
+})();
+
 /* ===== WT klokke og meldinger ===== */
 function lockWTControls(){
   const card = document.getElementById('wtControlsCard');
   const sel = document.getElementById('weekSel');
   const m60 = document.getElementById('mode60');
   const m30 = document.getElementById('mode30');
+  const gear = document.getElementById('wtGearBtn');
+  const langBtn = document.getElementById('langBtn');
   if(card){
     card.classList.add('locked');
     card.classList.add('collapsed'); // skjuler infofeltet under avspilling
@@ -1035,12 +1109,22 @@ function lockWTControls(){
   if(sel){ sel.setAttribute('disabled','disabled'); }
   if(m60){ m60.setAttribute('disabled','disabled'); }
   if(m30){ m30.setAttribute('disabled','disabled'); }
+  if(gear){
+    gear.classList.add('locked');
+    gear.setAttribute('disabled','disabled');
+  }
+  if(langBtn){
+    langBtn.classList.add('locked');
+    langBtn.setAttribute('disabled','disabled');
+  }
 }
 function unlockWTControls(){
   const card = document.getElementById('wtControlsCard');
   const sel = document.getElementById('weekSel');
   const m60 = document.getElementById('mode60');
   const m30 = document.getElementById('mode30');
+  const gear = document.getElementById('wtGearBtn');
+  const langBtn = document.getElementById('langBtn');
   if(card){
     card.classList.remove('locked');
     // Ikke åpne/lukke her – bruker styrer 'collapsed' med tannhjulet
@@ -1048,6 +1132,14 @@ function unlockWTControls(){
   if(sel){ sel.removeAttribute('disabled'); }
   if(m60){ m60.removeAttribute('disabled'); }
   if(m30){ m30.removeAttribute('disabled'); }
+  if(gear){
+    gear.classList.remove('locked');
+    gear.removeAttribute('disabled');
+  }
+  if(langBtn){
+    langBtn.classList.remove('locked');
+    langBtn.removeAttribute('disabled');
+  }
 }
 
 function resetWTUI(){
@@ -1083,6 +1175,7 @@ function tickWT(){
   const e=nowElapsed();
   $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=S.total);
   const p=Math.min(e/S.total*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`;
+  const elElapsed = document.getElementById('elapsed'); if(elElapsed){ elElapsed.classList.toggle('overrun', e>=S.total); }
   const L = window.L || {};
   if(e<S.intro) setWTMessage(L.Intro || 'Introduksjon');
   else if(e>=S.total) setWTMessage(L.TimeUsed || 'Tiden er brukt – teller over');
