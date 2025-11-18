@@ -25,7 +25,12 @@
     "ThemeLight": "Light mode",
     "ThemeDark": "Dark mode",
     "Error_Articles": "Could not load article data.",
-    "Error_Languages": "Could not load language file."
+    "Error_Languages": "Could not load language file.",
+    "ParasLabel": "Paragraph",
+    "ReadsLabel": "Read scriptures",
+    "ImagesLabel": "Images",
+    "FramesLabel": "Boxes",
+    "MinutesShort": "min"
   },
   "no": {
     "code": "no",
@@ -53,7 +58,12 @@
     "ThemeLight": "Lyst modus",
     "ThemeDark": "Mørkt modus",
     "Error_Articles": "Kunne ikke laste artikkeldata.",
-    "Error_Languages": "Kunne ikke laste språkfilen."
+    "Error_Languages": "Kunne ikke laste språkfilen.",
+    "ParasLabel": "Avsnitt",
+    "ReadsLabel": "Les-skriftsteder",
+    "ImagesLabel": "Bilder",
+    "FramesLabel": "Rammer",
+    "MinutesShort": "min"
   },
   "sv": {
     "code": "sv",
@@ -81,7 +91,12 @@
     "ThemeLight": "Ljust läge",
     "ThemeDark": "Mörkt läge",
     "Error_Articles": "Det gick inte att läsa in artikeldata.",
-    "Error_Languages": "Det gick inte att läsa in språkfilen."
+    "Error_Languages": "Det gick inte att läsa in språkfilen.",
+    "ParasLabel": "Paragrafer",
+    "ReadsLabel": "Läs-skriftställen",
+    "ImagesLabel": "Bilder",
+    "FramesLabel": "Rutor",
+    "MinutesShort": "min"
   },
   "da": {
     "code": "da",
@@ -89,13 +104,13 @@
     "WTStudy": "Vagttårnsstudiet",
     "SpeakerTimer": "Taler-timer",
     "Intro": "Introduktion",
-    "TimeUsed": "Over tid",
-    "Conclusion": "Opsummering",
+    "TimeUsed": "Tiden er brugt – overtid",
+    "Conclusion": "Afslutning",
     "Review": "Repetitionsspørgsmål",
     "Paragraph": "Paragraf",
     "Paragraphs": "Paragrafferne",
     "And": "og",
-    "Min": "min.",
+    "Min": "min",
     "Info_Paragraph": "Paragraffer",
     "Info_Reads": "Læse-skriftsteder",
     "Info_Images": "Billeder",
@@ -103,13 +118,18 @@
     "Info_Notes": "Her kan du notere.",
     "Ready": "Klar til start. Tryk ▶ når du er klar.",
     "BackToStart": "Tilbage til start",
-    "SelectArticle": "Vælg en artikel for at se timere.",
+    "SelectArticle": "Vælg en artikel for at indlæse timere.",
     "WTLoaded": "Artikel indlæst.",
     "NotesPlaceholder": "Skriv dine noter her.",
     "ThemeLight": "Lyst tema",
     "ThemeDark": "Mørkt tema",
-    "Error_Articles": "Kunne ikke indlæse artikelen.",
-    "Error_Languages": "Kunne ikke indlæse sprogfilen."
+    "Error_Articles": "Kunne ikke indlæse artikeldata.",
+    "Error_Languages": "Kunne ikke indlæse sprogfilen.",
+    "ParasLabel": "Paragraffer",
+    "ReadsLabel": "Læse-skriftsteder",
+    "ImagesLabel": "Billeder",
+    "FramesLabel": "Bokse",
+    "MinutesShort": "min"
   },
   "de": {
     "code": "de",
@@ -137,7 +157,12 @@
     "ThemeLight": "Helles Design",
     "ThemeDark": "Dunkles Design",
     "Error_Articles": "Artikeldaten konnten nicht geladen werden.",
-    "Error_Languages": "Sprachdatei konnte nicht geladen werden."
+    "Error_Languages": "Sprachdatei konnte nicht geladen werden.",
+    "ParasLabel": "Absätze",
+    "ReadsLabel": "Lesestellen",
+    "ImagesLabel": "Bilder",
+    "FramesLabel": "Kästen",
+    "MinutesShort": "min"
   },
   "es": {
     "code": "es",
@@ -165,7 +190,12 @@
     "ThemeLight": "Modo claro",
     "ThemeDark": "Modo oscuro",
     "Error_Articles": "No se pudieron cargar los datos del artículo.",
-    "Error_Languages": "No se pudo cargar el archivo de idioma."
+    "Error_Languages": "No se pudo cargar el archivo de idioma.",
+    "ParasLabel": "Párrafo",
+    "ReadsLabel": "Textos bíblicos",
+    "ImagesLabel": "Imágenes",
+    "FramesLabel": "Recuadros",
+    "MinutesShort": "min"
   },
   "fr": {
     "code": "fr",
@@ -193,7 +223,12 @@
     "ThemeLight": "Mode clair",
     "ThemeDark": "Mode sombre",
     "Error_Articles": "Impossible de charger les données de l’article.",
-    "Error_Languages": "Impossible de charger le fichier de langue."
+    "Error_Languages": "Impossible de charger le fichier de langue.",
+    "ParasLabel": "Paragraphe",
+    "ReadsLabel": "Textes bibliques",
+    "ImagesLabel": "Images",
+    "FramesLabel": "Encadrés",
+    "MinutesShort": "min"
   },
   "it": {
     "code": "it",
@@ -221,6 +256,11 @@
     "ThemeLight": "Tema chiaro",
     "ThemeDark": "Tema scuro",
     "Error_Articles": "Impossibile caricare i dati dell’articolo.",
-    "Error_Languages": "Impossibile caricare il file di lingua."
+    "Error_Languages": "Impossibile caricare il file di lingua.",
+    "ParasLabel": "Paragrafo",
+    "ReadsLabel": "Scritture",
+    "ImagesLabel": "Immagini",
+    "FramesLabel": "Riquadri",
+    "MinutesShort": "min"
   }
 }
