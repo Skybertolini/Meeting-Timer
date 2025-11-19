@@ -35,6 +35,7 @@ body{
   background-color:var(--bg);
   background-image: linear-gradient(rgba(255,255,255,.72), rgba(255,255,255,.72)), url('./img/paper-texture.png');
   background-size: auto, 300px 300px; background-repeat: repeat, repeat; background-attachment: fixed, fixed;
+  transition:background-color 1s ease;
 }
 .container{flex:1 0 auto;max-width:980px;margin:0 auto;padding:16px 16px 28px;min-width:320px}
 .footer{flex:0 0 auto;text-align:center;color:var(--muted);font-size:.9rem;padding:10px 0 14px;display:flex;align-items:center;justify-content:center;gap:12px}
@@ -149,7 +150,18 @@ img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 textarea{resize:vertical;}
 /* Top row (select only) */
 .wt-toprow{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap}
-.select-article{flex:1 1 auto; max-width:100%; height:42px; line-height:42px; padding:0 12px; margin:0}
+.select-article{flex:1 1 auto; max-width:100%; height:42px; line-height:42px; padding:0 12px 0 32px; margin:0; position:relative;}
+.select-article::before{
+  content:'≡';
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:1rem;
+  pointer-events:none;
+  opacity:.95;
+  color:inherit;
+}
 @media (max-width:560px){ .wt-toprow{flex-wrap:wrap} }
 /* Stats row: avsnitt/les/bilder + studietid */
 .stats-row{
