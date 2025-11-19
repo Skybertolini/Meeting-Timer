@@ -13,7 +13,7 @@
 <!-- End Cloudflare Web Analytics -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.acom/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f8f7f5; --ink:#2b3432; --muted:#8b827a;
@@ -200,6 +200,7 @@ textarea{resize:vertical;}
   border-radius:999px;
   font-weight:800;
   font-size:.95rem;
+  white-space:nowrap;
   transition:background .2s ease, color .2s ease;
 }
 .stats-row .modepill button:hover{background:rgba(0,0,0,.05);}
@@ -247,7 +248,7 @@ textarea{resize:vertical;}
   background:rgba(0,0,0,0.03);
 }
 body.dark{
-  --bg:#3c3f38;
+  --bg:#2c2d31;
   --ink:#f5f5f6;
   --muted:#a2aab3;
   --card:#2f3439;
@@ -256,7 +257,7 @@ body.dark{
   --pill:#383e45;
   --tl-green-1:#32463a;
   --tl-green-2:#293a32;
-  background-color:#3c3f38;
+  background-color:#2c2d31;
   background-image:none;
   color:var(--ink);
 }
@@ -811,6 +812,7 @@ try{
     } else if (!document.getElementById('pillFramesValue')){
       el.innerHTML='<img class="pill-icon" src="./img/box-icon.png" alt="" aria-hidden="true"><span class="pill-label">Rammer:</span><span class="pill-value" id="pillFramesValue">0</span>';
     }
+    if (typeof updateStaticTexts==='function'){ updateStaticTexts(); }
     setPillValue('pillFramesValue', (window.__VT_FRAME_SET instanceof Set) ? window.__VT_FRAME_SET.size : 0);
   })();
   computeAllocation(); drawTimeline(); resetWTUI();
