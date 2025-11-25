@@ -67,6 +67,11 @@ body{
   cursor:pointer;
   border-right:1px solid rgba(0,0,0,0.08);
 }
+.lang-btn:disabled{
+  opacity:.35;
+  filter:grayscale(100%);
+  cursor:default;
+}
 .lang-btn img{width:18px;height:18px;display:block;}
 .lang-btn:hover{background:rgba(0,0,0,0.03);}
 .lang-popover{position:absolute;top:56px;right:0;min-width:220px;border-radius:16px;border:1px solid rgba(0,0,0,0.06);background:rgba(248,247,245,0.94);backdrop-filter:blur(18px);box-shadow:0 18px 45px rgba(0,0,0,0.18);padding:6px 0;z-index:900;display:none;}
@@ -729,12 +734,12 @@ body.dark .feedback-actions button.primary{
     <textarea id="feedbackText" maxlength="500" placeholder="Write your feedback here."></textarea>
     <div class="feedback-name-row">
       <label for="feedbackName" class="feedback-name-label">From</label>
-      <input id="feedbackName" class="feedback-name-input" type="text" maxlength="100" placeholder="Your name and where you are from" />
+      <input id="feedbackName" class="feedback-name-input" type="text" maxlength="100" placeholder="Name and country (optional)" />
     </div>
     <div class="feedback-row">
       <span id="feedbackCount" class="feedback-count">0 / 500</span>
       <div class="feedback-actions">
-        <button type="button" id="feedbackCancel">Avbryt</button>
+        <button type="button" id="feedbackCancel">Cancel</button>
         <button type="button" id="feedbackSend" class="primary">Send</button>
       </div>
     </div>
@@ -746,8 +751,7 @@ body.dark .feedback-actions button.primary{
   <div class="feedback-backdrop" id="aboutBackdrop"></div>
   <div class="feedback-dialog about-dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
     <h3 id="aboutTitle" class="feedback-title">About</h3>
-    <p class="about-tagline">A small helper for the Watchtower Study and other meeting parts.</p>
-
+   
     <h4 class="about-subtitle">What is the Meeting Timer?</h4>
     <p class="feedback-help">
       The Meeting Timer is made to help Jehovah’s Witnesses during congregation meetings.
@@ -1228,6 +1232,7 @@ function lockWTControls(){
   const sel = document.getElementById('weekSel');
   const m60 = document.getElementById('mode60');
   const m30 = document.getElementById('mode30');
+  const langBtn = document.getElementById('langBtn');
   if(card){
     card.classList.add('locked');
     card.classList.add('collapsed'); // skjuler infofeltet under avspilling
@@ -1235,12 +1240,14 @@ function lockWTControls(){
   if(sel){ sel.setAttribute('disabled','disabled'); }
   if(m60){ m60.setAttribute('disabled','disabled'); }
   if(m30){ m30.setAttribute('disabled','disabled'); }
+  if(langBtn){ langBtn.setAttribute('disabled','disabled'); }
 }
 function unlockWTControls(){
   const card = document.getElementById('wtControlsCard');
   const sel = document.getElementById('weekSel');
   const m60 = document.getElementById('mode60');
   const m30 = document.getElementById('mode30');
+  const langBtn = document.getElementById('langBtn');
   if(card){
     card.classList.remove('locked');
     // Ikke åpne/lukke her – bruker styrer 'collapsed' med tannhjulet
@@ -1248,6 +1255,7 @@ function unlockWTControls(){
   if(sel){ sel.removeAttribute('disabled'); }
   if(m60){ m60.removeAttribute('disabled'); }
   if(m30){ m30.removeAttribute('disabled'); }
+  if(langBtn){ langBtn.removeAttribute('disabled'); }
 }
 function resetWTUI(){
   if(tickHandle) clearInterval(tickHandle);
@@ -1299,7 +1307,7 @@ $('#playWT').addEventListener('click',()=>{
 });
 $('#pauseWT').addEventListener('click',()=>{
   if(!started||paused) return;
-  accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage('Pause');
+  accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage(L.Paused);
   $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; setPressedWT('pauseWT');
 });
 $('#stopWT').addEventListener('click',()=>{
@@ -1486,15 +1494,15 @@ const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/C
     const text = textarea.value.trim();
     const name = nameInput ? nameInput.value.trim() : "";
     if(!text){
-      statusEl.textContent = "Skriv noe først før du sender.";
+      statusEl.textContent = "Please write something before you send.";
       return;
     }
     if(text.length > 500){
-      statusEl.textContent = "Tilbakemeldingen er for lang.";
+      statusEl.textContent = "The text is too long.";
       return;
     }
     sendBtn.disabled = true;
-    statusEl.textContent = "Sender …";
+    statusEl.textContent = "Sending …";
     let content = text;
     if(name){
       content += "\n\nName: " + name;
@@ -1504,16 +1512,15 @@ const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/C
       await fetch(FEEDBACK_WEBHOOK, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        mode: "no-cors"
+        body: JSON.stringify(payload)
       });
-      statusEl.textContent = "Takk for tilbakemeldingen!";
+      statusEl.textContent = "Thanks for the feedback!";
       textarea.value = "";
       updateCount();
       setTimeout(closeModal, 1200);
     }catch(err){
-      console.warn("Kunne ikke sende tilbakemelding", err);
-      statusEl.textContent = "Kunne ikke sende. Prøv igjen senere.";
+      console.warn("Couldn't send the feedback", err);
+      statusEl.textContent = "Couldn't send. Please try again later..";
     }finally{
       sendBtn.disabled = false;
     }
