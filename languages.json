@@ -30,7 +30,8 @@
     "ReadsLabel": "Read scriptures",
     "ImagesLabel": "Images",
     "FramesLabel": "Boxes",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Paused"
   },
   "no": {
     "code": "no",
@@ -63,7 +64,8 @@
     "ReadsLabel": "Les-skriftsteder",
     "ImagesLabel": "Bilder",
     "FramesLabel": "Rammer",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Pause"
   },
   "sv": {
     "code": "sv",
@@ -96,7 +98,8 @@
     "ReadsLabel": "Läs-skriftställen",
     "ImagesLabel": "Bilder",
     "FramesLabel": "Rutor",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Paus"
   },
   "da": {
     "code": "da",
@@ -129,7 +132,8 @@
     "ReadsLabel": "Læse-skriftsteder",
     "ImagesLabel": "Billeder",
     "FramesLabel": "Bokse",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Pause"
   },
   "de": {
     "code": "de",
@@ -162,7 +166,8 @@
     "ReadsLabel": "Lesestellen",
     "ImagesLabel": "Bilder",
     "FramesLabel": "Kästen",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Pause"
   },
   "es": {
     "code": "es",
@@ -195,7 +200,8 @@
     "ReadsLabel": "Textos bíblicos",
     "ImagesLabel": "Imágenes",
     "FramesLabel": "Recuadros",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Pausa"
   },
   "fr": {
     "code": "fr",
@@ -228,7 +234,8 @@
     "ReadsLabel": "Textes bibliques",
     "ImagesLabel": "Images",
     "FramesLabel": "Encadrés",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Pause"
   },
   "it": {
     "code": "it",
@@ -261,6 +268,7 @@
     "ReadsLabel": "Scritture",
     "ImagesLabel": "Immagini",
     "FramesLabel": "Riquadri",
-    "MinutesShort": "min"
+    "MinutesShort": "min",
+    "Paused": "Pausa"
   }
 }
