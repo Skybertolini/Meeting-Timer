@@ -304,6 +304,16 @@ body.dark #wtControlsCard .wt-menu-icon{
 .dark .round.small{ background:#1f2933; color:#f9fafb; }
 .dark #wtNotes{ background:rgba(0,0,0,0.16); color:var(--ink); }
 .dark .card{ box-shadow:0 10px 32px rgba(0,0,0,.6); }
+/* Logo shadows for light/dark mode */
+body:not(.dark) #logoImg{
+  filter:drop-shadow(0 8px 24px rgba(70,50,30,.08));
+}
+body.dark #logoImg{
+  filter:
+    drop-shadow(0 6px 18px rgba(0,0,0,0.7))
+    drop-shadow(0 0 10px rgba(255,255,255,0.30));
+}
+
 /* Mørkere kortbakgrunn for Taler-timer i mørk modus */
 .dark #spSectionBody .card{
   background:#1f2225;
@@ -1494,15 +1504,15 @@ const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/C
     const text = textarea.value.trim();
     const name = nameInput ? nameInput.value.trim() : "";
     if(!text){
-      statusEl.textContent = "Skriv noe først før du sender.";
+      statusEl.textContent = "Please write something before you send.";
       return;
     }
     if(text.length > 500){
-      statusEl.textContent = "Tilbakemeldingen er for lang.";
+      statusEl.textContent = "The text is too long.";
       return;
     }
     sendBtn.disabled = true;
-    statusEl.textContent = "Sender …";
+    statusEl.textContent = "Sending …";
     let content = text;
     if(name){
       content += "\n\nName: " + name;
@@ -1514,13 +1524,13 @@ const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/C
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      statusEl.textContent = "Takk for tilbakemeldingen!";
+      statusEl.textContent = "Thanks for the feedback!";
       textarea.value = "";
       updateCount();
       setTimeout(closeModal, 1200);
     }catch(err){
-      console.warn("Kunne ikke sende tilbakemelding", err);
-      statusEl.textContent = "Kunne ikke sende. Prøv igjen senere.";
+      console.warn("Couldn't send the feedback", err);
+      statusEl.textContent = "Couldn't send. Please try again later..";
     }finally{
       sendBtn.disabled = false;
     }
