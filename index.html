@@ -286,13 +286,6 @@ body.dark #wtControlsCard .wt-article-row,
 body.dark #wtControlsCard .wt-menu-icon{
   color:#fff;
 }
-body.dark #logoImg {
-    /* Mørk skygge under – gir dybde */
-    filter:
-        drop-shadow(0 6px 18px rgba(0, 0, 0, 0.7))
-        /* Lys halo rundt – gir tydeligere omriss */
-        drop-shadow(0 0 10px rgba(255, 255, 255, 0.30));
-}
 .dark .cursor{ background:#f5f5f6; }
 .dark .elapsed{ background:rgba(142,214,170,0.38); }
 .dark #elapsedSP{ background:rgba(240,120,120,0.42); }
@@ -737,8 +730,7 @@ body.dark .feedback-actions button.primary{
   <div class="feedback-backdrop" id="feedbackBackdrop"></div>
   <div class="feedback-dialog" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
     <h3 id="feedbackTitle" class="feedback-title">Feedback</h3>
-    <p class="feedback-help">I would love to hear from you if you have any feedback about the website. It could be related to translations, features, technical issues, or anything else. Feel free to share suggestions for things you think would be nice to add as well.
-If you want, you’re welcome to include your name and where you’re from — it’s always encouraging to know who is using the site.</p>
+    <p class="feedback-help">I would love to hear from you if you have any feedback regarding the website. It could be about the translations, functions, technical bugs or other things. Let me know if you have some suggestions to what would be nice to add as well. If you want, you are welcome to write your name and where you are from, it's always nice to know who's using the site.</p>
     <textarea id="feedbackText" maxlength="500" placeholder="Write your feedback here."></textarea>
     <div class="feedback-name-row">
       <label for="feedbackName" class="feedback-name-label">From</label>
@@ -762,30 +754,31 @@ If you want, you’re welcome to include your name and where you’re from — i
    
     <h4 class="about-subtitle">What is the Meeting Timer?</h4>
     <p class="feedback-help">
-      The Meeting Timer is designed to help Jehovah’s Witnesses during congregation meetings. 
-            Its main feature is the Watchtower Timer, created for the brother conducting the Watchtower Study. 
-            For each study article, the length of every paragraph is measured, and the number of pictures, boxes, and Scripture readings is counted.
-            All of these factors are combined to estimate how much time each paragraph should ideally receive.
+      The Meeting Timer is made to help Jehovah’s Witnesses during congregation meetings.
+      The main feature is the Watchtower Timer, made for the brother conducting the Watchtower Study.
+      In each study article, the length of each paragraph is measured, and the number of pictures, boxes,
+      and Scripture readings are counted.
     </p>
 
     <h4 class="about-subtitle">How does it help?</h4>
     <p class="feedback-help">
-     When you start the timer at the beginning of the study (after the song), 
-            it can help you manage your time throughout the discussion. 
-            The Meeting Timer isn’t perfect, of course—there will always be good reasons to spend a little extra time on certain paragraphs. 
-            Still, it can help you maintain a good pace and avoid going beyond the measured time.
+      When the timer is started at the beginning of each study (after the song), it can help you portion
+      your time during the study. The Meeting Timer is of course not perfect. There are good reasons to
+      spend a little extra time on some paragraphs. Still, it might help you keep a good pace and avoid
+      going over the measured time.
     </p>
 
     <h4 class="about-subtitle">Talk Timer</h4>
     <p class="feedback-help">
-      Another feature on this site is the Talk Timer. It can be useful if you are the chairman at a midweek meeting,
-            or if you are giving a talk and want to keep track of your time.
+      Another feature on this site is the Talk Timer. It can be useful if you are the chairman at a
+      midweek meeting, or maybe you are giving a talk and want to keep track of your time.
     </p>
 
     <h4 class="about-subtitle">A personal project</h4>
     <p class="feedback-help">
-      This website is created in my spare time and is not affiliated with Jehovah’s Witnesses as an organization. 
-            Errors might occur. If they do, I would appreciate it if you let me know through the feedback feature. I hope the Meeting Timer proves useful to you.
+      The website is made in my spare time, and it is in no way affiliated with Jehovah’s Witnesses as an
+      organization. Errors might occur. If that should happen, I would appreciate if you let me know through
+      the feedback function. I hope the Meeting Timer can be useful to you.
       <br><br>
       <em>Love from a brother in Norway.</em>
     </p>
@@ -1501,15 +1494,15 @@ const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/C
     const text = textarea.value.trim();
     const name = nameInput ? nameInput.value.trim() : "";
     if(!text){
-      statusEl.textContent = "Please write something before you send.";
+      statusEl.textContent = "Skriv noe først før du sender.";
       return;
     }
     if(text.length > 500){
-      statusEl.textContent = "The text is too long.";
+      statusEl.textContent = "Tilbakemeldingen er for lang.";
       return;
     }
     sendBtn.disabled = true;
-    statusEl.textContent = "Sending …";
+    statusEl.textContent = "Sender …";
     let content = text;
     if(name){
       content += "\n\nName: " + name;
@@ -1521,13 +1514,13 @@ const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/C
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      statusEl.textContent = "Thanks for the feedback!";
+      statusEl.textContent = "Takk for tilbakemeldingen!";
       textarea.value = "";
       updateCount();
       setTimeout(closeModal, 1200);
     }catch(err){
-      console.warn("Couldn't send the feedback", err);
-      statusEl.textContent = "Couldn't send. Please try again later..";
+      console.warn("Kunne ikke sende tilbakemelding", err);
+      statusEl.textContent = "Kunne ikke sende. Prøv igjen senere.";
     }finally{
       sendBtn.disabled = false;
     }
