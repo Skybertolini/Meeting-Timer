@@ -286,9 +286,12 @@ body.dark #wtControlsCard .wt-article-row,
 body.dark #wtControlsCard .wt-menu-icon{
   color:#fff;
 }
-        /* Forbedrer logoens synlighet i mørk modus */
 body.dark #logoImg {
-    filter: drop-shadow(0 0 118px rgba(255, 255, 255, 0.12));
+    /* Mørk skygge under – gir dybde */
+    filter:
+        drop-shadow(0 6px 18px rgba(0, 0, 0, 0.7))
+        /* Lys halo rundt – gir tydeligere omriss */
+        drop-shadow(0 0 10px rgba(255, 255, 255, 0.30));
 }
 .dark .cursor{ background:#f5f5f6; }
 .dark .elapsed{ background:rgba(142,214,170,0.38); }
