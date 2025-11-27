@@ -800,18 +800,24 @@ window.addEventListener('DOMContentLoaded', async () => {
 /* ===== Tema (lys/mørk) ===== */
 const THEME_KEY='meetingTimer.theme';
 function applyTheme(mode){
-  const body=document.body;
-  const btn=document.getElementById('themeToggle');
-  const langImg=document.querySelector('#langBtn img');
-  if(mode==='dark'){
+  const body = document.body;
+  const btn = document.getElementById('themeToggle');
+  const langImg = document.querySelector('#langBtn img');
+  const logoImg = document.getElementById('logoImg');
+
+  if (mode === 'dark') {
     body.classList.add('dark');
-    if(btn) btn.textContent='☀️';
-    if(langImg) langImg.src='./img/language-icon.png';
-  }else{
+    if (btn) btn.textContent = '☀️';
+    if (langImg) langImg.src = './img/language-icon.png';
+    if (logoImg) logoImg.src = './img/meeting-timer-logo-dark.png';
+  } else {
     body.classList.remove('dark');
-    if(btn) btn.textContent='🌙';
-    if(langImg) langImg.src='./img/language-icon.png';
+    if (btn) btn.textContent = '🌙';
+    if (langImg) langImg.src = './img/language-icon.png';
+    if (logoImg) logoImg.src = './img/meeting-timer-logo.png';
   }
+}
+
 }
 try{
   const savedTheme = localStorage.getItem(THEME_KEY);
