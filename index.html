@@ -817,8 +817,6 @@ function applyTheme(mode){
     if (logoImg) logoImg.src = './img/meeting-timer-logo.png';
   }
 }
-
-}
 try{
   const savedTheme = localStorage.getItem(THEME_KEY);
   if(savedTheme){ applyTheme(savedTheme); }
