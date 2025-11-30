@@ -241,6 +241,12 @@ textarea{resize:vertical;}
 #wtControlsCard.locked{opacity:.55; filter:grayscale(25%);}
 #wtControlsCard.locked .select, 
 #wtControlsCard.locked .modepill button{pointer-events:none}
+#wtControlsCard.locked ~ #wtArticleHeader #wtGearBtn{
+  opacity:.45;
+  filter:grayscale(80%) brightness(0.9);
+  cursor:default;
+  pointer-events:none;
+}
 /* Spacing between notes and timer section */
 #timerSection{margin-top:25px}
 /* --- addon: image pin --- */
@@ -272,7 +278,7 @@ body.dark{
   --border:rgba(0,0,0,.6);
   --press:#3b4147;
   --pill:#383e45;
-  --tl-green-1:#32463a;
+  --tl-green-1:#3c5244;
   --tl-green-2:#293a32;
   background-color:#2c2d31;
   background-image:none;
@@ -1150,7 +1156,7 @@ function drawTimeline(){
   for(let i=1;i<=totalParagraphs;i++){
     const leftP=(cumulative[i-1]/S.total)*100, widthP=(perParagraph[i-1]/S.total)*100;
     const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':''); slot.style.left=leftP+'%'; slot.style.width=widthP+'%';
-    const lbl=document.createElement('div'); const slotPx=perParagraph[i-1]*pxPerSec; const fs=Math.max(9,Math.min(14,Math.floor(slotPx*0.33)));
+    const lbl=document.createElement('div'); const slotPx=perParagraph[i-1]*pxPerSec; const fs=11;
     lbl.style.fontSize=fs+'px'; lbl.textContent=String(i); slot.appendChild(lbl);
     if(readSet.has(i)){ const pin=document.createElement('i'); pin.className='read-pin'; slot.appendChild(pin); }
     // Klikk for å hoppe (når ikke spiller)
