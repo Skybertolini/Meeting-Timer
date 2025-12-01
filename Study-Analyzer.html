@@ -19,7 +19,10 @@
   .card h2{ font-size:1rem; margin:0; padding:12px 14px; border-bottom:1px solid var(--border) }
   .card .body{ padding:12px 14px }
   textarea{ width:100%; min-height:320px; resize:vertical; padding:12px; font-size:15px; border:1px solid var(--border); border-radius:12px; }
-  input[type="text"], input[type="date"]{
+  input[type="text"]{
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; font-size:15px; background:#fff;
+  }
+  select{
     width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:12px; font-size:15px; background:#fff;
   }
   .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px }
@@ -65,7 +68,7 @@
 
           <div style="margin-top:0">
             <label for="week">Uke (mandag)</label>
-            <input type="date" id="week" />
+            <select id="week"></select>
           </div>
 
           <div style="margin-top:12px">
@@ -109,7 +112,7 @@
   <div class="card" style="margin-top:16px">
     <h2>3) JSON-resultat</h2>
     <div class="body">
-      <pre id="jsonOut">{}</pre>
+      <pre id="jsonOut">{},</pre>
       <div class="rowline">
         <button id="copyBtn" class="btn good">Kopier JSON</button>
         <span id="copyHint" class="muted"></span>
@@ -135,6 +138,41 @@
 <script>
 /* ========= Utilities ========= */
 const $ = sel => document.querySelector(sel);
+
+// Generer mandager fra start av inneværende år til +3 år
+function buildWeekOptions(){
+  const select = $('#week');
+  const now = new Date();
+  const startYear = now.getFullYear();
+  const endYear = startYear + 3;
+
+  // start: 1. januar inneværende år (UTC-basert for enkelhet)
+  let d = new Date(Date.UTC(startYear, 0, 1));
+  // finn første mandag
+  const day = d.getUTCDay(); // 0= søn ... 1=man
+  const offset = (day === 0 ? 1 : (day === 1 ? 0 : 8 - day));
+  d.setUTCDate(d.getUTCDate() + offset);
+
+  const options = [];
+  while (d.getUTCFullYear() <= endYear){
+    const iso = d.toISOString().slice(0,10); // yyyy-mm-dd
+    const dd = String(d.getUTCDate()).padStart(2,'0');
+    const mm = String(d.getUTCMonth()+1).padStart(2,'0');
+    const yyyy = d.getUTCFullYear();
+    const label = `${dd}.${mm}.${yyyy}`;
+    options.push({value: iso, label});
+    d.setUTCDate(d.getUTCDate()+7); // neste mandag
+  }
+
+  select.innerHTML = options.map(o =>
+    `<option value="${o.value}">${o.label}</option>`
+  ).join('');
+
+  // forsøk å velge "nærmeste" mandag (den første >= i dag)
+  const todayIso = isoMonday();
+  const found = options.find(o => o.value >= todayIso) || options[0];
+  if (found) select.value = found.value;
+}
 
 function isoMonday(d=new Date()){
   const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -345,8 +383,8 @@ function recompute(){
     images: imagesArr
   };
 
-  // Én linje JSON, klar til å limes inn i articles-data.json
-  $('#jsonOut').textContent = JSON.stringify(obj);
+  // Én linje JSON, med komma til slutt
+  $('#jsonOut').textContent = JSON.stringify(obj) + ',';
 
   // KPIs
   const totalWords = words.reduce((a,b)=>a+b,0);
@@ -367,9 +405,7 @@ function analyze(){
     return;
   }
 
-  const lang = 'no';
-
-  const { lines, paras } = extractParagraphs(raw, lang);
+  const { lines, paras } = extractParagraphs(raw);
 
   const title = pickTitle(lines) || '';
 
@@ -380,8 +416,6 @@ function analyze(){
   $('#paragraphs').value = String(paragraphs);
 
   window._lastWords = words;
-
-  if (!$('#week').value) $('#week').value = isoMonday();
 
   recompute();
 }
@@ -411,7 +445,7 @@ $('#copyBtn').addEventListener('click', async ()=>{
 
 /* ========= Init ========= */
 document.addEventListener('DOMContentLoaded', ()=>{
-  $('#week').value = isoMonday();
+  buildWeekOptions();
 });
 </script>
 </body>
