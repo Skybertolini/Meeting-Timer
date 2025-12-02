@@ -591,8 +591,28 @@ function analyze(){
 
 /* ========= Events ========= */
 $('#analyzeBtn').addEventListener('click', analyze);
-$('#clearBtn').addEventListener('click', ()=>{
+$('#clearBtn').addEventListener('click', () => {
+  // Tøm hovedtekst
   $('#src').value = '';
+
+  // Tøm metadata-feltene
+  $('#title').value = '';
+  $('#paragraphs').value = '';
+  $('#groups').value = '';
+  $('#images').value = '';
+  $('#reads').value = '';
+  $('#frames').value = '';
+
+  // Nullstill interne data
+  window._lastWords = [];
+
+  // Sett uke-feltet tilbake til standard (mandag 4 uker fram i tid)
+  buildWeekOptions();
+
+  // Nullstill JSON-visning, KPI-pillene og kopi-hintet
+  $('#jsonOut').textContent = '{},';
+  $('#kpi').innerHTML = '';
+  $('#copyHint').textContent = '';
 });
 
 ['#title','#paragraphs','#groups','#images','#reads','#frames','#week'].forEach(sel=>{
