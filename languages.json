@@ -17,7 +17,7 @@
     "Info_Images": "Pictures",
     "Info_Frames": "Boxes",
     "Info_Notes": "You can take notes here.",
-    "Ready": "Ready to start. Press ▶ when you’re ready.",
+    "Ready": "Press ▶ after the opening song.",
     "BackToStart": "Back to start",
     "SelectArticle": "Select an article to load timers.",
     "WTLoaded": "Article loaded.",
@@ -39,8 +39,10 @@
     "AdvancedReset": "Reset",
     "AdvancedClose": "Close",
     "AdvancedSave": "Save",
-    "AdvancedOverLimit": "The total allocation exceeds the limit by {over}. Please adjust it to stay within {limit} min.",
-    "ExtraTime": "Extra time"
+    "AdvancedTotalMismatch": "The total allocation is {diff} {direction} the {limit} min. Adjust it to match the total study time.",
+    "AdvancedOver": "over",
+    "AdvancedUnder": "under",
+    "ExtraTime": "Time variance"
   },
   "no": {
     "code": "no",
@@ -60,7 +62,7 @@
     "Info_Images": "Bilder",
     "Info_Frames": "Rammer",
     "Info_Notes": "Her kan du notere.",
-    "Ready": "Klar til start. Trykk ▶ når du er klar.",
+    "Ready": "Trykk ▶ etter innledende sang.",
     "BackToStart": "Tilbake til start",
     "SelectArticle": "Velg en artikkel for å laste timer.",
     "WTLoaded": "Artikkel lastet.",
@@ -82,8 +84,10 @@
     "AdvancedReset": "Tilbakestill",
     "AdvancedClose": "Lukk",
     "AdvancedSave": "Lagre",
-    "AdvancedOverLimit": "Den totale tidsfordelingen overstiger grensen med {over}. Juster slik at den holder seg innenfor {limit} min.",
-    "ExtraTime": "Ekstra tid"
+    "AdvancedTotalMismatch": "Den totale tidsfordelingen er {diff} {direction} {limit} min. Juster slik at den samsvarer med total studietid.",
+    "AdvancedOver": "over",
+    "AdvancedUnder": "under",
+    "ExtraTime": "Tidsavvik"
   },
   "sv": {
     "code": "sv",
@@ -103,7 +107,7 @@
     "Info_Images": "Bilder",
     "Info_Frames": "Rutor",
     "Info_Notes": "Här kan du anteckna.",
-    "Ready": "Klar att starta. Tryck ▶ när du är redo.",
+    "Ready": "Tryck ▶ efter den inledande sången.",
     "BackToStart": "Tillbaka till start",
     "SelectArticle": "Välj en artikel för att läsa in timers.",
     "WTLoaded": "Artikel inläst.",
@@ -125,8 +129,10 @@
     "AdvancedReset": "Återställ",
     "AdvancedClose": "Stäng",
     "AdvancedSave": "Spara",
-    "AdvancedOverLimit": "Den totala tidsfördelningen överskrider gränsen med {over}. Justera så att den håller sig inom {limit} min.",
-    "ExtraTime": "Extra tid"
+    "AdvancedTotalMismatch": "Den totala tidsfördelningen är {diff} {direction} {limit} min. Justera så att den stämmer med den totala studietiden.",
+    "AdvancedOver": "över",
+    "AdvancedUnder": "under",
+    "ExtraTime": "Tidsavvikelse"
   },
   "da": {
     "code": "da",
@@ -146,7 +152,7 @@
     "Info_Images": "Billeder",
     "Info_Frames": "Bokse",
     "Info_Notes": "Her kan du notere.",
-    "Ready": "Klar til start. Tryk ▶ når du er klar.",
+    "Ready": "Tryk ▶ efter indledende sang.",
     "BackToStart": "Tilbage til start",
     "SelectArticle": "Vælg en artikel for at indlæse timere.",
     "WTLoaded": "Artikel indlæst.",
@@ -168,8 +174,10 @@
     "AdvancedReset": "Nulstil",
     "AdvancedClose": "Luk",
     "AdvancedSave": "Gem",
-    "AdvancedOverLimit": "Den samlede tidsfordeling overstiger grænsen med {over}. Juster, så den holder sig inden for {limit} min.",
-    "ExtraTime": "Ekstra tid"
+    "AdvancedTotalMismatch": "Den samlede tidsfordeling er {diff} {direction} {limit} min. Juster, så den stemmer med den samlede studietid.",
+    "AdvancedOver": "over",
+    "AdvancedUnder": "under",
+    "ExtraTime": "Tidsafvigelse"
   },
   "de": {
     "code": "de",
@@ -189,7 +197,7 @@
     "Info_Images": "Bilder",
     "Info_Frames": "Kästen",
     "Info_Notes": "Hier können Sie Notizen machen.",
-    "Ready": "Bereit zum Start. Drücken Sie ▶ wenn Sie bereit sind.",
+    "Ready": "Drücke ▶ nach dem einleitenden Lied.",
     "BackToStart": "Zurück zum Anfang",
     "SelectArticle": "Wähle einen Artikel, um Timer zu laden.",
     "WTLoaded": "Artikel geladen.",
@@ -211,8 +219,10 @@
     "AdvancedReset": "Zurücksetzen",
     "AdvancedClose": "Schließen",
     "AdvancedSave": "Speichern",
-    "AdvancedOverLimit": "Die gesamte Zeitverteilung überschreitet die Grenze um {over}. Bitte passe sie so an, dass sie innerhalb von {limit} Min. bleibt.",
-    "ExtraTime": "Zusätzliche Zeit"
+    "AdvancedTotalMismatch": "Die gesamte Zeitverteilung liegt {diff} {direction} dem Limit von {limit} Min. Bitte passe sie an, sodass sie der gesamten Studienzeit entspricht.",
+    "AdvancedOver": "über",
+    "AdvancedUnder": "unter",
+    "ExtraTime": "Zeitabweichung"
   },
   "es": {
     "code": "es",
@@ -232,7 +242,7 @@
     "Info_Images": "Imágenes",
     "Info_Frames": "Recuadros",
     "Info_Notes": "Aquí puedes tomar notas.",
-    "Ready": "Listo para comenzar. Pulsa ▶ cuando estés listo.",
+    "Ready": "Pulsa ▶ después del cántico inicial.",
     "BackToStart": "Volver al inicio",
     "SelectArticle": "Elige un artículo para cargar los temporizadores.",
     "WTLoaded": "Artículo cargado.",
@@ -254,8 +264,10 @@
     "AdvancedReset": "Restablecer",
     "AdvancedClose": "Cerrar",
     "AdvancedSave": "Guardar",
-    "AdvancedOverLimit": "La asignación total supera el límite en {over}. Ajusta para que se mantenga dentro de {limit} min.",
-    "ExtraTime": "Tiempo extra"
+    "AdvancedTotalMismatch": "La distribución total está {diff} {direction} el límite de {limit} min. Ajusta para que coincida con el tiempo total de estudio.",
+    "AdvancedOver": "por encima de",
+    "AdvancedUnder": "por debajo de",
+    "ExtraTime": "Desviación de tiempo"
   },
   "fr": {
     "code": "fr",
@@ -275,7 +287,7 @@
     "Info_Images": "Images",
     "Info_Frames": "Encadrés",
     "Info_Notes": "Vous pouvez prendre des notes ici.",
-    "Ready": "Prêt à commencer. Appuyez sur ▶ quand vous êtes prêt.",
+    "Ready": "Appuyez sur ▶ après le cantique d’ouverture.",
     "BackToStart": "Retour au début",
     "SelectArticle": "Choisissez un article pour charger les minuteries.",
     "WTLoaded": "Article chargé.",
@@ -297,8 +309,10 @@
     "AdvancedReset": "Réinitialiser",
     "AdvancedClose": "Fermer",
     "AdvancedSave": "Enregistrer",
-    "AdvancedOverLimit": "La répartition totale dépasse la limite de {over}. Veuillez ajuster afin de rester dans la limite de {limit} min.",
-    "ExtraTime": "Temps supplémentaire"
+    "AdvancedTotalMismatch": "La répartition totale est de {diff} {direction} la limite de {limit} min. Ajustez-la pour qu’elle corresponde au temps total d’étude.",
+    "AdvancedOver": "au-dessus de",
+    "AdvancedUnder": "en dessous de",
+    "ExtraTime": "Écart de temps"
   },
   "it": {
     "code": "it",
@@ -318,7 +332,7 @@
     "Info_Images": "Immagini",
     "Info_Frames": "Riquadri",
     "Info_Notes": "Qui puoi prendere appunti.",
-    "Ready": "Pronto per iniziare. Premi ▶ quando sei pronto.",
+    "Ready": "Premi ▶ dopo il cantico iniziale.",
     "BackToStart": "Torna all’inizio",
     "SelectArticle": "Scegli un articolo per caricare i timer.",
     "WTLoaded": "Articolo caricato.",
@@ -340,7 +354,9 @@
     "AdvancedReset": "Reimposta",
     "AdvancedClose": "Chiudi",
     "AdvancedSave": "Salva",
-    "AdvancedOverLimit": "La distribuzione totale supera il limite di {over}. Regola affinché rimanga entro {limit} min.",
-    "ExtraTime": "Tempo extra"
+    "AdvancedTotalMismatch": "La distribuzione totale è {diff} {direction} il limite di {limit} min. Regolala in modo che corrisponda al tempo totale di studio.",
+    "AdvancedOver": "oltre",
+    "AdvancedUnder": "sotto",
+    "ExtraTime": "Scostamento di tempo"
   }
 }
