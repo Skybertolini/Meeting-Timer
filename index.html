@@ -426,10 +426,11 @@ body.dark .message {
   cursor:pointer;
   user-select:none;
   padding:10px 16px;
-  border-radius:18px;
-  background:#E3E0D2;
-  color:#2B3432;
-  box-shadow:0 10px 26px rgba(40,30,20,.18);
+  border-radius:999px;
+  background:var(--pill);
+  color:var(--ink);
+  box-shadow:0 3px 12px rgba(0,0,0,0.18);
+  border:1px solid rgba(0,0,0,0.10);
 }
 .section-title::before{
   content:"";
@@ -437,11 +438,11 @@ body.dark .message {
   width:14px;
   height:2px;
   border-radius:999px;
-  background:rgba(253,250,246,.95);
-  box-shadow:0 4px 0 rgba(253,250,246,.95),
-             0 -4px 0 rgba(253,250,246,.95);
+  background:rgba(0,0,0,0.16);
+  box-shadow:0 4px 0 rgba(0,0,0,0.16),
+             0 -4px 0 rgba(0,0,0,0.16);
   margin-right:6px;
-  opacity:.95;
+  opacity:.7;
 }
 .section-title:focus-visible {
   outline: 2px solid #fdfaf6;
