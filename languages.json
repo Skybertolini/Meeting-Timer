@@ -46,7 +46,7 @@
   },
   "no": {
     "code": "no",
-    "label": "Norsk",
+    "label": "Norwegian",
     "WTStudy": "Vakttårnstudiet",
     "SpeakerTimer": "Taler-timer",
     "Intro": "Introduksjon",
@@ -91,7 +91,7 @@
   },
   "sv": {
     "code": "sv",
-    "label": "Svenska",
+    "label": "Swedish",
     "WTStudy": "Vakttornsstudiet",
     "SpeakerTimer": "Tal-timer",
     "Intro": "Introduktion",
@@ -136,7 +136,7 @@
   },
   "da": {
     "code": "da",
-    "label": "Dansk",
+    "label": "Danish",
     "WTStudy": "Vagttårnsstudiet",
     "SpeakerTimer": "Taler-timer",
     "Intro": "Introduktion",
@@ -181,7 +181,7 @@
   },
   "de": {
     "code": "de",
-    "label": "Deutsch",
+    "label": "German",
     "WTStudy": "Wachtturm-Studium",
     "SpeakerTimer": "Redner-Timer",
     "Intro": "Einleitung",
@@ -226,7 +226,7 @@
   },
   "es": {
     "code": "es",
-    "label": "Español",
+    "label": Spanish",
     "WTStudy": "Estudio de La Atalaya",
     "SpeakerTimer": "Temporizador de discurso",
     "Intro": "Introducción",
@@ -271,7 +271,7 @@
   },
   "fr": {
     "code": "fr",
-    "label": "Français",
+    "label": "French",
     "WTStudy": "Étude de la Tour de Garde",
     "SpeakerTimer": "Minuteur de discours",
     "Intro": "Introduction",
@@ -316,7 +316,7 @@
   },
   "it": {
     "code": "it",
-    "label": "Italiano",
+    "label": "Italian",
     "WTStudy": "Studio della Torre di Guardia",
     "SpeakerTimer": "Timer del discorso",
     "Intro": "Introduzione",
