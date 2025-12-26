@@ -1,6 +1,4 @@
 // index_addon.js
-// Ryddet versjon: ingen glød, ingen aktiv-logikk, ingen klikkhåndtering.
-// Beholder kun en enkel wrapper rundt ikonene for konsistent struktur.
 
 (function () {
   const SELECTORS = {
