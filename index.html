@@ -872,7 +872,7 @@ body.dark .feedback-actions button.primary{
           <div id="ticksSP"></div>
         </div>
       </div>
-      <div class="big-clock" id="clockSP">00:00</div>
+      <div class="big-clock" id="clockSPWrap"><span id="clockSP">00:00</span><span id="clockSPTarget" class="clock-target"></span></div>
       <div class="controls">
         <button id="playSP" class="round play"><span id="playSPIcon">▶</span></button>
         <button id="pauseSP" class="round pause" disabled>❚❚</button>
@@ -1743,10 +1743,11 @@ function spFmt(s){s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60;
 function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; return spAccum+Math.floor((Date.now()-spStart)/1000) }
 function markPreset(s){ spPresets.forEach(b=>b.classList.toggle('active',parseInt(b.dataset.sec,10)===s)) }
 function updatePlayIcon(){ const iconEl=document.getElementById('playSPIcon'); if(iconEl) iconEl.textContent=isCountUp()?'⏱️':'▶' }
-function applyIdleClock(){ const el=$('#clockSP'); if(!el) return; el.classList.remove('over'); el.textContent=isCountUp()?'00:00':spFmt(SP_TOTAL) }
+function updateSPClockTarget(){ const tEl=$('#clockSPTarget'); if(!tEl) return; tEl.textContent=SP_TOTAL>0 ? ` / ${fmt(SP_TOTAL)}` : '' }
+function applyIdleClock(){ const el=$('#clockSP'); if(!el) return; el.classList.remove('over'); el.textContent='00:00'; updateSPClockTarget(); }
 function drawTimelineSP(){
-  const totalScale=isCountUp()?Math.max(1800,spElapsed()+1):SP_TOTAL;
   const e=spElapsed();
+  const totalScale=SP_TOTAL>0?SP_TOTAL:Math.max(1800,e+1);
   const progress=Math.min(1, totalScale ? (e/totalScale) : 0);
   $('#elapsedSP').style.width=(progress*100)+'%'; $('#cursorSP').style.left=`calc(${progress*100}% - 1px)`;
   // Minuttstreker (1 / 5 / 10)
@@ -1764,8 +1765,9 @@ function drawTimelineSP(){
 function showMilestone(name){ const el=$('#msImg'); if(!el) return; if(!name){ el.style.display='none'; el.removeAttribute('src'); return } el.style.display='block'; el.src=name }
 function updateSP(){
   const e=spElapsed();
-  if(isCountUp()){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(e) }
-  else { const remain=SP_TOTAL-e; if(remain>=0){ $('#clockSP').classList.remove('over'); $('#clockSP').textContent=spFmt(remain) } else { $('#clockSP').classList.add('over'); $('#clockSP').textContent=spFmt(-remain) } }
+  $('#clockSP').textContent=spFmt(e);
+  $('#clockSP').classList.toggle('over', SP_TOTAL>0 && e>SP_TOTAL);
+  updateSPClockTarget();
   drawTimelineSP();
 }
 function setPressedSP(id){ ['playSP','pauseSP','stopSP'].forEach(x=>{ const el=document.getElementById(x); if(el) el.classList.toggle('pressed', x===id); }); }
