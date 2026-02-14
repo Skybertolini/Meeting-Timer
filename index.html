@@ -1299,6 +1299,28 @@ window.refreshArticlesForLang = async function(){
   await loadTitlesFor(lang);
   await hydrateOptions();
 };
+
+// Splitt kun artikkeltittelen i to balanserte linjer når den faktisk brytes i layout.
+function splitTitleBalanced(element){
+  if(!element) return;
+
+  const rawText = (element.textContent || '').trim();
+  if(!rawText) return;
+
+  // Ikke endre korte titler.
+  const words = rawText.split(/\s+/);
+  if(words.length < 4) return;
+
+  // Kun del når teksten allerede bruker mer enn én linje.
+  if(element.scrollHeight <= element.clientHeight) return;
+
+  const midpoint = Math.ceil(words.length / 2);
+  const line1 = words.slice(0, midpoint).join(' ');
+  const line2 = words.slice(midpoint).join(' ');
+
+  element.innerHTML = line1 + '<br>' + line2;
+}
+
 function useItem(it){
 // VT 1.48 backfill & mapping
 try{
@@ -1334,7 +1356,9 @@ try{
   window.currentItem = it;
   window.ITEM = it;
     const overrideTitle = getOverrideTitleFor(it);
-  $('#articleTitle').textContent = (overrideTitle || it.title || '—');
+  const articleTitleElement = $('#articleTitle');
+  articleTitleElement.textContent = (overrideTitle || it.title || '—');
+  splitTitleBalanced(articleTitleElement);
   totalParagraphs=(it.paragraphs|0)||(Array.isArray(it.words)?it.words.length:0)||(it.paras|0)||0;
   reads = it.reads|0;
   const rp = Array.isArray(it.readParas) ? it.readParas : (Array.isArray(it.read_paras) ? it.read_paras : null);
