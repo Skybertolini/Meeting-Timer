@@ -3,6 +3,16 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8KJ13DVJKC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-8KJ13DVJKC');
+</script>
+
 <title>Meeting Timer</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1151,7 +1161,7 @@ function setMode(m){ localStorage.setItem(WT_MODE_KEY, m); }
 // Grunnverdier for 60/30-modus
 function slots(){
   const total = (getMode()==='30') ? 1800 : 3600;
-  const intro=90, review=90, outro=90; // 90s i begge moduser (grunnoppsett)
+  const intro=90, review=(getMode()==='30') ? 120 : 180, outro=90;
   return { total, intro, review, outro, content: total - (intro+review+outro) };
 }
 
