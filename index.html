@@ -1363,8 +1363,26 @@ try{
   reads = it.reads|0;
   const rp = Array.isArray(it.readParas) ? it.readParas : (Array.isArray(it.read_paras) ? it.read_paras : null);
   readSet = new Set(rp || ((Number.isFinite(reads) && reads>0) ? Array.from({length:reads},(_,i)=>i+1) : []));
-  paras=(it.words||[]).map((w,i)=>({num:i+1,words:w|0,q:1,les:0,hasAB:false}));
-  if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>({num:i+1,words:0,q:1,les:0,hasAB:false})); }
+  const imageSet = (()=>{
+    const out = new Set();
+    const add = n=>{ if(Number.isFinite(n) && n>0) out.add(n); };
+    const addRange = (a,b)=>{
+      const lo = Math.min(a,b), hi = Math.max(a,b);
+      for(let n=lo;n<=hi;n++) add(n);
+    };
+    for(const ref of (Array.isArray(it.images) ? it.images : [])){
+      if(typeof ref === 'number'){ add(ref); continue; }
+      const s = String(ref).trim();
+      let m = s.match(/^(\d+)\s*[\-–]\s*(\d+)$/);
+      if(m){ addRange(Number(m[1]), Number(m[2])); continue; }
+      m = s.match(/^(\d+)(?:[abc])?$/i);
+      if(m){ add(Number(m[1])); }
+    }
+    return out;
+  })();
+  window.__VT_IMAGE_SET = imageSet;
+  paras=(it.words||[]).map((w,i)=>{ const num=i+1; return {num,words:w|0,les:readSet.has(num)?1:0,img:imageSet.has(num)?1:0}; });
+  if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>{ const num=i+1; return {num,words:0,les:readSet.has(num)?1:0,img:imageSet.has(num)?1:0}; }); }
   const setPillValue = (id, value)=>{ const el=document.getElementById(id); if(el) el.textContent=String(value); };
   setPillValue('pillParasValue', totalParagraphs);
   setPillValue('pillReadsValue', readSet.size);
@@ -1391,7 +1409,7 @@ try{
   }
 }
 /* ===== Fordele tid (WT) ===== */
-const WPM=150, SEC_PER_Q=10, SEC_PER_READ=30, AB_BONUS=30;
+const WPM=150, SEC_PER_READ=30, SEC_PER_IMAGE=30;
 
 function roundParagraphsToNearestTen(values, targetContent, refs){
   if(!Array.isArray(values) || !values.length) return [];
@@ -1440,6 +1458,84 @@ function roundParagraphsToNearestTen(values, targetContent, refs){
   return rounded;
 }
 
+function applyMinMaxConstraints(perParagraph, S){
+  if(!Array.isArray(perParagraph) || !perParagraph.length) return [];
+  const mode = getMode();
+  const minPer = (mode === '30') ? 45 : 90;
+  const maxPer = (mode === '30') ? 180 : 360;
+  const step = 10;
+  const minClamp = Math.ceil(minPer / step) * step;
+  const maxClamp = Math.floor(maxPer / step) * step;
+  const target = Number(S && S.content) || 0;
+  const adjusted = perParagraph.map(v=>Math.max(0, Number(v)||0));
+
+  const distribute = (delta, capFn)=>{
+    let remaining = Math.abs(delta);
+    const sign = delta >= 0 ? 1 : -1;
+    if(remaining <= 0) return;
+
+    const entries = adjusted.map((v,i)=>({
+      i,
+      cap: Math.max(0, capFn(v))
+    })).filter(e=>e.cap > 0);
+    if(!entries.length) return;
+
+    const totalCap = entries.reduce((a,e)=>a+e.cap,0);
+    remaining = Math.min(remaining, totalCap);
+    if(remaining <= 0) return;
+
+    let used = 0;
+    const parts = entries.map(e=>{
+      const exact = (remaining * e.cap) / totalCap;
+      const whole = Math.min(e.cap, Math.floor(exact / step) * step);
+      used += whole;
+      return { ...e, exact, whole, rem: exact - whole };
+    });
+
+    let rem = remaining - used;
+    parts.sort((a,b)=> b.rem - a.rem || b.cap - a.cap || a.i - b.i);
+    let spin = 0;
+    while(rem >= step && spin < 10000){
+      let moved = false;
+      for(const p of parts){
+        if(rem < step) break;
+        if(p.whole + step > p.cap) continue;
+        p.whole += step;
+        rem -= step;
+        moved = true;
+      }
+      if(!moved) break;
+      spin++;
+    }
+
+    parts.forEach(p=>{ adjusted[p.i] += sign * p.whole; });
+  };
+
+  let iter = 0;
+  while(iter < 1000){
+    for(let i=0;i<adjusted.length;i++) adjusted[i] = Math.min(maxClamp, Math.max(minClamp, adjusted[i]));
+
+    const sum = adjusted.reduce((a,b)=>a+b,0);
+    const diff = target - sum;
+    if(diff === 0) break;
+
+    if(diff > 0){
+      distribute(diff, v=>maxClamp - v);
+    } else {
+      distribute(diff, v=>v - minClamp);
+    }
+
+    iter++;
+  }
+
+  const finalSum = adjusted.reduce((a,b)=>a+b,0);
+  const tailDiff = target - finalSum;
+  if(tailDiff !== 0 && adjusted.length){
+    adjusted[adjusted.length-1] += tailDiff;
+  }
+  return adjusted;
+}
+
 // Bruker advancedOverrides (hvis satt) til å justere perParagraph/cumulative
 function applyAdvancedOverridesToState(){
   if(!advancedOverrides || totalParagraphs<=0) return;
@@ -1486,8 +1582,8 @@ function computeAllocation(){
   if(totalParagraphs<=0){perParagraph=[];cumulative=[];return;}
   const wps=WPM/60;
   const raw=Array.from({length:totalParagraphs},(_,i)=>{
-    const p=paras[i]||{words:0,q:1,les:0,hasAB:false};
-    let s=(p.words||0)/wps + (p.q||0)*SEC_PER_Q + (p.les||0)*SEC_PER_READ + (p.hasAB?AB_BONUS:0);
+    const p=paras[i]||{words:0,les:0,img:0};
+    let s=(p.words||0)/wps + (p.les||0)*SEC_PER_READ + (p.img||0)*SEC_PER_IMAGE;
     s=Math.max(5,s);
     // +10% for de siste 5 avsnittene
     const lastN=Math.min(5,totalParagraphs);
@@ -1497,6 +1593,7 @@ function computeAllocation(){
   const scale=S.content/((raw.reduce((a,b)=>a+b,0))||1);
   const scaled = raw.map(x=>x*scale);
   perParagraph = roundParagraphsToNearestTen(scaled, S.content, scaled);
+  perParagraph = applyMinMaxConstraints(perParagraph, S);
   cumulative=[]; let acc=S.intro; for(let i=0;i<totalParagraphs;i++){cumulative.push(acc); acc+=perParagraph[i];}
 
   // Hvis vi har manuelle overstyringer, gjelder de foran baseline
