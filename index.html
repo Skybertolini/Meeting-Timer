@@ -13,7 +13,29 @@
   gtag('config', 'G-8KJ13DVJKC');
 </script>
 
-<title>Meeting Timer</title>
+<title>JW Meeting Timer – Watchtower Study Timer for Jehovah’s Witnesses</title>
+<meta name="description" content="JW Meeting Timer is a simple Watchtower Study helper for Jehovah’s Witnesses, with pacing tools that support meetings in the Kingdom Hall. Use it to keep study parts and talks on schedule in any browser.">
+<link rel="canonical" href="https://meetingtimer.org/">
+<meta property="og:title" content="JW Meeting Timer – Watchtower Study Timer for Jehovah’s Witnesses">
+<meta property="og:description" content="JW Meeting Timer is a simple Watchtower Study helper for Jehovah’s Witnesses, with pacing tools that support meetings in the Kingdom Hall.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://meetingtimer.org/">
+<meta property="og:image" content="https://meetingtimer.org/img/meeting-timer-logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JW Meeting Timer – Watchtower Study Timer for Jehovah’s Witnesses">
+<meta name="twitter:description" content="JW Meeting Timer is a simple Watchtower Study helper for Jehovah’s Witnesses, with pacing tools that support meetings in the Kingdom Hall.">
+<meta name="twitter:image" content="https://meetingtimer.org/img/meeting-timer-logo.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "JW Meeting Timer",
+  "description": "Browser-based timer for Watchtower Study pacing and meeting talks for Jehovah’s Witnesses congregations.",
+  "url": "https://meetingtimer.org/",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any"
+}
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f8f7f5">
@@ -100,7 +122,7 @@ body.dark .lang-popover li:hover{background:rgba(255,255,255,0.04);}
 .logo-spin{animation:spin2s 2s linear}
 .logo-shake{animation:shake .4s ease-in-out}
 .card{background:var(--card);background-image:linear-gradient(rgba(255,255,255,.9),rgba(255,255,255,.9)), url('./img/paper-texture.png'); background-size:auto,300px 300px; background-repeat:repeat; border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 12px 40px rgba(70,50,30,.06);padding:14px}
-.h1{font-size:clamp(1.1rem, 2.8vw, 1.38rem);font-weight:900;margin:18px auto 10px;max-width:var(--content-max);text-transform:uppercase}
+.h1{font-size:clamp(1.1rem, 2.8vw, 1.38rem);font-weight:900;margin:18px 0 10px;max-width:var(--content-max);text-transform:uppercase;text-align:left}
 .message{background:var(--pill);border:2px solid var(--border);border-radius:12px;padding:20px 22px;min-height:56px;box-shadow:0 8px 24px rgba(70,50,30,.05);margin:0 auto 20px;max-width:var(--content-max);color:#4a5552;font-size:clamp(1.1rem, 3.2vw, 1.62rem);line-height:1.3;display:flex;align-items:center;font-weight:700}
 /* Timeline */
 .timeline-wrap{margin-top:22px; margin-bottom:40px; max-width:var(--content-max); margin-inline:auto; position:relative}
@@ -607,6 +629,21 @@ body.dark .message {
   max-width:36rem;
   text-align:left;
 }
+.about-intro{
+  margin:0 0 12px;
+}
+.about-intro h3{
+  margin:0 0 6px;
+  font-size:1rem;
+}
+.about-intro ul{
+  margin:6px 0 0;
+  padding-left:18px;
+}
+.about-intro li{
+  margin:3px 0;
+  font-size:.9rem;
+}
 
 .feedback-title{
   font-weight:900;
@@ -825,7 +862,7 @@ body.dark .feedback-actions button.primary{
       </button>
     </div>
   </div>
-  <div class="h1" id="articleTitle">—</div>
+  <h1 class="h1" id="articleTitle">—</h1>
   <div class="message" id="message" aria-live="polite">Velg artikkel for å laste timer.</div>
   <div class="timeline-wrap">
     <div id="timeline" class="timeline">
@@ -928,8 +965,25 @@ If you want, you’re welcome to include your name and where you’re from — i
 
 <div id="aboutModal" class="feedback-modal" aria-hidden="true">
   <div class="feedback-backdrop" id="aboutBackdrop"></div>
-  <div class="feedback-dialog about-dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-    <h3 id="aboutTitle" class="feedback-title">About</h3>
+  <div class="feedback-dialog about-dialog" role="dialog" aria-modal="true" aria-label="About">
+
+    <section class="about-intro">
+      <h4>JW Meeting Timer – Watchtower Study Helper</h3>
+    <p class="feedback-help">
+        This JW meeting timer is made for congregation use and helps keep each Watchtower Study moving at a steady pace from start to finish.
+      </p>
+    <p class="feedback-help">
+        It is useful for Jehovah’s Witnesses who want clearer timing support in the Kingdom Hall, while still keeping discussions natural and flexible.
+      </p>
+    <p class="feedback-help">
+        <li>Paragraph timing</li>
+        <li>Readings (+30s)</li>
+        <li>Images (+30s)</li>
+        <li>30/60 minute modes</li>
+        <li>Helps keep Watchtower Study on schedule</li>
+        <li>Works in any browser</li>
+      </p>
+    </section>
 
     <h4 class="about-subtitle">What is the Meeting Timer?</h4>
     <p class="feedback-help">
@@ -955,6 +1009,7 @@ If you want, you’re welcome to include your name and where you’re from — i
       <br><br>
       <em>Love from a brother in Norway.</em>
     </p>
+
     <div class="feedback-actions">
       <button type="button" id="aboutClose">Close</button>
     </div>
@@ -1300,26 +1355,102 @@ window.refreshArticlesForLang = async function(){
   await hydrateOptions();
 };
 
-// Splitt kun artikkeltittelen i to balanserte linjer når den faktisk brytes i layout.
-function splitTitleBalanced(element){
-  if(!element) return;
+let __titleMeasureSpan = null;
 
-  const rawText = (element.textContent || '').trim();
-  if(!rawText) return;
+function __measureTitlePart(el, text){
+  if(!__titleMeasureSpan){
+    __titleMeasureSpan = document.createElement('span');
+    __titleMeasureSpan.style.position = 'absolute';
+    __titleMeasureSpan.style.visibility = 'hidden';
+    __titleMeasureSpan.style.whiteSpace = 'nowrap';
+    __titleMeasureSpan.style.left = '-9999px';
+    __titleMeasureSpan.style.top = '-9999px';
+    document.body.appendChild(__titleMeasureSpan);
+  }
 
-  // Ikke endre korte titler.
-  const words = rawText.split(/\s+/);
-  if(words.length < 4) return;
+  const cs = window.getComputedStyle(el);
+  __titleMeasureSpan.style.font = cs.font;
+  __titleMeasureSpan.style.fontFamily = cs.fontFamily;
+  __titleMeasureSpan.style.fontSize = cs.fontSize;
+  __titleMeasureSpan.style.fontWeight = cs.fontWeight;
+  __titleMeasureSpan.style.letterSpacing = cs.letterSpacing;
+  __titleMeasureSpan.style.textTransform = cs.textTransform;
+  __titleMeasureSpan.textContent = text;
 
-  // Kun del når teksten allerede bruker mer enn én linje.
-  if(element.scrollHeight <= element.clientHeight) return;
-
-  const midpoint = Math.ceil(words.length / 2);
-  const line1 = words.slice(0, midpoint).join(' ');
-  const line2 = words.slice(midpoint).join(' ');
-
-  element.innerHTML = line1 + '<br>' + line2;
+  return __titleMeasureSpan.getBoundingClientRect().width;
 }
+
+function balanceTitleBreak(el){
+  if(!el || el.dataset.hasManualBreak === '1') return;
+
+  if(!el.dataset.originalTitle){
+    el.dataset.originalTitle = (el.textContent || '').trim();
+  }
+
+  const original = (el.dataset.originalTitle || '').trim();
+  if(!original) return;
+
+  el.textContent = original;
+
+  const cs = window.getComputedStyle(el);
+  let lineHeight = parseFloat(cs.lineHeight);
+  if(!Number.isFinite(lineHeight)){
+    lineHeight = parseFloat(cs.fontSize) * 1.2;
+  }
+
+  const overflows = (el.scrollWidth > el.clientWidth + 1) || (el.scrollHeight > lineHeight * 1.2);
+  if(!overflows) return;
+
+  const words = original.split(/\s+/).filter(Boolean);
+  if(words.length < 5) return;
+
+  const candidates = [];
+  for(let i=2;i<=words.length-2;i++){
+    const line1 = words.slice(0, i).join(' ');
+    const line2 = words.slice(i).join(' ');
+    const w1 = __measureTitlePart(el, line1);
+    const w2 = __measureTitlePart(el, line2);
+    const total = w1 + w2;
+    if(total <= 0) continue;
+
+    const ratio = w1 / total;
+    let score = Math.abs(ratio - 0.5);
+    if(ratio < 0.35 || ratio > 0.65) score += 4;
+    const line2Words = words.length - i;
+    if(line2Words <= 2) score += 3;
+    if(line2.length < 12) score += 2;
+
+    candidates.push({ i, score, ratio });
+  }
+
+  if(!candidates.length) return;
+
+  candidates.sort((a,b)=> a.score - b.score || Math.abs(a.ratio - 0.5) - Math.abs(b.ratio - 0.5));
+  const tryCandidates = candidates.slice(0, 3);
+
+  for(const candidate of tryCandidates){
+    const line1 = words.slice(0, candidate.i).join(' ');
+    const line2 = words.slice(candidate.i).join(' ');
+    el.innerHTML = line1 + '<br>' + line2;
+    if(el.scrollHeight <= lineHeight * 2.4 + 2){
+      return;
+    }
+  }
+
+  el.textContent = original;
+}
+
+const debouncedBalanceTitleBreak = (()=>{
+  let resizeTimer = null;
+  return ()=>{
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(()=>{
+      balanceTitleBreak(document.getElementById('articleTitle'));
+    }, 150);
+  };
+})();
+
+window.addEventListener('resize', debouncedBalanceTitleBreak);
 
 function useItem(it){
 // VT 1.48 backfill & mapping
@@ -1355,10 +1486,20 @@ try{
 }catch(e){}
   window.currentItem = it;
   window.ITEM = it;
-    const overrideTitle = getOverrideTitleFor(it);
+  const overrideTitle = getOverrideTitleFor(it);
   const articleTitleElement = $('#articleTitle');
-  articleTitleElement.textContent = (overrideTitle || it.title || '—');
-  splitTitleBalanced(articleTitleElement);
+  const articleTitle = (overrideTitle || it.title || '—');
+  const hasExistingBreak = /<br\s*\/?>/i.test(articleTitle);
+  if(hasExistingBreak){
+    articleTitleElement.innerHTML = articleTitle;
+    articleTitleElement.dataset.originalTitle = articleTitleElement.textContent.trim();
+    articleTitleElement.dataset.hasManualBreak = '1';
+  }else{
+    articleTitleElement.textContent = articleTitle;
+    articleTitleElement.dataset.originalTitle = articleTitleElement.textContent.trim();
+    articleTitleElement.dataset.hasManualBreak = '0';
+    balanceTitleBreak(articleTitleElement);
+  }
   totalParagraphs=(it.paragraphs|0)||(Array.isArray(it.words)?it.words.length:0)||(it.paras|0)||0;
   reads = it.reads|0;
   const rp = Array.isArray(it.readParas) ? it.readParas : (Array.isArray(it.read_paras) ? it.read_paras : null);
