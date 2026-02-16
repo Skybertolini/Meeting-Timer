@@ -53,6 +53,7 @@
   --phase-outro:#87b9ff; /* blå avslutning (samme som intro) */
   --press:#cfc7bd; --pill:#fffefb; --radius:16px;
   --tl-green-1:#e9f3ec; --tl-green-2:#99e0bc;
+  --message-bg:var(--pill);
   --content-max:min(640px, 94vw);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -123,7 +124,13 @@ body.dark .lang-popover li:hover{background:rgba(255,255,255,0.04);}
 .logo-shake{animation:shake .4s ease-in-out}
 .card{background:var(--card);background-image:linear-gradient(rgba(255,255,255,.9),rgba(255,255,255,.9)), url('./img/paper-texture.png'); background-size:auto,300px 300px; background-repeat:repeat; border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 12px 40px rgba(70,50,30,.06);padding:14px}
 .h1{font-size:clamp(1.1rem, 2.8vw, 1.38rem);font-weight:900;margin:18px 0 10px;max-width:var(--content-max);text-transform:uppercase;text-align:left}
-.message{background:var(--pill);border:2px solid var(--border);border-radius:12px;padding:20px 22px;min-height:56px;box-shadow:0 8px 24px rgba(70,50,30,.05);margin:0 auto 20px;max-width:var(--content-max);color:#4a5552;font-size:clamp(1.1rem, 3.2vw, 1.62rem);line-height:1.3;display:flex;align-items:center;font-weight:700}
+.message{--original-bg:var(--message-bg);background:var(--original-bg);border:2px solid var(--border);border-radius:12px;padding:20px 22px;min-height:56px;box-shadow:0 8px 24px rgba(70,50,30,.05);margin:0 auto 20px;max-width:var(--content-max);color:#4a5552;font-size:clamp(1.1rem, 3.2vw, 1.62rem);line-height:1.3;display:flex;align-items:center;font-weight:700}
+@keyframes overtimePulse {
+  0% { background-color: var(--original-bg); }
+  50% { background-color: #FFE4E1; }
+  100% { background-color: var(--original-bg); }
+}
+.overtime-warning{animation:overtimePulse 4s ease-in-out infinite}
 /* Timeline */
 .timeline-wrap{margin-top:22px; margin-bottom:40px; max-width:var(--content-max); margin-inline:auto; position:relative}
 .timeline{position:relative;height:56px;border-radius:14px;overflow:visible;background:linear-gradient(180deg,var(--tl-green-1) 0%,#edf5f0 100%);border:1px solid var(--border)}
@@ -1861,6 +1868,7 @@ function drawTimeline(){
         document.getElementById('cursor').style.left = '0%';
         document.getElementById('clockWT').textContent = '00:00';
         document.getElementById('clockWT').classList.remove('over');
+        document.getElementById('message').classList.remove('overtime-warning');
         document.getElementById('message').textContent = ((window.L && window.L.BackToStart) ? window.L.BackToStart : 'Tilbake til start') + ' (00:00)';
       }
     });
@@ -1907,6 +1915,7 @@ function resetWTUI(){
   if(tickHandle) clearInterval(tickHandle);
   $('#clockWT').textContent='00:00';
   $('#clockWT').classList.remove('over');
+  $('#message').classList.remove('overtime-warning');
   updateWTClockTarget();
   // nullstill tidslinjen visuelt
   $('#elapsed').style.width = '0%';
@@ -1931,6 +1940,7 @@ function tickWT(){
   const S = (typeof currentSlots === 'function') ? currentSlots() : slots();
   const e=nowElapsed();
   $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=S.total);
+  $('#message').classList.toggle('overtime-warning', e>=S.total);
   const p=Math.min(e/S.total*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`;
   const L = window.L || {};
   if(e<S.intro) setWTMessage(L.Intro || 'Introduksjon');
