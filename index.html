@@ -172,6 +172,12 @@ body.dark .lang-popover li:hover{background:rgba(255,255,255,0.04);}
 .preset-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;margin-top:22px}
 .preset{border:1px solid var(--border);background:var(--pill);border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(70,50,30,.06);color:#2f3b34;font-size:1.05rem}
 .preset.active{background:#2f3b34;color:#fff}
+.preset:disabled,
+.round.small:disabled{
+  opacity:.55;
+  cursor:default;
+  filter:grayscale(50%);
+}
 /* Taler-timer presets i mørk modus */
 body.dark .preset{
   color:#fff !important;
@@ -318,6 +324,16 @@ textarea{resize:vertical;}
 }
 /* Spacing between notes and timer section */
 #timerSection{margin-top:25px}
+
+@keyframes talkOvertimePulse {
+  0% { background-color: var(--talk-bg, transparent); }
+  50% { background-color: #F08080; }
+  100% { background-color: var(--talk-bg, transparent); }
+}
+
+.talk-overtime-warning {
+  animation: talkOvertimePulse 4s ease-in-out infinite;
+}
 /* --- addon: image pin --- */
 #timeline .para-slot i.image-pin{
   position:absolute; left:50%; transform:translateX(-50%);
@@ -903,7 +919,7 @@ body.dark .feedback-actions button.primary{
   </h2>
   <div id="spSectionBody" class="section-body">
   <section id="timerSection">
-    <div class="card" style="max-width:var(--content-max);margin-inline:auto">
+    <div id="spTimerCard" class="card" style="max-width:var(--content-max);margin-inline:auto">
       <div class="h1 hide-in-card">Taler-timer</div>
       <div id="spInputs">
         <div class="preset-row">
@@ -2018,12 +2034,28 @@ $('#stopWT').addEventListener('click',()=>{
 /* ===== TIMER (SP) ===== */
 const PRESET_KEY='meetingTimer.annetSeconds';
 const spPresets=[...document.querySelectorAll('#spInputs .preset')];
+const spTimerCard=document.getElementById('spTimerCard');
 let spRunning=false, spPaused=false, spStart=null, spAccum=0, spTick=null;
 let SP_TOTAL=parseInt(localStorage.getItem(PRESET_KEY),10); if(isNaN(SP_TOTAL)) SP_TOTAL=600; // default 10 min
 function isCountUp(){ return SP_TOTAL===0 }
 function spFmt(s){s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; return spAccum+Math.floor((Date.now()-spStart)/1000) }
 function markPreset(s){ spPresets.forEach(b=>b.classList.toggle('active',parseInt(b.dataset.sec,10)===s)) }
+function updateTalkControlsUI(){
+  const runningNow = spRunning && !spPaused;
+  spPresets.forEach(btn=>{
+    const isActivePreset = parseInt(btn.dataset.sec,10)===SP_TOTAL;
+    btn.disabled = runningNow;
+    btn.setAttribute('aria-disabled', runningNow ? 'true' : 'false');
+    btn.classList.toggle('active', isActivePreset);
+  });
+  ['decSP','incSP'].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(!btn) return;
+    btn.disabled = runningNow;
+    btn.setAttribute('aria-disabled', runningNow ? 'true' : 'false');
+  });
+}
 function updatePlayIcon(){ const iconEl=document.getElementById('playSPIcon'); if(iconEl) iconEl.textContent=isCountUp()?'⏱️':'▶' }
 function updateSPClockTarget(){ const tEl=$('#clockSPTarget'); if(!tEl) return; tEl.textContent=SP_TOTAL>0 ? ` / ${fmt(SP_TOTAL)}` : '' }
 function applyIdleClock(){ const el=$('#clockSP'); if(!el) return; el.classList.remove('over'); el.textContent='00:00'; updateSPClockTarget(); }
@@ -2048,7 +2080,10 @@ function showMilestone(name){ const el=$('#msImg'); if(!el) return; if(!name){ e
 function updateSP(){
   const e=spElapsed();
   $('#clockSP').textContent=spFmt(e);
-  $('#clockSP').classList.toggle('over', SP_TOTAL>0 && e>SP_TOTAL);
+  const isOvertime=SP_TOTAL>0 && e>SP_TOTAL;
+  $('#clockSP').classList.toggle('over', isOvertime);
+  if(spTimerCard) spTimerCard.classList.toggle('talk-overtime-warning', spRunning && !spPaused && isOvertime);
+  updateTalkControlsUI();
   updateSPClockTarget();
   drawTimelineSP();
 }
@@ -2076,7 +2111,7 @@ function spStartFn(){
   }
 }
 function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date.now()-spStart)/1000); spPaused=true; spTick&&clearInterval(spTick); spTick=null; $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false; setPressedSP('pauseSP'); updateSP() }
-function spStopFn(){ if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000); spRunning=false; spPaused=false; spStart=null; spAccum=0; spTick&&clearInterval(spTick); spTick=null; showMilestone('./img/milestone-stop.png'); $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true; $('#clockSP').classList.remove('over'); setPressedSP('stopSP'); drawTimelineSP(); applyIdleClock(); }
+function spStopFn(){ if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000); spRunning=false; spPaused=false; spStart=null; spAccum=0; spTick&&clearInterval(spTick); spTick=null; showMilestone('./img/milestone-stop.png'); $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true; $('#clockSP').classList.remove('over'); if(spTimerCard) spTimerCard.classList.remove('talk-overtime-warning'); setPressedSP('stopSP'); drawTimelineSP(); applyIdleClock(); updateTalkControlsUI(); }
 $('#playSP').addEventListener('click',spStartFn); $('#pauseSP').addEventListener('click',spPauseFn); $('#stopSP').addEventListener('click',spStopFn);
 /* Preset clicks */
 spPresets.forEach(btn=>btn.addEventListener('click',()=>{
@@ -2099,6 +2134,7 @@ function setTargetSeconds(sec){
 function updateTargetBox(){ const box=document.getElementById('spTargetDisplay'); if(box) box.textContent= isCountUp() ? '00:00' : fmt(SP_TOTAL); }
 document.getElementById('decSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL - 60));
 document.getElementById('incSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL + 60));
+updateTalkControlsUI();
   const themeBtn = document.getElementById('themeToggle');
   if(themeBtn){
     themeBtn.addEventListener('click', ()=>{
