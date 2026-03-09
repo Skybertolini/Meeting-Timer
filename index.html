@@ -193,32 +193,7 @@ body.dark .preset.active{
 .target-box{min-width:140px; text-align:center; font-weight:900; border-radius:999px; padding:8px 16px; border:1px solid var(--border);
   background:linear-gradient(180deg,var(--tl-green-1) 0%, #edf5f0 100%); color:#2f3b34; box-shadow:0 8px 20px rgba(70,50,30,.06)}
 img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
-#wtControlsCard{max-width:var(--content-max);margin-inline:auto;position:relative}
-.wt-settings-close{
-  position:absolute;
-  top:10px;
-  right:10px;
-  width:30px;
-  height:30px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  background:var(--pill);
-  color:var(--ink);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.25rem;
-  line-height:1;
-  cursor:pointer;
-  box-shadow:0 6px 18px rgba(70,50,30,.12);
-  transition:filter .15s ease, transform .05s ease, box-shadow .15s ease;
-  z-index:6;
-}
-.wt-settings-close:hover{filter:brightness(.97);}
-.wt-settings-close:active{
-  transform:translateY(1px);
-  box-shadow:inset 0 3px 8px rgba(0,0,0,.2),0 4px 12px rgba(70,50,30,.12);
-}
+#wtControlsCard{max-width:var(--content-max);margin-inline:auto}
 .select{appearance:none;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--pill);font-weight:900;color:#2f3b4;box-shadow:0 4px 14px rgba(70,50,30,.05);min-width:180px;max-width:100%}
 textarea{resize:vertical;}
 /* Top row (select only) */
@@ -2622,21 +2597,12 @@ const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/C
     btn.innerHTML = '⚙️';
     btn.style.fontSize = '1.6rem';
     wrapper.appendChild(btn);
-    const closeBtn = document.createElement('button');
-    closeBtn.id = 'wtSettingsCloseBtn';
-    closeBtn.className = 'wt-settings-close';
-    closeBtn.type = 'button';
-    closeBtn.setAttribute('aria-label','Lukk artikkelinnstillinger');
-    closeBtn.textContent = '×';
-    card.appendChild(closeBtn);
-    function toggleSettingsPanel(){
-      if(card.classList.contains('locked')) return;
-      card.classList.toggle('collapsed');
-    }
     // Start med artikkelinformasjon skjult
     card.classList.add('collapsed');
-    btn.addEventListener('click', toggleSettingsPanel);
-    closeBtn.addEventListener('click', toggleSettingsPanel);
+    btn.addEventListener('click', ()=>{
+      if(card.classList.contains('locked')) return; // ikke åpne mens timeren er låst
+      card.classList.toggle('collapsed');
+    });
   })();
 })();
 }); // DOMContentLoaded
