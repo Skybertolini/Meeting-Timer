@@ -193,6 +193,2818 @@ body.dark .preset.active{
 .target-box{min-width:140px; text-align:center; font-weight:900; border-radius:999px; padding:8px 16px; border:1px solid var(--border);
   background:linear-gradient(180deg,var(--tl-green-1) 0%, #edf5f0 100%); color:#2f3b34; box-shadow:0 8px 20px rgba(70,50,30,.06)}
 img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+#wtControlsCard{max-width:var(--content-max);margin-inline:auto;position:relative}
+.wt-settings-close{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:30px;
+  height:30px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--pill);
+  color:var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.25rem;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 6px 18px rgba(70,50,30,.12);
+  transition:filter .15s ease, transform .05s ease, box-shadow .15s ease;
+  z-index:6;
+}
+.wt-settings-close:hover{filter:brightness(.97);}
+.wt-settings-close:active{
+  transform:translateY(1px);
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.2),0 4px 12px rgba(70,50,30,.12);
+}
+.select{appearance:none;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--pill);font-weight:900;color:#2f3b4;box-shadow:0 4px 14px rgba(70,50,30,.05);min-width:180px;max-width:100%}
+textarea{resize:vertical;}
+/* Top row (select only) */
+.wt-toprow{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap}
+.select-article{flex:1 1 auto; max-width:100%; height:42px; line-height:42px; padding:0 12px 0 32px; margin:0; position:relative;}
+.select-article::before{
+  content:'≡';
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:1rem;
+  pointer-events:none;
+  opacity:.95;
+  color:inherit;
+}
+@media (max-width:560px){ .wt-toprow{flex-wrap:wrap} }
+/* Stats row: avsnitt/les/bilder + studietid */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+  align-items:stretch;
+  gap:8px;
+}
+.stats-row .pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 12px;
+  background:var(--pill);
+  border:1px solid var(--border);
+  border-radius:999px;
+  font-weight:800;
+  font-size:.95rem;
+  color:#2f3b34;
+  box-shadow:0 4px 12px rgba(70,50,30,.05);
+  min-height:46px;
+  text-align:center;
+  line-height:1.25;
+  flex-wrap:wrap;
+}
+.stats-row .pill .pill-icon{width:16px; height:16px; object-fit:contain; filter:drop-shadow(0 2px 4px rgba(0,0,0,.12));}
+.stats-row .pill .pill-label{white-space:normal;}
+.stats-row .pill .pill-value{font-weight:900; white-space:nowrap;}
+.stats-row .modepill{
+  display:flex;
+  gap:6px;
+  background:var(--pill);
+  border:1px solid var(--border);
+  border-radius:999px;
+  box-shadow:0 4px 12px rgba(70,50,30,.05);
+  padding:4px;
+  min-height:46px;
+  width:100%;
+}
+.stats-row .modepill button{
+  flex:1 1 50%;
+  min-width:0;
+  height:38px;
+  line-height:38px;
+  padding:0 12px;
+  background:transparent;
+  color:#2f3b34;
+  border:0;
+  border-radius:999px;
+  font-weight:800;
+  font-size:.95rem;
+  white-space:nowrap;
+  transition:background .2s ease, color .2s ease;
+}
+.stats-row .modepill button:hover{background:rgba(0,0,0,.05);}
+.stats-row .modepill button:focus-visible{
+  outline:2px solid #2f3b34;
+  outline-offset:2px;
+}
+.stats-row .modepill button.active{
+  background:#2f3b34;
+  color:#fff;
+}
+    /* Avansert-knapp (skiftenøkkel) */
+.stats-row .advanced-pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 12px;
+  background:var(--pill);
+  border:1px solid var(--border);
+  border-radius:999px;
+  font-weight:800;
+  font-size:.9rem;
+  color:#2f3b34;
+  box-shadow:0 4px 12px rgba(70,50,30,.05);
+  cursor:pointer;
+  min-height:46px;
+  width:100%;
+}
+.stats-row .advanced-pill .adv-icon{
+  font-size:1.1rem;
+}
+.dark .stats-row .advanced-pill{
+  color:var(--ink);
+}
+.stats-row .advanced-pill:disabled{
+  opacity:.55;
+  cursor:default;
+  filter:grayscale(50%);
+}
+@media (min-width:720px){
+  .stats-row{
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+@media (max-width:640px){
+  .stats-row{
+    grid-template-columns:1fr;
+  }
+}
+/* Locked state when study started */
+#wtControlsCard.locked{opacity:.55; filter:grayscale(25%);}
+#wtControlsCard.locked .select, 
+#wtControlsCard.locked .modepill button{pointer-events:none}
+#wtControlsCard.locked ~ #wtArticleHeader #wtGearBtn{
+  opacity:.45;
+  filter:grayscale(80%) brightness(0.9);
+  cursor:default;
+  pointer-events:none;
+}
+/* Spacing between notes and timer section */
+#timerSection{margin-top:25px}
+
+@keyframes talkOvertimePulse {
+  0% { background-color: var(--talk-bg, transparent); }
+  50% { background-color: #F08080; }
+  100% { background-color: var(--talk-bg, transparent); }
+}
+
+.talk-overtime-warning {
+  animation: talkOvertimePulse 4s ease-in-out infinite;
+}
+/* --- addon: image pin --- */
+#timeline .para-slot i.image-pin{
+  position:absolute; left:50%; transform:translateX(-50%);
+  bottom:-2px; width:16px; height:16px;
+  background:url('./img/image-icon.png') center/contain no-repeat;
+  pointer-events:none; opacity:.95;
+}
+.theme-toggle{
+  padding:6px 12px 6px 10px;
+  border:0;
+  background:transparent;
+  color:var(--ink);
+  font-size:1.1rem;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.theme-toggle:hover{
+  background:rgba(0,0,0,0.03);
+}
+body.dark{
+  --bg:#2c2d31;
+  --ink:#f5f5f6;
+  --muted:#a2aab3;
+  --card:#2f3439;
+  --border:rgba(0,0,0,.6);
+  --press:#3b4147;
+  --pill:#383e45;
+  --tl-green-1:#3c5244;
+  --tl-green-2:#293a32;
+  background-color:#2c2d31;
+  background-image:none;
+  color:var(--ink);
+}
+body.dark #wtControlsCard,
+body.dark #wtControlsCard .pill,
+body.dark #wtControlsCard .pill-label,
+body.dark #wtControlsCard .pill-value,
+body.dark #wtControlsCard .wt-article-row,
+body.dark #wtControlsCard .wt-menu-icon{
+  color:var(--ink);
+}
+.dark .cursor{ background:#f5f5f6; }
+.dark .elapsed{ background:rgba(142,214,170,0.38); }
+.dark #elapsedSP{ background:rgba(240,120,120,0.42); }
+.dark .para-slot{ color:#f9fafb; text-shadow:0 1px 0 rgba(0,0,0,.6); }
+.dark .clock,
+.dark .big-clock{ color:#f9fafb; }
+.dark .select{ background:var(--pill); color:var(--ink); }
+.dark .select option{ color:#f5f5f6; }
+.dark #wtControlsCard{
+  background:#1f2225;
+}
+.dark #wtControlsCard,
+.dark #wtControlsCard *{
+  color:#f5f5f6;
+}
+.dark #wtControlsCard .select{
+  background:#1f2225;
+  color:#f5f5f6;
+  border-color:rgba(255,255,255,0.16);
+}
+.dark #wtNotesCard{
+  background:#1f2225;
+  color:#f5f5f6;
+}
+.dark .stats-row .modepill{ background:var(--pill); }
+.dark .stats-row .modepill button{ color:var(--ink); }
+.dark .stats-row .modepill button.active{ background:#1f2225; color:#f9fafb; }
+.dark .round.small{ background:#1f2933; color:#f9fafb; }
+.dark #wtNotes{
+  background:transparent;
+  color:#f5f5f6 !important;
+}
+.dark #wtNotes::placeholder{
+  color:rgba(245,245,246,0.8);
+}
+.dark #wtNotes.dark-has-text{
+  color:#f5f5f6;
+}
+.dark #wtNotes.dark-has-text::placeholder{
+  color:rgba(245,245,246,0.8);
+}
+.dark .card{ box-shadow:0 10px 32px rgba(0,0,0,.6); }
+/* Mørkere kortbakgrunn for Taler-timer i mørk modus */
+.dark #spSectionBody .card{
+  background:#1f2225;
+  border-color:rgba(0,0,0,0.55);
+  box-shadow:0 8px 24px rgba(0,0,0,0.55);
+}
+
+/* --- Fikser tekstfarge i beskjedfeltet i mørk modus --- */
+body.dark #message,
+body.dark .message {
+    color: #ffffff !important;
+}
+</style>
+<style>
+/* --- Kollaps av informasjonsvinduet når avspilling pågår --- */
+#wtControlsCard.collapsed { display:none; }                           /* skjul hele kortet når kollapset */
+</style>
+<style>
+/* --- Touch-vennlig nedover-resize for notatfelt --- */
+#wtNotes { min-height: 72px; max-height: 75vh; }
+#wtNotesGrip {
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 8px;
+  background: repeating-linear-gradient(to right, rgba(0,0,0,.25) 0 8px, rgba(0,0,0,0) 8px 16px);
+  cursor: ns-resize;
+  touch-action: none; /* nødvendig for iOS Safari */
+}
+.dark #wtNotesGrip {
+  background: repeating-linear-gradient(to right, rgba(255,255,255,.35) 0 8px, rgba(255,255,255,0) 8px 16px);
+}
+</style>
+<style>
+.timerTitle {
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
+  margin: 0 0 6px;
+  opacity: .85;
+}
+.dark .timerTitle { opacity: .9; }
+</style>
+<style>
+/* --- Kollapsbare seksjoner --- */
+.collapsible { max-width: var(--content-max); margin: 0 auto 18px; }
+/* Tittelramme for seksjonene */
+.section-title {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  cursor:pointer;
+  user-select:none;
+  padding:10px 16px;
+  border-radius:999px;
+  background:var(--pill);
+  color:var(--ink);
+  box-shadow:0 3px 12px rgba(0,0,0,0.18);
+  border:1px solid rgba(0,0,0,0.10);
+}
+.section-title::before{
+  content:"";
+  display:inline-block;
+  width:14px;
+  height:2px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.16);
+  box-shadow:0 4px 0 rgba(0,0,0,0.16),
+             0 -4px 0 rgba(0,0,0,0.16);
+  margin-right:6px;
+  opacity:.7;
+}
+.dark .section-title::before{
+  background:rgba(255,255,255,0.75);
+  box-shadow:0 4px 0 rgba(255,255,255,0.75),
+             0 -4px 0 rgba(255,255,255,0.75);
+}
+.section-icon-wrap{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  flex-shrink:0;
+}
+.section-icon{
+  width:26px;
+  height:26px;
+  object-fit:contain;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,0.14));
+}
+.section-title-text{ display:inline-flex; align-items:center; gap:6px; }
+.section-title:focus-visible {
+  outline: 2px solid #fdfaf6;
+  outline-offset: 3px;
+}
+.collapsible .section-body { display:block; }
+.collapsible.collapsed .section-body { display:none; }
+/* Skjul den gamle pil-indikatoren ▸/▾ */
+.section-title .caret { display:none; }
+/* Skjul den gamle h1-tittelen inne i SP-kortet (vi har ny seksjonstittel) */
+.hide-in-card { display:none !important; }
+</style>
+<style>
+#timeline .para-slot .pin-stack{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  top:calc(100% + 10px); /* below the bar */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 2px;
+  pointer-events:none;
+}
+#timeline .para-slot .pin-stack .pin{
+  width:18px; height:18px;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:contain;
+  opacity:.98;
+}
+#timeline .para-slot .pin-stack .pin.read{  background-image:url('./img/read-icon.png'); }
+#timeline .para-slot .pin-stack .pin.image{ background-image:url('./img/image-icon.png'); }
+#timeline .para-slot .pin-stack .pin.frame{ background-image:url('./img/box-icon.png'); }
+</style>
+
+<style>
+/* Feedback-knapp nederst ved footer */
+.footer{
+  flex:0 0 auto;
+  text-align:center;
+  color:var(--muted);
+  font-size:.9rem;
+  padding:10px 0 14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  max-width:var(--content-max);
+  margin:0 auto;
+}
+.footer-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+}
+.feedback-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:0;
+  padding:6px 12px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--pill);
+  color:var(--ink);
+  font-size:.9rem;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+}
+.feedback-btn:hover{
+  filter:brightness(0.97);
+}
+.feedback-btn-icon{
+  display:none;
+
+  width:20px;
+  height:20px;
+  flex:0 0 auto;
+  background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ4AAACUCAMAAABVwGAvAAAAZlBMVEX///8AAAD+/v7u7u7a2tr7+/vLy8vGxsYfHx/R0dE6Ojqfn5/z8/N9fX1bW1vDw8Ph4eETExOSkpKMjIxQUFAuLi41NTWrq6uGhoa4uLhpaWlAQEAaGhpVVVWYmJhzc3MmJiZJSUnRqHwhAAAINUlEQVR4nO1c6ZqiOhDNQkBkiygiooLv/5K3qgIISt8BFOUH55vpdkFyrKQqtaUZW7FixYoVK1as+CIUU06WSSaE+DWVHgh244gzEPw1lz5k3CDUS6Snc6CW7FB+amnyg+XmALGbdpCkuzR6wAfmdqcZc0rOT2xh2iEqekqIgvOjvzDx1fSAlsf5Ri+NHmMp5xeYXBYBzeUtPhZzvvXhN6jIzl4evZAsCpm/i7UweoJptCtsoWtP4Y62i+A3C2iSl0WPuWDuQmAl5IHzYlF2D6gosHY8Y0IxG7a1dEn0lKCp5Qdypc7wSP6aUhtKMffCeWmj8FBDCvVrSm0IZm2BVCpQeCcwK9GvmMA8CpxCAjxQCheZlQC7gNYgaQhcw+ifYF9chD0jCVx35OiFEt8VsHXwqG1VhPiSjYGBVHoNDy14IE5BTnIo0eQxH+R4fvngt+hJ/gTN5Am0guca1YKRYoTxvo1Uf4ehMBtXB1GKy44XtSVxny8A7GKzQr9DLwwqhDg0Edg3hsTqocc58vsWPQfUFcGcixk8t/GZgQqSZ/Av+VcVPbt+HpHoDqliZt0RvddPgZeKsce36DnVM6IX2PIf614o2OWus5Prp2exf6YsfHRTfyQ98Ir/WvZKEjQa6vhn9PovVcJN+I4AH9l8w7cfRY/t25bvV6rxN72Mt5FOH3UGerBLKDutcNqA+fEnkhu13ciB9LoATzoZdOErgJxvRd5AxOPpwdeHjfhi//PCfvjpuezdKP/CeOmdpkkPJzbKR3EbqhpCuPtThSuv0gcjAQY1NUMm20HIj0NVQ6lN5ztNmdtK+zc3V8thcAcbFr/DbtqugelWvh+h8yPsXhpeDTCIC0fTw+txVdwGr4oRdg/f9yuJa4zL9Uh2OFgEnwuG+7Hj6D1gX6asPcUKiOyt4WHAVHp43Wh6EHbdKXYe/okRe65QjTo5MMz4pItg1nHcVj1Gemrf0dyix8v/Fz13M07oY+jpY5vdQU+gZ2+wfPM+vb616xctdqV8xErfpXfLKAfwrF5CyMzAO1K1Y0Kc+wl6uJ1awginn4FrkqWj2U2l9xTnwtzdXo1uJU/46YM/5I0nN5lepHyCyoBeSZmCS+i5lvT7YjZyOrIvSi+vs2foikVurQO7bXgOTvEzig2Vsr6w9ph6zVBZzM+Ozy8+Yz+pu2A0Pdhodk8jS9SJaH9N/ia3i9Wk/N5oegC3k1qMHTOukNpOb8H5cD8StnDnXQIPku0hcCam6afQe5FCn1goPR/69dsTU4+T6HXGEo+n4PiIx/oPanroHHyQ3l93ql9v5dlbghHmf1VTgF9BVV+ragwfoWeGlparRXePxAGVdl3ZIUrygiDZtXzzpPWJh/Sm40V6MIBzzpNke07bdgpIKO+aJ2Ve2KyZKpKSDu7H8ng/ySfDNgc9sBuNn3Ht8Lbv9evBw68Efl5tZy5ed4nNQs8/t5wgqxKIMI5hDWzwMUQUlr0bdHf9GegJBTflSRFFe9wHDpJY1DWpPI6yM9LcC6MQphq0C1M7DVGInUrVHNLDmkRJ/ogOG3kI6g3ArjJAVFK2xOiNTxchCYXF3LPf0qY56IEtBWeOrJe/edhVH4SX+1hQo04a8I4MPZtTQUBh0a/gXb9+DnpbXFlm4rAnpay8OIs/IiZ1eGTZPVqg5nJr142qZqCHSZtYVPQwQqf3BEqpyc4JkPC2sn0nWp9mRmWOeZRZ6QmiZx7SLPbQQ+3JH/TuspKenp8eTa5fSW9fT66gyfUqSupOk0si86jZx+wdLp99cqmZImVU3NS8zhiCRlxNVw+W9VKj0fQOxjih2XZVSFTnpWfB8yTDoW3QgDpAEMQpxAv9FK7Y1o2hZMRjNDgadb5Q89o9oWKyszcP4wOcZ/MqkyGZa++GpNGuVKrr4GX5Pj2h2S7dmc0yrKFWaJ/LylvCjb8VTQSNdyk6lZWIzb1rgJxO9WhFJ3S1wvr126N3CxZpVocYSdR1WWaRHkykFYf5/XpyOhs8PI6Ca56fY80al9iINj3f8zv4X6zrIs4iPaq5+1pLs+s3HhK11kitffZgR99GYVlUQ7QmqsaaOel9ECu9d7DSewcrvXew0nsHK7138D698XWNEbf+CL2yKVJ8FtRaPaV7oHOPsSW/oQBeEDEVb7UlgQskTdj18e4m8BpLOhvxBjDeDjBE+PyRMkXNy2+uatOdU0e2HwUm3PI374GsMBQsfDYkeT64ol+1qGfvsaNbYYP7U9TTWxcWbER6Pc35Z84ciKq3N8isBn3WCpPr2hoE16M8r2mgf5eeYlm3lwio9vHrue5/cZhQ/u6hB19Rn5/KZGlPbZvJMU1qm5v63CkDFQXb9s0T+bLOBFmKYSiv3sROwl5gfklatkOwMUtwe1ZTRbp4dJ1/wnZcS/a0FrxBr7NI8BBX+frtMYcx1FKI6VW03rt1nlKDezvkx/jfmO8Rd5yvCxiTVOjGNCOIWqQLOHkm6ETX1W+/QhLdTy4sfhLCND+13CwhZEJ9PEs4egaLWuJ+rpvzIVTZnsUtnABc1ZgB3z+Ehb7bYSGHCqmAjGakMS54GGQx5/hp+WPKuFBVFwCWh8JJjR4zwZwRzcymjtWoo7UkeooKeDkWGpXAYmm8BJPXQCiqz3rUMwXB3HZxf8EEK3hHPH1eHVn+NZ9nmI2Cqn1Xf3HsGMP6lE2VvKUYlRZM42VIFmZJWlsBVKEqXy3u7x8gsDvEhCDeooxKBSxH0Z8dOow+KfAtYIKIjMrypEcA43L4xrHfaVDMzfxFOKG9oHhogXqxYsWKFStWrJiG/wDiV2Yk/HqMegAAAABJRU5ErkJggg==');
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+}
+.feedback-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:flex-start;
+  justify-content:center;
+  z-index:999;
+  padding: max(16px, env(safe-area-inset-top, 16px)) 14px 20px 14px;
+  overflow-y:auto;
+}
+.feedback-modal.open{
+  display:flex;
+}
+.feedback-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+}
+.feedback-dialog{
+  position:relative;
+  max-width:420px;
+  width:90%;
+  background:var(--card);
+  border-radius:18px;
+  padding:16px 18px 14px;
+  box-shadow:0 18px 48px rgba(0,0,0,0.45);
+  z-index:1;
+  max-height:calc(100vh - 60px);
+  overflow:auto;
+}
+.about-dialog{
+  padding:20px 22px 16px;
+}
+.about-dialog .feedback-title{
+  text-align:center;
+  font-size:1.2rem;
+  margin:0 0 4px;
+}
+.about-tagline{
+  text-align:center;
+  font-size:.85rem;
+  color:var(--muted);
+  margin:0 0 10px;
+}
+.about-subtitle{
+  margin:10px 0 4px;
+  font-size:.9rem;
+  font-weight:800;
+}
+.about-dialog .feedback-help{
+  margin:0 0 6px;
+  font-size:.9rem;
+  line-height:1.6;
+  max-width:36rem;
+  text-align:left;
+}
+.about-intro{
+  margin:0 0 12px;
+}
+.about-intro h3{
+  margin:0 0 6px;
+  font-size:1rem;
+}
+.about-intro ul{
+  margin:6px 0 0;
+  padding-left:18px;
+}
+.about-intro li{
+  margin:3px 0;
+  font-size:.9rem;
+}
+
+.feedback-title{
+  font-weight:900;
+  margin:0 0 6px;
+  font-size:1.02rem;
+}
+.feedback-help{
+  margin:0 0 10px;
+  font-size:.9rem;
+  color:var(--muted);
+}
+#feedbackText{
+  width:100%;
+  min-height:90px;
+  max-height:40vh;
+  border-radius:12px;
+  border:1px solid var(--border);
+  padding:8px 10px;
+  font:inherit;
+}
+.feedback-name-row{
+  margin-top:8px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+}
+.feedback-name-label{
+  font-size:.8rem;
+  color:var(--muted);
+}
+.feedback-name-input{
+  width:100%;
+  border-radius:10px;
+  border:1px solid var(--border);
+  padding:6px 8px;
+  font:inherit;
+}
+.feedback-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:8px;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.feedback-count{
+  font-size:.8rem;
+  color:var(--muted);
+}
+.feedback-actions{
+  display:flex;
+  gap:8px;
+}
+.feedback-actions button{
+  border-radius:999px;
+  border:1px solid var(--border);
+  padding:6px 14px;
+  font-size:.85rem;
+  font-weight:800;
+  cursor:pointer;
+  background:var(--pill);
+  color:var(--ink);
+}
+.feedback-actions button.primary{
+  background:#2f3b34;
+  color:#fff;
+}
+.feedback-status{
+  margin-top:6px;
+  font-size:.8rem;
+  min-height:1em;
+}
+body.dark .feedback-dialog{
+  background:#1f2225;
+}
+body.dark .feedback-actions button.primary{
+  background:#f5f5f6;
+  color:#111827;
+}
+   /* WT Advanced dialog */
+.advanced-dialog{
+  max-width:460px;
+  width:90%;
+  max-height:80vh;
+  overflow:auto;
+}
+
+.advanced-body{
+  margin-top:8px;
+  max-height:52vh;
+  overflow:auto;
+  padding-right:4px;
+}
+
+.adv-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:6px;
+  margin-bottom:4px;
+  font-size:.85rem;
+}
+
+.adv-label{
+  justify-self:flex-start;
+}
+
+.adv-control{ 
+  display:grid;
+  grid-template-columns:auto auto auto;
+  align-items:center;
+  gap:4px;
+}
+
+.adv-input{
+  width:80px;
+  padding:4px 6px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  font:inherit;
+  text-align:right;
+}
+
+.adv-step.placeholder{
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.adv-highlight{
+  color:#d12c2c;
+  font-weight:900;
+}
+
+.adv-step{
+  width:32px;
+  height:32px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--pill);
+  color:var(--ink);
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(70,50,30,.06);
+}
+
+.adv-step:active{
+  transform:translateY(1px);
+  box-shadow:inset 0 4px 8px rgba(0,0,0,.12);
+}
+     
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbar">
+    <div class="brand" id="brandBox">
+      <img id="logoImg" src="./img/meeting-timer-logo.png" alt="Meeting Timer logo">
+    </div>
+    <div class="lang-switcher">
+      <div class="lang-theme-toggle">
+        <button id="langBtn" class="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
+          <img src="./img/language-icon.png" alt="">
+        </button>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Bytt mellom lys og mørk modus">🌙</button>
+      </div>
+      <div id="langPopover" class="lang-popover" role="menu" aria-label="Choose language">
+        <ul>
+          <li data-lang="da">Danish</li>
+          <li data-lang="en">English</li>
+          <li data-lang="fr">French</li>
+          <li data-lang="de">German</li>
+          <li data-lang="it">Italian</li>
+          <li data-lang="no">Norwegian</li>
+          <li data-lang="pr">Portuguese</li>
+          <li data-lang="es">Spanish</li>
+          <li data-lang="sv">Swedish</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <section id="wtSection" class="collapsible">
+<!-- VAKTTÅRN -->
+  <h2 id="wtStudyTitle" class="timerTitle section-title" role="button" tabindex="0" aria-expanded="true">
+    <span class="section-icon-wrap"><img id="wtTitleIcon" class="section-icon" src="./img/Tower-icon.png" alt="Vakttårnstudiet ikon"></span>
+    <span class="section-title-text" id="wtStudyTitleText">Vakttårnstudiet</span>
+  </h2>
+<div class="section-body" id="wtSectionBody">
+<div id="wtControlsCard" class="card" style="max-width:var(--content-max);margin-inline:auto">
+    <div class="wt-toprow">
+      <select id="weekSel" class="select select-article" aria-label="Artikkel"><option>Laster …</option></select>
+    </div>
+        <div class="stats-row" style="margin-top:10px">
+      <div class="pill" id="pillParas">
+        <span class="pill-label">Avsnitt:</span>
+        <span class="pill-value" id="pillParasValue">0</span>
+      </div>
+      <div class="pill" id="pillReads">
+        <img class="pill-icon" src="./img/read-icon.png" alt="" aria-hidden="true">
+        <span class="pill-label">Les-skriftsteder:</span>
+        <span class="pill-value" id="pillReadsValue">0</span>
+      </div>
+      <div class="pill" id="pillImages">
+        <img class="pill-icon" src="./img/image-icon.png" alt="" aria-hidden="true">
+        <span class="pill-label">Bilder:</span>
+        <span class="pill-value" id="pillImagesValue">0</span>
+      </div>
+      <div class="modepill" aria-label="Studietid">
+        <button id="mode60" type="button" class="active">60 min</button>
+        <button id="mode30" type="button">30 min</button>
+      </div>
+
+      <!-- NY: Avansert-knapp -->
+      <button id="wtAdvancedBtn" type="button" class="advanced-pill" aria-label="">
+        <span class="adv-icon">🔧</span>
+        <span class="adv-label"></span>
+      </button>
+    </div>
+  </div>
+  <h1 class="h1" id="articleTitle">—</h1>
+  <div class="message" id="message" aria-live="polite">Velg artikkel for å laste timer.</div>
+  <div class="timeline-wrap">
+    <div id="timeline" class="timeline">
+      <div id="introSlot" class="slot"></div>
+      <div id="reviewSlot" class="slot"></div>
+      <div id="outroSlot" class="slot"></div>
+      <div id="elapsed" class="elapsed"></div>
+      <div id="cursor" class="cursor"></div>
+    </div>
+    <div class="clock clock--with-target">
+      <span id="clockWT">00:00</span>
+      <span id="clockWTTarget" class="clock-target">/ 00:00</span>
+    </div>
+  </div>
+  <div class="controls">
+    <button id="playWT" class="round play">▶</button>
+    <button id="pauseWT" class="round pause" disabled>❚❚</button>
+    <button id="stopWT" class="round stop" disabled>■</button>
+  </div>
+  <div id="wtNotesCard" class="card" style="margin-top:14px;max-width:var(--content-max);margin-inline:auto">
+    <textarea id="wtNotes" rows="3" style="width:100%;border:1px solid var(--border);border-radius:12px;padding:10px;font:inherit;color:#2b2a32;background:transparent;font-size:90%" placeholder="Her kan du notere."></textarea>
+<div id="wtNotesGrip" role="separator" aria-orientation="vertical" title="Dra for å endre høyde"></div>
+  </div>
+</div>
+</section>
+<section id="spSection" class="collapsible collapsed">
+  <h2 id="speechTimerTitle" class="timerTitle section-title" role="button" tabindex="0" aria-expanded="false">
+    <span class="section-icon-wrap"><img id="spTitleIcon" class="section-icon" src="./img/Clock-icon.png" alt="Taler-timer ikon"></span>
+    <span class="section-title-text" id="speechTimerTitleText">Taler-timer</span>
+    <span class="caret" aria-hidden="true"></span>
+  </h2>
+  <div id="spSectionBody" class="section-body">
+  <section id="timerSection">
+    <div id="spTimerCard" class="card" style="max-width:var(--content-max);margin-inline:auto">
+      <div class="h1 hide-in-card">Taler-timer</div>
+      <div id="spInputs">
+        <div class="preset-row">
+          <button class="preset" data-sec="0">0</button>
+          <button class="preset" data-sec="300">5</button>
+          <button class="preset" data-sec="600">10</button>
+          <button class="preset" data-sec="900">15</button>
+          <button class="preset" data-sec="1800">30</button>
+        </div>
+        <div class="target-row">
+          <button id="decSP" class="round small" aria-label="Minus ett minutt">–</button>
+          <div id="spTarget" class="target-box"><span id="spTargetDisplay">10:00</span></div>
+          <button id="incSP" class="round small" aria-label="Pluss ett minutt">+</button>
+        </div>
+      </div>
+      <div class="timeline-wrap">
+        <div id="timelineSP" class="timeline">
+          <div id="elapsedSP" class="elapsed"></div>
+          <div id="cursorSP" class="cursor"></div>
+          <div id="ticksSP"></div>
+        </div>
+      </div>
+      <div class="big-clock" id="clockSPWrap"><span id="clockSP">00:00</span><span id="clockSPTarget" class="clock-target"></span></div>
+      <div class="controls">
+        <button id="playSP" class="round play"><span id="playSPIcon">▶</span></button>
+        <button id="pauseSP" class="round pause" disabled>❚❚</button>
+        <button id="stopSP" class="round stop" disabled>■</button>
+      </div>
+    </div>
+  </section>
+  </div>
+</section>
+<div class="footer">
+  <div class="footer-buttons">
+    <button id="feedbackBtn" class="feedback-btn" type="button">
+      <span class="feedback-btn-label">Feedback</span>
+    </button>
+    <button id="aboutBtn" class="feedback-btn" type="button">
+      <span class="feedback-btn-label">About</span>
+    </button>
+  </div>
+  <span>Meeting Timer © 2026</span>
+</div>
+</div>
+<div id="feedbackModal" class="feedback-modal" aria-hidden="true">
+  <div class="feedback-backdrop" id="feedbackBackdrop"></div>
+  <div class="feedback-dialog" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+    <h3 id="feedbackTitle" class="feedback-title">Feedback</h3>
+    <p class="feedback-help">I would love to hear from you if you have any feedback about the website. It could be related to translations, features, technical issues, or anything else. Feel free to share suggestions for things you think would be nice to add as well.
+If you want, you’re welcome to include your name and where you’re from — it’s always encouraging to know who is using the site.</p>
+    <textarea id="feedbackText" maxlength="500" placeholder="Write your feedback here."></textarea>
+    <div class="feedback-name-row">
+      <label for="feedbackName" class="feedback-name-label">From</label>
+      <input id="feedbackName" class="feedback-name-input" type="text" maxlength="100" placeholder="Name and country (optional)" />
+    </div>
+    <div class="feedback-row">
+      <span id="feedbackCount" class="feedback-count">0 / 500</span>
+      <div class="feedback-actions">
+        <button type="button" id="feedbackCancel">Cancel</button>
+        <button type="button" id="feedbackSend" class="primary">Send</button>
+      </div>
+    </div>
+    <div id="feedbackStatus" class="feedback-status"></div>
+  </div>
+</div>
+
+<div id="aboutModal" class="feedback-modal" aria-hidden="true">
+  <div class="feedback-backdrop" id="aboutBackdrop"></div>
+  <div class="feedback-dialog about-dialog" role="dialog" aria-modal="true" aria-label="About">
+
+    <section class="about-intro">
+      <h4>JW Meeting Timer – Watchtower Study Helper</h3>
+    <p class="feedback-help">
+        This JW meeting timer is made for congregation use and helps keep each Watchtower Study moving at a steady pace from start to finish.
+      </p>
+    <p class="feedback-help">
+        It is useful for Jehovah’s Witnesses who want clearer timing support in the Kingdom Hall, while still keeping discussions natural and flexible.
+      </p>
+    <p class="feedback-help">
+        <li>Paragraph timing</li>
+        <li>Readings (+30s)</li>
+        <li>Images (+30s)</li>
+        <li>30/60 minute modes</li>
+        <li>Helps keep Watchtower Study on schedule</li>
+        <li>Works in any browser</li>
+      </p>
+    </section>
+
+    <h4 class="about-subtitle">What is the Meeting Timer?</h4>
+    <p class="feedback-help">
+      The Meeting Timer is made for Jehovah’s Witnesses congregation meetings. Its main feature, the Watchtower Timer, is designed for the brother conducting the Watchtower Study and estimates how the available study time should be distributed across each article.
+    </p>
+    <h4 class="about-subtitle">How does it work?</h4>
+    <p class="feedback-help">
+      Paragraph length, pictures, boxed material, and Scripture readings are taken into account. Earlier paragraphs receive slightly less time, while later paragraphs receive a bit more, reflecting how discussions often develop.
+    </p>
+    <h4 class="about-subtitle">How does it help?</h4>
+    <p class="feedback-help">
+      Started at the beginning of the study (after the song), the timer helps you keep a steady pace and avoid going beyond the intended study time, while still allowing flexibility where needed.
+    </p>
+
+    <h4 class="about-subtitle">Talk Timer</h4>
+    <p class="feedback-help">
+      The Talk Timer is a simple tool for keeping track of time when giving a talk or serving as chairman at a midweek meeting.
+    </p>
+
+    <h4 class="about-subtitle">A personal project</h4>
+    <p class="feedback-help">
+      This is a personal project, created in my spare time, and is not affiliated with Jehovah’s Witnesses as an organization. Errors may occur, and feedback is always appreciated.
+      <br><br>
+      <em>Love from a brother in Norway.</em>
+    </p>
+
+    <div class="feedback-actions">
+      <button type="button" id="aboutClose">Close</button>
+    </div>
+  </div>
+</div>
+<!-- WT Advanced modal -->
+<div id="wtAdvancedModal" class="feedback-modal" aria-hidden="true">
+  <div class="feedback-backdrop" id="wtAdvancedBackdrop"></div>
+  <div class="feedback-dialog advanced-dialog" role="dialog" aria-modal="true" aria-labelledby="wtAdvancedTitle">
+    <h3 id="wtAdvancedTitle" class="feedback-title"></h3>
+    <p id="wtAdvancedDescription" class="feedback-help"></p>
+    <div id="wtAdvancedBody" class="advanced-body"></div>
+    <div class="feedback-actions" style="margin-top:10px;">
+      <button type="button" id="wtAdvancedReset"></button>
+      <button type="button" id="wtAdvancedClose"></button>
+      <button type="button" id="wtAdvancedSave" class="primary"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', async () => {
+/* ===== Tema (lys/mørk) ===== */
+const THEME_KEY='meetingTimer.theme';
+function syncNotesInk(){
+  const ta = document.getElementById('wtNotes');
+  if(!ta) return;
+  const isDark = document.body.classList.contains('dark');
+  const hasText = ta.value && ta.value.length>0;
+  if(isDark && hasText){
+    ta.classList.add('dark-has-text');
+  }else{
+    ta.classList.remove('dark-has-text');
+  }
+}
+function setTitleIcon(iconId, lightSrc, darkSrc){
+  const img = document.getElementById(iconId);
+  if(!img) return;
+  if(lightSrc) img.dataset.light = lightSrc;
+  if(darkSrc) img.dataset.dark = darkSrc;
+  const isDark = document.body.classList.contains('dark');
+  const target = isDark ? (img.dataset.dark || img.dataset.light || img.src) : (img.dataset.light || img.dataset.dark || img.src);
+  img.src = target;
+}
+function applyTheme(mode){
+  const body = document.body;
+  const btn = document.getElementById('themeToggle');
+  const langImg = document.querySelector('#langBtn img');
+  const logoImg = document.getElementById('logoImg');
+
+  if (mode === 'dark') {
+    body.classList.add('dark');
+    if (btn) btn.textContent = '☀️';
+    if (langImg) langImg.src = './img/language-icon.png';
+    if (logoImg) logoImg.src = './img/meeting-timer-logo-dark.png';
+  } else {
+    body.classList.remove('dark');
+    if (btn) btn.textContent = '🌙';
+    if (langImg) langImg.src = './img/language-icon.png';
+    if (logoImg) logoImg.src = './img/meeting-timer-logo.png';
+  }
+  setTitleIcon('wtTitleIcon', './img/Tower-icon.png', './img/Tower-icon-dark.png');
+  setTitleIcon('spTitleIcon', './img/Clock-icon.png', './img/Clock-icon-dark.png');
+  syncNotesInk();
+}
+try{
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if(savedTheme){ applyTheme(savedTheme); }
+}catch(e){ applyTheme('light'); }
+/* ===== Språk (language) ===== */
+const LANG_KEY='meetingTimer.lang';
+const DEFAULT_LANG='en';
+let LANGS={};
+async function loadLanguages(){
+  try{
+    const res = await fetch('./languages.json');
+    const data = await res.json();
+    if(data && typeof data === 'object'){
+      LANGS = data;
+    }
+  }catch(e){
+    console.warn('Kunne ikke laste languages.json, bruker innebygde tekster', e);
+  }
+}
+function getLang(){ try{return localStorage.getItem(LANG_KEY) || DEFAULT_LANG;}catch(e){return DEFAULT_LANG;} }
+function setLang(code){ try{localStorage.setItem(LANG_KEY,code);}catch(e){} }
+await loadLanguages();
+window.currentLang=getLang();
+window.L=LANGS[window.currentLang] || LANGS[DEFAULT_LANG] || {};
+function updateStaticTexts(){
+  const L = window.L || {};
+  const base = LANGS[DEFAULT_LANG] || {};
+  // Seksjonstitler
+  const wtTitleText=document.getElementById('wtStudyTitleText');
+  if(wtTitleText && L.WTStudy){ wtTitleText.textContent=L.WTStudy; }
+  const spTitleText=document.getElementById('speechTimerTitleText');
+  if(spTitleText && L.SpeakerTimer){ spTitleText.textContent=L.SpeakerTimer; }
+  // Informasjonsfelt-piller
+  const lblParas = document.querySelector('#pillParas .pill-label');
+  if(lblParas && L.Info_Paragraph){ lblParas.textContent = L.Info_Paragraph + ':'; }
+  const lblReads = document.querySelector('#pillReads .pill-label');
+  if(lblReads && L.Info_Reads){ lblReads.textContent = L.Info_Reads + ':'; }
+  const lblImages = document.querySelector('#pillImages .pill-label');
+  if(lblImages && L.Info_Images){ lblImages.textContent = L.Info_Images + ':'; }
+  const lblFrames = document.querySelector('#pillFrames .pill-label');
+  if(lblFrames && L.Info_Frames){ lblFrames.textContent = L.Info_Frames + ':'; }
+  // 60 / 30 min-knapper
+  if(L.Min){
+    const m60 = document.getElementById('mode60');
+    const m30 = document.getElementById('mode30');
+    if(m60){ m60.textContent = '60 ' + L.Min; }
+    if(m30){ m30.textContent = '30 ' + L.Min; }
+  }
+  // Notatfelt (fallback til Info_Notes hvis NotesPlaceholder ikke finnes)
+  const wtNotes=document.getElementById('wtNotes');
+  if(wtNotes){
+    if(L.NotesPlaceholder){ wtNotes.placeholder = L.NotesPlaceholder; }
+    else if(L.Info_Notes){ wtNotes.placeholder = L.Info_Notes; }
+    wtNotes.addEventListener('input', syncNotesInk);
+    syncNotesInk();
+  }
+  // Avansert dialog
+  const advBtn=document.getElementById('wtAdvancedBtn');
+  if(advBtn){
+    const advLabel=advBtn.querySelector('.adv-label');
+    const advText=L.Advanced || base.Advanced;
+    if(advLabel && advText){ advLabel.textContent=advText; }
+    const advAria=L.AdvancedAria || base.AdvancedAria;
+    if(advAria){ advBtn.setAttribute('aria-label', advAria); }
+  }
+  const advTitle=document.getElementById('wtAdvancedTitle');
+  const advTitleText=L.AdvancedTitle || base.AdvancedTitle;
+  if(advTitle && advTitleText){ advTitle.textContent=advTitleText; }
+  const advDesc=document.getElementById('wtAdvancedDescription') || document.querySelector('#wtAdvancedModal .feedback-help');
+  const advDescText=L.AdvancedDescription || base.AdvancedDescription;
+  if(advDesc && advDescText){ advDesc.textContent=advDescText; }
+  const advReset=document.getElementById('wtAdvancedReset');
+  const advResetText=L.AdvancedReset || base.AdvancedReset;
+  if(advReset && advResetText){ advReset.textContent=advResetText; }
+  const advClose=document.getElementById('wtAdvancedClose');
+  const advCloseText=L.AdvancedClose || base.AdvancedClose;
+  if(advClose && advCloseText){ advClose.textContent=advCloseText; }
+  const advSave=document.getElementById('wtAdvancedSave');
+  const advSaveText=L.AdvancedSave || base.AdvancedSave;
+  if(advSave && advSaveText){ advSave.textContent=advSaveText; }
+}
+/* Språkvelger UI */
+(function(){
+  const btn=document.getElementById('langBtn');
+  const pop=document.getElementById('langPopover');
+  if(!btn || !pop) return;
+  const items=pop.querySelectorAll('li[data-lang]');
+  items.forEach(li=>{
+    const code=li.dataset.lang;
+    const cfg=LANGS[code];
+    if(cfg){ li.textContent=cfg.label; }
+    li.classList.toggle('active', code===window.currentLang);
+  });
+  function openPop(){ pop.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+  function closePop(){ pop.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    if(pop.classList.contains('open')) closePop(); else openPop();
+  });
+  items.forEach(li=>{
+    li.addEventListener('click', (e)=>{
+      const code=li.dataset.lang;
+      if(!code) return;
+      window.currentLang=code;
+      window.L=LANGS[code] || LANGS[DEFAULT_LANG];
+      setLang(code);
+      items.forEach(x=>x.classList.toggle('active', x.dataset.lang===code));
+      updateStaticTexts();
+      try{ if(window.refreshArticlesForLang) window.refreshArticlesForLang(); }catch(e){}
+      closePop();
+    });
+  });
+  document.addEventListener('click',(e)=>{
+    if(!pop.contains(e.target) && e.target!==btn) closePop();
+  });
+})();
+updateStaticTexts();
+/* ===== Logo animasjon ===== */
+/* ===== Hjelpere ===== */
+const $=s=>document.querySelector(s);
+const fmt=s=>{s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60),r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
+function updateWTClockTarget(){
+  const targetEl = document.getElementById('clockWTTarget');
+  if(!targetEl) return;
+  const S = (typeof currentSlots === 'function') ? currentSlots() : slots();
+  targetEl.textContent = ` / ${fmt(S.total)}`;
+}
+function isoMondayLocal(d=new Date()){
+  const day=d.getDay(); const diff=(day===0?-6:1-day);
+  const monday=new Date(d.getFullYear(), d.getMonth(), d.getDate()+diff);
+  const y=monday.getFullYear(), m=String(monday.getMonth()+1).padStart(2,'0'), dd=String(monday.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+/* ===== WT konfig/modus ===== */
+const WT_MODE_KEY='meetingTimer.wtMode'; // '60' | '30'
+function getMode(){ return localStorage.getItem(WT_MODE_KEY) || '60'; }
+function setMode(m){ localStorage.setItem(WT_MODE_KEY, m); }
+
+// Grunnverdier for 60/30-modus
+function slots(){
+  const total = (getMode()==='30') ? 1800 : 3600;
+  const intro=90, review=(getMode()==='30') ? 120 : 180, outro=90;
+  return { total, intro, review, outro, content: total - (intro+review+outro) };
+}
+
+// Manuelle overstyringer fra "Avansert"
+//
+// advancedOverrides = {
+//   intro: number,
+//   review: number,
+//   outro: number,
+//   paras: number[]   // sekunder per avsnitt
+// }
+let advancedOverrides = null;
+
+// Gjeldende slots inkludert overstyringer
+function currentSlots(){
+  const base = slots();
+  if(!advancedOverrides) return base;
+  const intro  = Number.isFinite(advancedOverrides.intro)  ? advancedOverrides.intro  : base.intro;
+  const review = Number.isFinite(advancedOverrides.review) ? advancedOverrides.review : base.review;
+  const outro  = Number.isFinite(advancedOverrides.outro)  ? advancedOverrides.outro  : base.outro;
+  const total  = base.total;
+  return {
+    total,
+    intro,
+    review,
+    outro,
+    content: Math.max(0, total - (intro + review + outro))
+  };
+}
+
+let TITLE_OVERRIDES = {};
+
+/* ===== WT state ===== */
+let paras=[], perParagraph=[], cumulative=[], totalParagraphs=0;
+let reads=0, readSet=new Set();
+let started=false, paused=false, startTs=null, accum=0, tickHandle=null;
+/* ===== Laste artikkeldata ===== */
+async function fetchJSON(u){
+  const r = await fetch(u,{cache:'no-store'});
+  if(!r.ok) throw 0;
+  return r.json();
+}
+// Felles artikkeldatasett for alle språk
+async function loadArticles(){
+  try{
+    const raw = await fetchJSON('data/articles-data.json?v=' + Date.now().toString().slice(7));
+    return Array.isArray(raw) ? raw : (raw && Array.isArray(raw.items) ? raw.items : []);
+  }catch(e){
+    console.warn('Kunne ikke laste articles-data.json', e);
+    return [];
+  }
+}
+// Titles-override per språk (f.eks. data/titles-en.json)
+async function loadTitlesFor(lang){
+  if(lang === 'no'){
+    TITLE_OVERRIDES = {};
+    return;
+  }
+  try{
+    const res = await fetch('data/titles-' + lang + '.json?v=' + Date.now().toString().slice(7));
+    if(!res.ok){
+      TITLE_OVERRIDES = {};
+      return;
+    }
+    const obj = await res.json();
+    TITLE_OVERRIDES = (obj && typeof obj === 'object') ? obj : {};
+  }catch(e){
+    console.warn('Kunne ikke laste titles for', lang, e);
+    TITLE_OVERRIDES = {};
+  }
+}
+function getOverrideTitleFor(item){
+  if(!item || !item.week_start) return null;
+  const map = TITLE_OVERRIDES || {};
+  return map[item.week_start] || null;
+}
+async function hydrateOptions(){
+  let items = [];
+  try{
+    items = await loadArticles();
+  }catch(e){
+    console.warn('loadArticles feilet', e);
+    items = [];
+  }
+  const curMon = isoMondayLocal(new Date());
+  const parse = (s)=> new Date(s + "T00:00:00");
+  // Filtrer bort artikler som er eldre enn to uker fra i dag
+  const today = new Date();
+  const cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
+  let sorted = [...items].filter(it=>it.week_start).sort((a,b)=>parse(a.week_start)-parse(b.week_start));
+  const recent = sorted.filter(it=>parse(it.week_start) >= cutoff);
+  if (recent.length) {
+    sorted = recent;
+  }
+  let current = sorted.find(it=>it.week_start===curMon);
+  if(!current){
+    const past = sorted.filter(it=>parse(it.week_start) <= parse(curMon));
+    if(past.length){ current=past[past.length-1]; }
+    else if(sorted.length){ current=sorted[0]; }
+  }
+  const sel = $('#weekSel');
+  if(!sel) return;
+  sel.innerHTML='';
+  let idx = sorted.indexOf(current);
+  const start = Math.max(0, idx-6), end = Math.min(sorted.length, idx+6);
+  const windowItems = sorted.slice(start,end);
+  const overrides = TITLE_OVERRIDES || {};
+  windowItems.forEach(it=>{
+    const o = document.createElement('option');
+    o.value = JSON.stringify(it);
+    const overrideTitle = overrides[it.week_start];
+    o.textContent = overrideTitle || it.title || '(uten tittel)';
+    sel.appendChild(o);
+  });
+  sel.selectedIndex = windowItems.indexOf(current);
+  // Sørg for at valgt artikkel også får titteloverride
+  const overrideCurrent = overrides[current.week_start];
+  if(overrideCurrent){
+    current = Object.assign({}, current, { title: overrideCurrent });
+  }
+  useItem(current);
+  sel.addEventListener('change', (e)=>{
+    try{
+      const obj = JSON.parse(e.target.value);
+      const overrideTitle = getOverrideTitleFor(obj);
+      if(overrideTitle){
+        obj.title = overrideTitle;
+      }
+      useItem(obj);
+    }catch(err){}
+  });
+}
+window.refreshArticlesForLang = async function(){
+  const lang = (window.currentLang || DEFAULT_LANG);
+  await loadTitlesFor(lang);
+  await hydrateOptions();
+};
+
+let __titleMeasureSpan = null;
+
+function __measureTitlePart(el, text){
+  if(!__titleMeasureSpan){
+    __titleMeasureSpan = document.createElement('span');
+    __titleMeasureSpan.style.position = 'absolute';
+    __titleMeasureSpan.style.visibility = 'hidden';
+    __titleMeasureSpan.style.whiteSpace = 'nowrap';
+    __titleMeasureSpan.style.left = '-9999px';
+    __titleMeasureSpan.style.top = '-9999px';
+    document.body.appendChild(__titleMeasureSpan);
+  }
+
+  const cs = window.getComputedStyle(el);
+  __titleMeasureSpan.style.font = cs.font;
+  __titleMeasureSpan.style.fontFamily = cs.fontFamily;
+  __titleMeasureSpan.style.fontSize = cs.fontSize;
+  __titleMeasureSpan.style.fontWeight = cs.fontWeight;
+  __titleMeasureSpan.style.letterSpacing = cs.letterSpacing;
+  __titleMeasureSpan.style.textTransform = cs.textTransform;
+  __titleMeasureSpan.textContent = text;
+
+  return __titleMeasureSpan.getBoundingClientRect().width;
+}
+
+function balanceTitleBreak(el){
+  if(!el || el.dataset.hasManualBreak === '1') return;
+
+  if(!el.dataset.originalTitle){
+    el.dataset.originalTitle = (el.textContent || '').trim();
+  }
+
+  const original = (el.dataset.originalTitle || '').trim();
+  if(!original) return;
+
+  el.textContent = original;
+
+  const cs = window.getComputedStyle(el);
+  let lineHeight = parseFloat(cs.lineHeight);
+  if(!Number.isFinite(lineHeight)){
+    lineHeight = parseFloat(cs.fontSize) * 1.2;
+  }
+
+  const overflows = (el.scrollWidth > el.clientWidth + 1) || (el.scrollHeight > lineHeight * 1.2);
+  if(!overflows) return;
+
+  const words = original.split(/\s+/).filter(Boolean);
+  if(words.length < 5) return;
+
+  const candidates = [];
+  for(let i=2;i<=words.length-2;i++){
+    const line1 = words.slice(0, i).join(' ');
+    const line2 = words.slice(i).join(' ');
+    const w1 = __measureTitlePart(el, line1);
+    const w2 = __measureTitlePart(el, line2);
+    const total = w1 + w2;
+    if(total <= 0) continue;
+
+    const ratio = w1 / total;
+    let score = Math.abs(ratio - 0.5);
+    if(ratio < 0.35 || ratio > 0.65) score += 4;
+    const line2Words = words.length - i;
+    if(line2Words <= 2) score += 3;
+    if(line2.length < 12) score += 2;
+
+    candidates.push({ i, score, ratio });
+  }
+
+  if(!candidates.length) return;
+
+  candidates.sort((a,b)=> a.score - b.score || Math.abs(a.ratio - 0.5) - Math.abs(b.ratio - 0.5));
+  const tryCandidates = candidates.slice(0, 3);
+
+  for(const candidate of tryCandidates){
+    const line1 = words.slice(0, candidate.i).join(' ');
+    const line2 = words.slice(candidate.i).join(' ');
+    el.innerHTML = line1 + '<br>' + line2;
+    if(el.scrollHeight <= lineHeight * 2.4 + 2){
+      return;
+    }
+  }
+
+  el.textContent = original;
+}
+
+const debouncedBalanceTitleBreak = (()=>{
+  let resizeTimer = null;
+  return ()=>{
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(()=>{
+      balanceTitleBreak(document.getElementById('articleTitle'));
+    }, 150);
+  };
+})();
+
+window.addEventListener('resize', debouncedBalanceTitleBreak);
+
+function useItem(it){
+// VT 1.48 backfill & mapping
+try{
+  if (Array.isArray(it.para_lengths) && (!Array.isArray(it.words) || !it.words.length)) {
+    it.words = it.para_lengths.slice();
+  }
+  // parse groups
+  window.__VT_GROUPS_RAW = (typeof it.groups === 'string') ? it.groups : "";
+  // parse reads/frames with a/b
+  (function(){
+    function parse(e){ const m=String(e).match(/^(\d+)([ab])?$/i); return m? {n:Number(m[1]), o:(m[2]? (m[2].toLowerCase()==='a'?1:2): null)} : null; }
+    const FR = Array.isArray(it.frames) ? it.frames.map(parse).filter(Boolean) : [];
+    const RD = Array.isArray(it.reads)  ? it.reads.map(parse).filter(Boolean)  : [];
+    window.__VT_FRAME_SET = new Set(FR.map(x=>x.n));
+    window.__VT_READ_SET2 = new Set(RD.map(x=>x.n));
+    if (!Array.isArray(it.readParas) && !Array.isArray(it.read_paras) && RD.length){
+      it.readParas = Array.from(new Set(RD.map(x=>x.n)));
+    }
+    const ORD = new Map();
+    RD.forEach(x=>{ const m = ORD.get(x)||{}; if (x.o!=null) m.read = x.o; ORD.set(x.n,m); });
+    FR.forEach(x=>{ const m = ORD.get(x)||{}; if (x.o!=null) m.frame = x.o; ORD.set(x.n,m); });
+    window.__VT_ORD = ORD;
+    window.__VT_GROUPS = (function(str){
+      if (!str || typeof str!=='string') return [];
+      return str.split(',').map(s=>s.trim()).flatMap(token=>{
+        const m = token.match(/^(\d+)(?:-(\d+))?$/); if(!m) return [];
+        const a = Number(m[1]), b = m[2] ? Number(m[2]) : a;
+        const g=[]; for(let k=a;k<=b;k++) g.push(k); return [g];
+      });
+    })(window.__VT_GROUPS_RAW);
+  })();
+}catch(e){}
+  window.currentItem = it;
+  window.ITEM = it;
+  const overrideTitle = getOverrideTitleFor(it);
+  const articleTitleElement = $('#articleTitle');
+  const articleTitle = (overrideTitle || it.title || '—');
+  const hasExistingBreak = /<br\s*\/?>/i.test(articleTitle);
+  if(hasExistingBreak){
+    articleTitleElement.innerHTML = articleTitle;
+    articleTitleElement.dataset.originalTitle = articleTitleElement.textContent.trim();
+    articleTitleElement.dataset.hasManualBreak = '1';
+  }else{
+    articleTitleElement.textContent = articleTitle;
+    articleTitleElement.dataset.originalTitle = articleTitleElement.textContent.trim();
+    articleTitleElement.dataset.hasManualBreak = '0';
+    balanceTitleBreak(articleTitleElement);
+  }
+  totalParagraphs=(it.paragraphs|0)||(Array.isArray(it.words)?it.words.length:0)||(it.paras|0)||0;
+  reads = it.reads|0;
+  const rp = Array.isArray(it.readParas) ? it.readParas : (Array.isArray(it.read_paras) ? it.read_paras : null);
+  readSet = new Set(rp || ((Number.isFinite(reads) && reads>0) ? Array.from({length:reads},(_,i)=>i+1) : []));
+  const imageSet = (()=>{
+    const out = new Set();
+    const add = n=>{ if(Number.isFinite(n) && n>0) out.add(n); };
+    const addRange = (a,b)=>{
+      const lo = Math.min(a,b), hi = Math.max(a,b);
+      for(let n=lo;n<=hi;n++) add(n);
+    };
+    for(const ref of (Array.isArray(it.images) ? it.images : [])){
+      if(typeof ref === 'number'){ add(ref); continue; }
+      const s = String(ref).trim();
+      let m = s.match(/^(\d+)\s*[\-–]\s*(\d+)$/);
+      if(m){ addRange(Number(m[1]), Number(m[2])); continue; }
+      m = s.match(/^(\d+)(?:[abc])?$/i);
+      if(m){ add(Number(m[1])); }
+    }
+    return out;
+  })();
+  window.__VT_IMAGE_SET = imageSet;
+  paras=(it.words||[]).map((w,i)=>{ const num=i+1; return {num,words:w|0,les:readSet.has(num)?1:0,img:imageSet.has(num)?1:0}; });
+  if(paras.length!==totalParagraphs){ paras=Array.from({length:totalParagraphs},(_,i)=>{ const num=i+1; return {num,words:0,les:readSet.has(num)?1:0,img:imageSet.has(num)?1:0}; }); }
+  const setPillValue = (id, value)=>{ const el=document.getElementById(id); if(el) el.textContent=String(value); };
+  setPillValue('pillParasValue', totalParagraphs);
+  setPillValue('pillReadsValue', readSet.size);
+  (function(){
+    let el=document.getElementById('pillFrames');
+    if(!el){
+      const anchor=document.getElementById('pillImages')||document.getElementById('pillReads')||document.querySelector('[id*=pillReads]');
+      el=document.createElement('div');
+      el.id='pillFrames';
+      el.className='pill';
+      el.innerHTML='<img class="pill-icon" src="./img/box-icon.png" alt="" aria-hidden="true"><span class="pill-label">Rammer:</span><span class="pill-value" id="pillFramesValue">0</span>';
+      if(anchor && anchor.parentElement){ anchor.insertAdjacentElement('afterend', el); }
+      else { document.body.appendChild(el); }
+    } else if (!document.getElementById('pillFramesValue')){
+      el.innerHTML='<img class="pill-icon" src="./img/box-icon.png" alt="" aria-hidden="true"><span class="pill-label">Rammer:</span><span class="pill-value" id="pillFramesValue">0</span>';
+    }
+    if (typeof updateStaticTexts==='function'){ updateStaticTexts(); }
+    setPillValue('pillFramesValue', (window.__VT_FRAME_SET instanceof Set) ? window.__VT_FRAME_SET.size : 0);
+  })();
+   advancedOverrides = null;
+  computeAllocation(); drawTimeline(); resetWTUI();
+  if (typeof window.__VT_APPLY_IMAGES === 'function'){
+    try{ window.__VT_APPLY_IMAGES(); }catch(e){}
+  }
+}
+/* ===== Fordele tid (WT) ===== */
+const WPM=150, SEC_PER_READ=30, SEC_PER_IMAGE=30;
+
+function roundParagraphsToNearestTen(values, targetContent, refs){
+  if(!Array.isArray(values) || !values.length) return [];
+  const target = Math.max(0, Math.round((Number(targetContent)||0) / 10) * 10);
+  if(target === 0) return values.map(()=>0);
+  const round10 = (v)=> Math.max(10, Math.round((Number(v)||0)/10)*10);
+  const rounded = values.map(round10);
+  const reference = (Array.isArray(refs) && refs.length === values.length) ? refs : values;
+  const indices = values.map((_,i)=>i);
+  const minSlot = (target >= values.length * 10) ? 10 : 0;
+  const addOrder = indices.slice().sort((a,b)=>{
+    const da = (reference[a]||0) - (rounded[a]||0);
+    const db = (reference[b]||0) - (rounded[b]||0);
+    if(da === db) return a - b;
+    return db - da; // Prioriter de som ble rundet mest ned
+  });
+  const subOrder = indices.slice().sort((a,b)=>{
+    const da = (reference[a]||0) - (rounded[a]||0);
+    const db = (reference[b]||0) - (rounded[b]||0);
+    if(da === db) return a - b;
+    return da - db; // Prioriter de som ble rundet mest opp
+  });
+  const step = 10;
+  let diff = target - rounded.reduce((a,b)=>a+b,0);
+  let addIdx = 0, subIdx = 0, safety = 0;
+  const maxIter = 8000;
+  while(diff !== 0 && safety < maxIter){
+    if(diff > 0){
+      const idx = addOrder[addIdx % addOrder.length];
+      rounded[idx] += step;
+      diff -= step;
+      addIdx++;
+    } else {
+      const idx = subOrder[subIdx % subOrder.length];
+      if(rounded[idx] - step < minSlot){
+        subIdx++;
+        safety++;
+        continue;
+      }
+      rounded[idx] -= step;
+      diff += step;
+      subIdx++;
+    }
+    safety++;
+  }
+  return rounded;
+}
+
+function applyMinMaxConstraints(perParagraph, S){
+  if(!Array.isArray(perParagraph) || !perParagraph.length) return [];
+  const mode = getMode();
+  const minPer = (mode === '30') ? 45 : 90;
+  const maxPer = (mode === '30') ? 180 : 360;
+  const step = 10;
+  const minClamp = Math.ceil(minPer / step) * step;
+  const maxClamp = Math.floor(maxPer / step) * step;
+  const target = Number(S && S.content) || 0;
+  const adjusted = perParagraph.map(v=>Math.max(0, Number(v)||0));
+
+  const distribute = (delta, capFn)=>{
+    let remaining = Math.abs(delta);
+    const sign = delta >= 0 ? 1 : -1;
+    if(remaining <= 0) return;
+
+    const entries = adjusted.map((v,i)=>({
+      i,
+      cap: Math.max(0, capFn(v))
+    })).filter(e=>e.cap > 0);
+    if(!entries.length) return;
+
+    const totalCap = entries.reduce((a,e)=>a+e.cap,0);
+    remaining = Math.min(remaining, totalCap);
+    if(remaining <= 0) return;
+
+    let used = 0;
+    const parts = entries.map(e=>{
+      const exact = (remaining * e.cap) / totalCap;
+      const whole = Math.min(e.cap, Math.floor(exact / step) * step);
+      used += whole;
+      return { ...e, exact, whole, rem: exact - whole };
+    });
+
+    let rem = remaining - used;
+    parts.sort((a,b)=> b.rem - a.rem || b.cap - a.cap || a.i - b.i);
+    let spin = 0;
+    while(rem >= step && spin < 10000){
+      let moved = false;
+      for(const p of parts){
+        if(rem < step) break;
+        if(p.whole + step > p.cap) continue;
+        p.whole += step;
+        rem -= step;
+        moved = true;
+      }
+      if(!moved) break;
+      spin++;
+    }
+
+    parts.forEach(p=>{ adjusted[p.i] += sign * p.whole; });
+  };
+
+  let iter = 0;
+  while(iter < 1000){
+    for(let i=0;i<adjusted.length;i++) adjusted[i] = Math.min(maxClamp, Math.max(minClamp, adjusted[i]));
+
+    const sum = adjusted.reduce((a,b)=>a+b,0);
+    const diff = target - sum;
+    if(diff === 0) break;
+
+    if(diff > 0){
+      distribute(diff, v=>maxClamp - v);
+    } else {
+      distribute(diff, v=>v - minClamp);
+    }
+
+    iter++;
+  }
+
+  const finalSum = adjusted.reduce((a,b)=>a+b,0);
+  const tailDiff = target - finalSum;
+  if(tailDiff !== 0 && adjusted.length){
+    adjusted[adjusted.length-1] += tailDiff;
+  }
+  return adjusted;
+}
+
+// Bruker advancedOverrides (hvis satt) til å justere perParagraph/cumulative
+function applyAdvancedOverridesToState(){
+  if(!advancedOverrides || totalParagraphs<=0) return;
+  const base = slots();
+  const intro  = Number.isFinite(advancedOverrides.intro)  ? advancedOverrides.intro  : base.intro;
+  const review = Number.isFinite(advancedOverrides.review) ? advancedOverrides.review : base.review;
+  const outro  = Number.isFinite(advancedOverrides.outro)  ? advancedOverrides.outro  : base.outro;
+  const targetContent = Math.max(0, base.total - (intro + review + outro));
+
+  const srcParas = Array.isArray(advancedOverrides.paras) ? advancedOverrides.paras : [];
+  const fallbackEach = (() => {
+    if(!perParagraph || !perParagraph.length || totalParagraphs===0){
+      return (base.content/Math.max(1,totalParagraphs));
+    }
+    const sum = perParagraph.reduce((a,b)=>a+(Number(b)||0),0);
+    return sum/Math.max(1,perParagraph.length);
+  })();
+
+  const newPer = [];
+  for(let i=0; i<totalParagraphs; i++){
+    let v = Number(srcParas[i]);
+    if(!Number.isFinite(v) || v<=0){
+      v = Number(perParagraph[i]);
+      if(!Number.isFinite(v) || v<=0) v = fallbackEach;
+    }
+    newPer.push(v);
+  }
+  perParagraph = roundParagraphsToNearestTen(newPer, targetContent, newPer);
+  cumulative=[];
+  let acc = intro;
+  for(let i=0;i<totalParagraphs;i++){
+    cumulative.push(acc);
+    acc += perParagraph[i];
+  }
+  // Renset tilbake
+  const extra = (advancedOverrides && Number.isFinite(advancedOverrides.extra))
+    ? advancedOverrides.extra
+    : 0;
+  advancedOverrides = { intro, review, outro, paras: perParagraph.slice(), extra };
+}
+
+function computeAllocation(){
+  const S = slots(); // grunnlag
+  if(totalParagraphs<=0){perParagraph=[];cumulative=[];return;}
+  const wps=WPM/60;
+  const raw=Array.from({length:totalParagraphs},(_,i)=>{
+    const p=paras[i]||{words:0,les:0,img:0};
+    let s=(p.words||0)/wps + (p.les||0)*SEC_PER_READ + (p.img||0)*SEC_PER_IMAGE;
+    s=Math.max(5,s);
+    // +10% for de siste 5 avsnittene
+    const lastN=Math.min(5,totalParagraphs);
+    if(i>=totalParagraphs-lastN) s*=1.10;
+    return s;
+  });
+  const scale=S.content/((raw.reduce((a,b)=>a+b,0))||1);
+  const scaled = raw.map(x=>x*scale);
+  perParagraph = roundParagraphsToNearestTen(scaled, S.content, scaled);
+  perParagraph = applyMinMaxConstraints(perParagraph, S);
+  cumulative=[]; let acc=S.intro; for(let i=0;i<totalParagraphs;i++){cumulative.push(acc); acc+=perParagraph[i];}
+
+  // Hvis vi har manuelle overstyringer, gjelder de foran baseline
+  applyAdvancedOverridesToState();
+
+  updateWTClockTarget();
+}
+
+function formatGroupMessage(p){
+  const groups = window.__VT_GROUPS || [];
+  const L = window.L || {};
+  const single = L.Paragraph || 'Avsnitt';
+  const plural = L.Paragraphs || 'Avsnittene';
+  const andWord = L.And || 'og';
+  for(const g of groups){
+    if(g.includes(p)){
+      if(g.length === 1) return `${single} ${p}`;
+      if(g.length === 2) return `${plural} ${g[0]} ${andWord} ${g[1]}`;
+      return `${plural} ${g[0]}–${g[g.length-1]}`;
+    }
+  }
+  return `${single} ${p}`;
+}
+/* ===== Tegn WT-tidslinje ===== */
+function drawTimeline(){
+  const S = (typeof currentSlots === 'function') ? currentSlots() : slots();
+  const t=$('#timeline'); if(!t) return;
+  Array.from(t.querySelectorAll('.para-slot')).forEach(n=>n.remove());
+  const pct=v=> (v/S.total*100).toFixed(4)+'%';
+  $('#introSlot').style.left='0%'; $('#introSlot').style.width=pct(S.intro);
+  $('#outroSlot').style.right='0%'; $('#outroSlot').style.width=pct(S.outro);
+  $('#reviewSlot').style.right=pct(S.outro); $('#reviewSlot').style.width=pct(S.review);
+  if(totalParagraphs<=0){$('#elapsed').style.width='0%'; $('#cursor').style.left='0%'; return;}
+  const tlWidth=t.clientWidth||t.getBoundingClientRect().width||1; const pxPerSec=tlWidth/S.total;
+  for(let i=1;i<=totalParagraphs;i++){
+    const leftP=(cumulative[i-1]/S.total)*100, widthP=(perParagraph[i-1]/S.total)*100;
+    const slot=document.createElement('div'); slot.className='para-slot'+(i%2===0?' alt':''); slot.style.left=leftP+'%'; slot.style.width=widthP+'%';
+    const lbl=document.createElement('div'); const slotPx=perParagraph[i-1]*pxPerSec; const fs=11;
+    lbl.style.fontSize=fs+'px'; lbl.textContent=String(i); slot.appendChild(lbl);
+    if(readSet.has(i)){ const pin=document.createElement('i'); pin.className='read-pin'; slot.appendChild(pin); }
+    // Klikk for å hoppe (når ikke spiller)
+    slot.addEventListener('click',()=>{ if(started && !paused) return; const target=cumulative[i-1]; accum=Math.min(Math.round(target), S.total-S.outro-S.review); const pNow=Math.min(accum/S.total*100,100); $('#elapsed').style.width=pNow+'%'; $('#cursor').style.left=`calc(${pNow}% - 1px)`; $('#clockWT').textContent=fmt(accum); $('#clockWT').classList.toggle('over',accum>=S.total); $('#message').textContent = formatGroupMessage(i); });
+    t.insertBefore(slot,$('#elapsed'));
+    $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
+  }
+  // VT 1.48 enhance: group-aware zebra colors and ordered pins (frame/read with a/b)
+  try{
+    const t = document.getElementById('timeline'); if(t){
+      const groups = window.__VT_GROUPS || [];
+      const slots = Array.from(t.querySelectorAll('.para-slot'));
+      const paraToGroupId = new Map();
+      groups.forEach((g,i)=> g.forEach(p=>paraToGroupId.set(p,i)));
+      const blockIndexByPara = new Map();
+      const seen = new Set();
+      let block = 0;
+      for(let p=1; p<=slots.length; p++){
+        if(seen.has(p)) continue;
+        const gid = paraToGroupId.has(p) ? paraToGroupId.get(p) : null;
+        const members = [];
+        if(gid !== null && gid !== undefined){
+          const g = groups[gid] || [];
+          g.forEach(q=>{
+            if(q>=1 && q<=slots.length){
+              members.push(q);
+            }
+          });
+        }else{
+          members.push(p);
+        }
+        block++;
+        members.forEach(q=>{
+          seen.add(q);
+          blockIndexByPara.set(q, block);
+        });
+      }
+      function blockColor(b){
+        if(!b) return null;
+        return (b % 2 === 1) ? 'var(--tl-green-1)' : 'var(--tl-green-2)';
+      }
+      const ord = window.__VT_ORD || new Map();
+      const pinPriority = { read: 1, frame: 3 };
+      const frameSet = window.__VT_FRAME_SET || new Set();
+      const numericReads = (window.__VT_READ_SET2 instanceof Set) ? window.__VT_READ_SET2 : (window.readSet || new Set());
+      slots.forEach((slot, idx)=>{
+        const p = idx+1;
+        const b = blockIndexByPara.get(p);
+        const col = blockColor(b);
+        if (col) slot.style.background = col;
+        slot.querySelectorAll('.read-pin,.frame-pin').forEach(n=>n.remove());
+        const hasRead = numericReads.has ? numericReads.has(p) : false;
+        const hasFrame = frameSet.has ? frameSet.has(p) : false;
+        if (!hasRead && !hasFrame) return;
+        const items = [];
+        if (hasRead)  items.push({type:'read',  order:(ord.get(p)||{}).read});
+        if (hasFrame) items.push({type:'frame', order:(ord.get(p)||{}).frame});
+        items.sort((a,b)=>{
+          const pa = pinPriority[a.type] ?? 99;
+          const pb = pinPriority[b.type] ?? 99;
+          if (pa !== pb) return pa - pb;
+          const oa = Number.isFinite(a.order) ? a.order : 99;
+          const ob = Number.isFinite(b.order) ? b.order : 99;
+          return oa - ob;
+        });
+        items.forEach((it, j)=>{
+          const pin = document.createElement('i');
+          pin.className = it.type==='frame' ? 'frame-pin' : 'read-pin';
+          pin.style.bottom = `${-24 - j*12}px`;
+          slot.appendChild(pin);
+        });
+      });
+    }
+  }catch(e){}
+  $('#elapsed').style.width='0%'; $('#cursor').style.left='0%';
+}
+// Klikk på introfeltet: hopp til 00:00 når ikke spiller (eller pauset)
+(function(){
+  const intro = document.getElementById('introSlot');
+  if(intro){
+    intro.style.cursor = 'pointer';
+    intro.addEventListener('click', ()=>{
+      if(!started || paused){
+        accum = 0;
+        document.getElementById('elapsed').style.width = '0%';
+        document.getElementById('cursor').style.left = '0%';
+        document.getElementById('clockWT').textContent = '00:00';
+        document.getElementById('clockWT').classList.remove('over');
+        document.getElementById('message').classList.remove('overtime-warning');
+        document.getElementById('message').textContent = ((window.L && window.L.BackToStart) ? window.L.BackToStart : 'Tilbake til start') + ' (00:00)';
+      }
+    });
+  }
+})();
+let _rAF=null; function relayout(){ drawTimeline(); drawTimelineSP(); }
+['resize','orientationchange'].forEach(ev=>{ window.addEventListener(ev, ()=>{ if(_rAF) cancelAnimationFrame(_rAF); _rAF=requestAnimationFrame(relayout); }); });
+/* ===== WT klokke og meldinger ===== */
+function lockWTControls(){
+  const card = document.getElementById('wtControlsCard');
+  const sel = document.getElementById('weekSel');
+  const m60 = document.getElementById('mode60');
+  const m30 = document.getElementById('mode30');
+  const langBtn = document.getElementById('langBtn');
+  const advBtn = document.getElementById('wtAdvancedBtn');
+  if(card){
+    card.classList.add('locked');
+    card.classList.add('collapsed'); // skjuler infofeltet under avspilling
+  }
+  if(sel){ sel.setAttribute('disabled','disabled'); }
+  if(m60){ m60.setAttribute('disabled','disabled'); }
+  if(m30){ m30.setAttribute('disabled','disabled'); }
+  if(langBtn){ langBtn.setAttribute('disabled','disabled'); }
+  if(advBtn){ advBtn.setAttribute('disabled','disabled'); }
+}
+function unlockWTControls(){
+  const card = document.getElementById('wtControlsCard');
+  const sel = document.getElementById('weekSel');
+  const m60 = document.getElementById('mode60');
+  const m30 = document.getElementById('mode30');
+  const langBtn = document.getElementById('langBtn');
+  const advBtn = document.getElementById('wtAdvancedBtn');
+  if(card){
+    card.classList.remove('locked');
+    // Ikke åpne/lukke her – bruker styrer 'collapsed' med tannhjulet
+  }
+  if(sel){ sel.removeAttribute('disabled'); }
+  if(m60){ m60.removeAttribute('disabled'); }
+  if(m30){ m30.removeAttribute('disabled'); }
+  if(langBtn){ langBtn.removeAttribute('disabled'); }
+  if(advBtn){ advBtn.removeAttribute('disabled'); }
+}
+function resetWTUI(){
+  if(tickHandle) clearInterval(tickHandle);
+  $('#clockWT').textContent='00:00';
+  $('#clockWT').classList.remove('over');
+  $('#message').classList.remove('overtime-warning');
+  updateWTClockTarget();
+  // nullstill tidslinjen visuelt
+  $('#elapsed').style.width = '0%';
+  $('#cursor').style.left = '0%';
+  // standardmelding etter reset
+  const L = window.L || {};
+  $('#message').textContent = L.Ready || 'Klar for å starte. Trykk ▶ når du er klar.';
+  started = false;
+  paused = false;
+  startTs = null;
+  accum = 0;
+  $('#playWT').disabled = false;
+  $('#pauseWT').disabled = true;
+  $('#stopWT').disabled = true;
+  unlockWTControls();
+}
+function startClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=setInterval(tickWT,250) }
+function stopClock(){ if(tickHandle)clearInterval(tickHandle); tickHandle=null }
+function nowElapsed(){ if(!started) return accum; if(paused) return accum; return accum+Math.floor((Date.now()-startTs)/1000)}
+function setWTMessage(txt){ $('#message').textContent=txt }
+function tickWT(){
+  const S = (typeof currentSlots === 'function') ? currentSlots() : slots();
+  const e=nowElapsed();
+  $('#clockWT').textContent=fmt(e); $('#clockWT').classList.toggle('over',e>=S.total);
+  $('#message').classList.toggle('overtime-warning', e>=S.total);
+  const p=Math.min(e/S.total*100,100); $('#elapsed').style.width=p+'%'; $('#cursor').style.left=`calc(${p}% - 1px)`;
+  const L = window.L || {};
+  if(e<S.intro) setWTMessage(L.Intro || 'Introduksjon');
+  else if(e>=S.total) setWTMessage(L.TimeUsed || 'Tiden er brukt – teller over');
+  else if(e>=S.total-S.outro) setWTMessage(L.Conclusion || 'Avslutning');
+  else if(e>=S.total-S.outro-S.review) setWTMessage(L.Review || 'Repetisjonsspørsmål');
+  else{
+    let idx=0;
+    for(let i=0;i<totalParagraphs;i++){
+      const s=cumulative[i], end=(i===totalParagraphs-1)?(S.total-S.outro-S.review):cumulative[i+1];
+      if(e>=s&&e<end){idx=i;break}
+    }
+    let msg = formatGroupMessage(idx+1);
+    setWTMessage(msg);
+  }
+}
+
+function setPressedWT(id){ ['playWT','pauseWT','stopWT'].forEach(x=>{ const el=document.getElementById(x); if(el) el.classList.toggle('pressed', x===id); }); }
+$('#playWT').addEventListener('click',()=>{
+  if(started && paused){ paused=false; startTs=Date.now(); startClock(); tickWT(); setWTMessage('Fortsetter'); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; setPressedWT('playWT'); lockWTControls(); return }
+  if(!started){ started=true; paused=false; startTs=Date.now(); startClock(); tickWT(); setWTMessage('Introduksjon'); $('#playWT').disabled=true; $('#pauseWT').disabled=false; $('#stopWT').disabled=false; setPressedWT('playWT'); lockWTControls(); }
+});
+$('#pauseWT').addEventListener('click',()=>{
+  if(!started||paused) return;
+  accum+=Math.floor((Date.now()-startTs)/1000); paused=true; stopClock(); setWTMessage(L.Paused);
+  $('#playWT').disabled=false; $('#pauseWT').disabled=true; $('#stopWT').disabled=false; setPressedWT('pauseWT');
+});
+$('#stopWT').addEventListener('click',()=>{
+  if(started && !paused){
+    accum += Math.floor((Date.now() - startTs) / 1000);
+  }
+  started = false;
+  paused  = false;
+  stopClock();
+  resetWTUI();
+  setPressedWT('stopWT');
+});
+/* ===== WT modus-bryter ===== */
+(function(){
+  const m60 = document.getElementById('mode60');
+  const m30 = document.getElementById('mode30');
+  if(!m60 || !m30) return;
+  function applyModeToUI(mode){
+    if(mode === '30'){
+      m30.classList.add('active');
+      m60.classList.remove('active');
+    }else{
+      m60.classList.add('active');
+      m30.classList.remove('active');
+    }
+  }
+  // Marker gjeldende modus ved last
+  const cur = getMode();
+  applyModeToUI(cur);
+  updateWTClockTarget();
+  m60.addEventListener('click', () => {
+    if(getMode() === '60') return;
+    setMode('60');
+    applyModeToUI('60');
+    advancedOverrides = null;
+    computeAllocation();
+    drawTimeline();
+    resetWTUI();
+  });
+  m30.addEventListener('click', () => {
+    if(getMode() === '30') return;
+    setMode('30');
+    applyModeToUI('30');
+    advancedOverrides = null;
+    computeAllocation();
+    drawTimeline();
+    resetWTUI();
+  });
+})();
+/* ===== TIMER (SP) ===== */
+const PRESET_KEY='meetingTimer.annetSeconds';
+const spPresets=[...document.querySelectorAll('#spInputs .preset')];
+const spTimerCard=document.getElementById('spTimerCard');
+let spRunning=false, spPaused=false, spStart=null, spAccum=0, spTick=null;
+let SP_TOTAL=parseInt(localStorage.getItem(PRESET_KEY),10); if(isNaN(SP_TOTAL)) SP_TOTAL=600; // default 10 min
+function isCountUp(){ return SP_TOTAL===0 }
+function spFmt(s){s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), r=s%60; return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
+function spElapsed(){ if(!spRunning) return spAccum; if(spPaused) return spAccum; return spAccum+Math.floor((Date.now()-spStart)/1000) }
+function markPreset(s){ spPresets.forEach(b=>b.classList.toggle('active',parseInt(b.dataset.sec,10)===s)) }
+function updateTalkControlsUI(){
+  const runningNow = spRunning && !spPaused;
+  spPresets.forEach(btn=>{
+    const isActivePreset = parseInt(btn.dataset.sec,10)===SP_TOTAL;
+    btn.disabled = runningNow;
+    btn.setAttribute('aria-disabled', runningNow ? 'true' : 'false');
+    btn.classList.toggle('active', isActivePreset);
+  });
+  ['decSP','incSP'].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(!btn) return;
+    btn.disabled = runningNow;
+    btn.setAttribute('aria-disabled', runningNow ? 'true' : 'false');
+  });
+}
+function updatePlayIcon(){ const iconEl=document.getElementById('playSPIcon'); if(iconEl) iconEl.textContent=isCountUp()?'⏱️':'▶' }
+function updateSPClockTarget(){ const tEl=$('#clockSPTarget'); if(!tEl) return; tEl.textContent=SP_TOTAL>0 ? ` / ${fmt(SP_TOTAL)}` : '' }
+function applyIdleClock(){ const el=$('#clockSP'); if(!el) return; el.classList.remove('over'); el.textContent='00:00'; updateSPClockTarget(); }
+function drawTimelineSP(){
+  const e=spElapsed();
+  const totalScale=SP_TOTAL>0?SP_TOTAL:Math.max(1800,e+1);
+  const progress=Math.min(1, totalScale ? (e/totalScale) : 0);
+  $('#elapsedSP').style.width=(progress*100)+'%'; $('#cursorSP').style.left=`calc(${progress*100}% - 1px)`;
+  // Minuttstreker (1 / 5 / 10)
+  const ticksC = $('#ticksSP'); if(!ticksC) return;
+  ticksC.innerHTML='';
+  const minutes = Math.floor(totalScale/60);
+  for(let m=0; m<=minutes; m++){
+    const x = (m*60/totalScale)*100;
+    const i = document.createElement('i');
+    i.className = 'tick' + (m%10===0 ? ' xmajor' : (m%5===0 ? ' major' : ''));
+    i.style.left = x+'%';
+    ticksC.appendChild(i);
+  }
+}
+function showMilestone(name){ const el=$('#msImg'); if(!el) return; if(!name){ el.style.display='none'; el.removeAttribute('src'); return } el.style.display='block'; el.src=name }
+function updateSP(){
+  const e=spElapsed();
+  $('#clockSP').textContent=spFmt(e);
+  const isOvertime=SP_TOTAL>0 && e>SP_TOTAL;
+  $('#clockSP').classList.toggle('over', isOvertime);
+  if(spTimerCard) spTimerCard.classList.toggle('talk-overtime-warning', spRunning && !spPaused && isOvertime);
+  updateTalkControlsUI();
+  updateSPClockTarget();
+  drawTimelineSP();
+}
+function setPressedSP(id){ ['playSP','pauseSP','stopSP'].forEach(x=>{ const el=document.getElementById(x); if(el) el.classList.toggle('pressed', x===id); }); }
+function spStartFn(){
+  if(spRunning && spPaused){
+    spPaused=false; spStart=Date.now(); spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
+    $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; setPressedSP('playSP'); return;
+  }
+  if(!spRunning){
+    spRunning=true; spPaused=false; spStart=Date.now(); spAccum=0;
+    spTick&&clearInterval(spTick); spTick=setInterval(updateSP,250);
+    $('#playSP').disabled=true; $('#pauseSP').disabled=false; $('#stopSP').disabled=false; setPressedSP('playSP');
+    // LÅS milestone ved start (bytter ikke underveis)
+    if(!isCountUp()){
+      if(SP_TOTAL===1800) showMilestone('./img/milestone-30.png');
+      else if(SP_TOTAL===900) showMilestone('./img/milestone-15.png');
+      else if(SP_TOTAL===600) showMilestone('./img/milestone-10.png');
+      else if(SP_TOTAL===300) showMilestone('./img/milestone-5.png');
+      else showMilestone('./img/milestone-other.png');
+    }else{
+      showMilestone('./img/start-stopwatch.png');
+    }
+    updateSP();
+  }
+}
+function spPauseFn(){ if(!spRunning||spPaused) return; spAccum+=Math.floor((Date.now()-spStart)/1000); spPaused=true; spTick&&clearInterval(spTick); spTick=null; $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=false; setPressedSP('pauseSP'); updateSP() }
+function spStopFn(){ if(spRunning&&!spPaused) spAccum+=Math.floor((Date.now()-spStart)/1000); spRunning=false; spPaused=false; spStart=null; spAccum=0; spTick&&clearInterval(spTick); spTick=null; showMilestone('./img/milestone-stop.png'); $('#playSP').disabled=false; $('#pauseSP').disabled=true; $('#stopSP').disabled=true; $('#clockSP').classList.remove('over'); if(spTimerCard) spTimerCard.classList.remove('talk-overtime-warning'); setPressedSP('stopSP'); drawTimelineSP(); applyIdleClock(); updateTalkControlsUI(); }
+$('#playSP').addEventListener('click',spStartFn); $('#pauseSP').addEventListener('click',spPauseFn); $('#stopSP').addEventListener('click',spStopFn);
+/* Preset clicks */
+spPresets.forEach(btn=>btn.addEventListener('click',()=>{
+  if(spRunning) return;
+  const s=parseInt(btn.dataset.sec,10)||0;
+  localStorage.setItem(PRESET_KEY,String(s));
+  SP_TOTAL=s;
+  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
+  applyIdleClock(); updatePlayIcon(); showMilestone('./img/pick-milestone.png'); drawTimelineSP(); updateSP(); updateTargetBox();
+}));
+/* +/- justering av mål-tid */
+function clampTarget(v){ return Math.max(0, Math.min(3600, v)); }
+function setTargetSeconds(sec){
+  if(spRunning) return;
+  SP_TOTAL=clampTarget(sec);
+  localStorage.setItem(PRESET_KEY,String(SP_TOTAL));
+  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
+  applyIdleClock(); updatePlayIcon(); drawTimelineSP(); updateSP(); updateTargetBox();
+}
+function updateTargetBox(){ const box=document.getElementById('spTargetDisplay'); if(box) box.textContent= isCountUp() ? '00:00' : fmt(SP_TOTAL); }
+document.getElementById('decSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL - 60));
+document.getElementById('incSP').addEventListener('click',()=> setTargetSeconds(SP_TOTAL + 60));
+updateTalkControlsUI();
+  const themeBtn = document.getElementById('themeToggle');
+  if(themeBtn){
+    themeBtn.addEventListener('click', ()=>{
+      const body = document.body;
+      const nowDark = !body.classList.contains('dark');
+      applyTheme(nowDark ? 'dark' : 'light');
+      try{ localStorage.setItem(THEME_KEY, nowDark ? 'dark' : 'light'); }catch(e){}
+    });
+  }
+
+/* ===== Tilbakemeldingsknapp (Discord webhook) ===== */
+const FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1440783611509866688/ClF8r4102SRomjQC8g3pYh4icRGG8TLlKxT3h5TeTizG_OqzQ94S-Y_gNiZ4KaBruSSD";
+(function(){
+  const btn = document.getElementById('feedbackBtn');
+  const modal = document.getElementById('feedbackModal');
+  const backdrop = document.getElementById('feedbackBackdrop');
+  const textarea = document.getElementById('feedbackText');
+  const nameInput = document.getElementById('feedbackName');
+  const countEl = document.getElementById('feedbackCount');
+  const statusEl = document.getElementById('feedbackStatus');
+  const cancelBtn = document.getElementById('feedbackCancel');
+  const sendBtn = document.getElementById('feedbackSend');
+  if(!btn || !modal || !textarea || !countEl || !statusEl || !cancelBtn || !sendBtn) return;
+
+  function openModal(){
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    statusEl.textContent = '';
+    textarea.focus();
+    updateCount();
+  }
+  function closeModal(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+    textarea.value = '';
+    if(nameInput) nameInput.value = '';
+    statusEl.textContent = '';
+    updateCount();
+  }
+  function updateCount(){
+    const len = textarea.value.length;
+    countEl.textContent = len + " / 500";
+  }
+  textarea.addEventListener('input', updateCount);
+
+  btn.addEventListener('click', openModal);
+  backdrop.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('open')){
+      closeModal();
+    }
+  });
+
+  async function sendFeedback(){
+    const text = textarea.value.trim();
+    const name = nameInput ? nameInput.value.trim() : "";
+    if(!text){
+      statusEl.textContent = "Please write something before you send.";
+      return;
+    }
+    if(text.length > 500){
+      statusEl.textContent = "The text is too long.";
+      return;
+    }
+    sendBtn.disabled = true;
+    statusEl.textContent = "Sending …";
+    let content = text;
+    if(name){
+      content += "\n\nName: " + name;
+    }
+    const payload = { content };
+    try{
+      await fetch(FEEDBACK_WEBHOOK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      statusEl.textContent = "Thanks for the feedback!";
+      textarea.value = "";
+      updateCount();
+      setTimeout(closeModal, 1200);
+    }catch(err){
+      console.warn("Couldn't send the feedback", err);
+      statusEl.textContent = "Couldn't send. Please try again later..";
+    }finally{
+      sendBtn.disabled = false;
+    }
+  }
+  sendBtn.addEventListener('click', sendFeedback);
+})();
+
+/* ===== About Modal ===== */
+(function(){
+  const btn = document.getElementById('aboutBtn');
+  const modal = document.getElementById('aboutModal');
+  const backdrop = document.getElementById('aboutBackdrop');
+  const closeBtn = document.getElementById('aboutClose');
+  if(!btn || !modal) return;
+
+  function openModal(){
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+  }
+  function closeModal(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+  }
+
+  btn.addEventListener('click', openModal);
+  backdrop.addEventListener('click', closeModal);
+  if(closeBtn){
+    closeBtn.addEventListener('click', closeModal);
+  }
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('open')){
+      closeModal();
+    }
+  });
+})();
+/* ===== WT Advanced timings ===== */
+(function(){
+  const btn      = document.getElementById('wtAdvancedBtn');
+  const modal    = document.getElementById('wtAdvancedModal');
+  const backdrop = document.getElementById('wtAdvancedBackdrop');
+  const closeBtn = document.getElementById('wtAdvancedClose');
+  const saveBtn  = document.getElementById('wtAdvancedSave');
+  const resetBtn = document.getElementById('wtAdvancedReset');
+  const body     = document.getElementById('wtAdvancedBody');
+  if(!btn || !modal || !body) return;
+
+  const formatSeconds = (sec, min=1)=>{
+    const safe   = Math.max(min, Math.round(Number(sec) || 0));
+    const mins   = Math.floor(safe / 60);
+    const remain = safe % 60;
+    return `${mins}:${remain.toString().padStart(2,'0')}`;
+  };
+
+  const formatSignedSeconds = (sec)=>{
+    const sign = sec < 0 ? '-' : '';
+    return `${sign}${formatSeconds(Math.abs(sec), 0)}`;
+  };
+
+  const parseDuration = (val)=>{
+    const text = String(val || '').trim();
+    if(!text) return NaN;
+    const normalized = text.replace(',', ':');
+    if(normalized.includes(':')){
+      const parts = normalized.split(':');
+      if(parts.length !== 2) return NaN;
+      const [m,s] = parts;
+      const mins = parseInt(m,10);
+      const secs = parseInt(s,10);
+      if(!Number.isFinite(mins) || !Number.isFinite(secs) || mins < 0 || secs < 0) return NaN;
+      return (mins * 60) + secs;
+    }
+    return parseInt(normalized,10);
+  };
+
+  const nudgeByDelta = (input, delta)=>{
+    if(!input || !Number.isFinite(delta)) return;
+    const current = parseDuration(input.value);
+    const min = Number.isFinite(parseInt(input.dataset.min,10)) ? parseInt(input.dataset.min,10) : 1;
+    const nextVal = Math.max(min, (Number.isFinite(current) ? current : 0) + delta);
+    input.value = formatSeconds(nextVal, min);
+  };
+
+  const readInputValue = (input)=>{
+    if(!input) return NaN;
+    let v = NaN;
+    if(input.dataset.parser === 'clock'){
+      v = parseDuration(input.value);
+    } else {
+      v = parseInt(input.value,10);
+    }
+    const min = Number.isFinite(parseInt(input.dataset.min,10)) ? parseInt(input.dataset.min,10) : 1;
+    if(!Number.isFinite(v) || v < min) v = min;
+    return v;
+  };
+
+  function collectInputs(){
+    const inputs = body.querySelectorAll('.adv-input');
+    const base = slots();
+    const next = {
+      intro:  base.intro,
+      review: base.review,
+      outro:  base.outro,
+      paras:  [],
+      extra:  0
+    };
+
+    inputs.forEach(input=>{
+      const key = input.dataset.key;
+      if(key === 'extra') return; // beregnes automatisk
+      const v = readInputValue(input);
+      if(key === 'intro')      next.intro  = v;
+      else if(key === 'review')next.review = v;
+      else if(key === 'outro') next.outro  = v;
+      else if(key && key.startsWith('p')){
+        const idx = parseInt(key.slice(1),10);
+        if(idx >= 1) next.paras[idx-1] = v;
+      }
+    });
+
+    for(let i=0;i<totalParagraphs;i++){
+      if(!Number.isFinite(next.paras[i]) || next.paras[i] <= 0){
+        const fallback = perParagraph[i] || (base.content/Math.max(1,totalParagraphs));
+        next.paras[i] = Math.max(1, Math.round(fallback));
+      }
+    }
+
+    const totalParas = next.paras.reduce((sum,val)=>sum+(Number(val)||0),0);
+    const totalUsed = next.intro + next.review + next.outro + totalParas;
+    const diff = totalUsed - base.total;
+    next.extra = diff;
+
+    return { next, base, totalParas, totalUsed, diff };
+  }
+
+  function updateExtraField(){
+    const input = body.querySelector('.adv-input[data-key="extra"]');
+    if(!input) return;
+    const parsed = collectInputs();
+    const diff = parsed ? parsed.diff : 0;
+    input.value = formatSignedSeconds(diff);
+  }
+
+  function buildRows(){
+    body.innerHTML = '';
+    const S = (typeof currentSlots === 'function') ? currentSlots() : slots();
+    const L = window.L || {};
+    const base = LANGS[DEFAULT_LANG] || {};
+    const labelIntro   = L.Intro || base.Intro || 'Intro';
+    const labelReview  = L.Review || base.Review || 'Repetisjonsspørsmål';
+    const labelOutro   = L.Conclusion || base.Conclusion || 'Avslutning';
+    const labelPara    = L.Paragraph || base.Paragraph || 'Avsnitt';
+    const labelExtra   = L.ExtraTime || base.ExtraTime || '';
+
+    function addRow(key, label, value, opts={}){
+      const min = Number.isFinite(parseInt(opts.min,10)) ? parseInt(opts.min,10) : 1;
+      const labelClass = `adv-label${opts.highlight ? ' adv-highlight' : ''}`;
+      const inputClass = `adv-input${opts.highlight ? ' adv-highlight' : ''}`;
+      const row = document.createElement('div');
+      row.className = 'adv-row';
+      const displayValue = opts.signed ? formatSignedSeconds(value) : formatSeconds(value, min);
+      const hasSteps = opts.steps !== false;
+      row.innerHTML = `
+        <span class="${labelClass}">${label}</span>
+        <div class="adv-control${hasSteps ? '' : ' no-steps'}">
+          ${hasSteps ? '<button type="button" class="adv-step" data-delta="-10" aria-label="Minus 10 sekunder">◀</button>' : '<span class="adv-step placeholder" aria-hidden="true"></span>'}
+          <input type="text" inputmode="numeric" pattern="[0-9:]+" class="${inputClass}" data-key="${key}" value="${displayValue}" ${opts.readOnly ? 'readonly aria-readonly="true"' : ''}>
+          ${hasSteps ? '<button type="button" class="adv-step" data-delta="10" aria-label="Pluss 10 sekunder">▶</button>' : '<span class="adv-step placeholder" aria-hidden="true"></span>'}
+        </div>
+      `;
+      const input = row.querySelector('.adv-input');
+      if(input){
+        input.dataset.parser = 'clock';
+        input.dataset.key = key;
+        input.dataset.originalSeconds = String(value);
+        input.dataset.min = String(min);
+      }
+      body.appendChild(row);
+    }
+
+    // Intro
+    const curIntro = (advancedOverrides && Number.isFinite(advancedOverrides.intro))
+      ? advancedOverrides.intro
+      : S.intro;
+    addRow('intro', labelIntro, curIntro);
+
+    // Avsnitt
+    for(let i=1;i<=totalParagraphs;i++){
+      const baseSec = perParagraph[i-1] || 0;
+      const curSec =
+        (advancedOverrides &&
+         Array.isArray(advancedOverrides.paras) &&
+         Number.isFinite(advancedOverrides.paras[i-1]) &&
+         advancedOverrides.paras[i-1] > 0)
+          ? advancedOverrides.paras[i-1]
+          : baseSec;
+      const row = document.createElement('div');
+      row.className='adv-row';
+      row.innerHTML = `
+        <span class="adv-label">${labelPara} ${i}</span>
+        <div class="adv-control">
+          <button type="button" class="adv-step" data-delta="-10" aria-label="Minus 10 sekunder">◀</button>
+          <input type="text" inputmode="numeric" pattern="[0-9:]+" class="adv-input" data-key="p${i}" value="${formatSeconds(curSec)}">
+          <button type="button" class="adv-step" data-delta="10" aria-label="Pluss 10 sekunder">▶</button>
+        </div>
+      `;
+      const input = row.querySelector('.adv-input');
+      if(input){
+        input.dataset.parser = 'clock';
+        input.dataset.key = `p${i}`;
+        input.dataset.originalSeconds = String(curSec);
+      }
+      body.appendChild(row);
+    }
+
+    // Repetisjon + avslutning
+    const curReview = (advancedOverrides && Number.isFinite(advancedOverrides.review))
+      ? advancedOverrides.review
+      : S.review;
+    const curOutro = (advancedOverrides && Number.isFinite(advancedOverrides.outro))
+      ? advancedOverrides.outro
+      : S.outro;
+    addRow('review', labelReview, curReview);
+    addRow('outro', labelOutro, curOutro);
+
+    // Ekstra tid
+    const curExtra = (advancedOverrides && Number.isFinite(advancedOverrides.extra))
+      ? advancedOverrides.extra
+      : 0;
+    addRow('extra', labelExtra, curExtra, {min:0, signed:true, steps:false, readOnly:true, highlight:true});
+    updateExtraField();
+  }
+
+  function openModal(){
+    if(!totalParagraphs){
+      alert('Velg en artikkel først.');
+      return;
+    }
+    buildRows();
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+  }
+
+  function closeModal(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+  }
+
+  function parseInputs(){
+    const parsed = collectInputs();
+    if(!parsed) return;
+    const { next, base, totalParas, totalUsed } = parsed;
+    const modeTotal = base.total;
+    const diffSec = totalUsed - modeTotal;
+    if(diffSec !== 0){
+      const diffAbs = Math.abs(diffSec);
+      const limitLabel = modeTotal === 1800 ? '30' : '60';
+      const lang = window.L || {};
+      const baseLang = LANGS[DEFAULT_LANG] || {};
+      const template = lang.AdvancedTotalMismatch || baseLang.AdvancedTotalMismatch;
+      const direction = diffSec > 0
+        ? (lang.AdvancedOver || baseLang.AdvancedOver || 'over')
+        : (lang.AdvancedUnder || baseLang.AdvancedUnder || 'under');
+      const message = template
+        ? template
+          .replace('{diff}', formatSeconds(diffAbs,0))
+          .replace('{limit}', limitLabel)
+          .replace('{direction}', direction)
+        : '';
+      alert(message);
+      return;
+    }
+
+    advancedOverrides = next;
+    computeAllocation();
+    drawTimeline();
+    resetWTUI();
+    return true;
+  }
+
+  function applyFromInputs(){
+    return parseInputs();
+  }
+
+  if(btn)      btn.addEventListener('click',   openModal);
+  if(backdrop) backdrop.addEventListener('click', closeModal);
+  if(closeBtn) closeBtn.addEventListener('click',  closeModal);
+
+  if(saveBtn){
+    saveBtn.addEventListener('click', ()=>{
+      const ok = applyFromInputs();
+      if(ok) closeModal();
+    });
+  }
+
+  if(resetBtn){
+    resetBtn.addEventListener('click', ()=>{
+      advancedOverrides = null;
+      buildRows();
+      updateExtraField();
+    });
+  }
+
+  body.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.adv-step');
+    if(!btn) return;
+    const delta = parseInt(btn.dataset.delta,10);
+    const input = btn.parentElement ? btn.parentElement.querySelector('.adv-input') : null;
+    nudgeByDelta(input, delta);
+    updateExtraField();
+  });
+
+  body.addEventListener('input', (e)=>{
+    const input = e.target.closest('.adv-input');
+    if(!input || input.dataset.key === 'extra') return;
+    updateExtraField();
+  });
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal.classList.contains('open')){
+      closeModal();
+    }
+  });
+})();
+
+/* ===== Init ===== */
+(async function init(){
+  // Sett default til 60 min dersom ikke satt
+  try{ if(!localStorage.getItem('meetingTimer.wtMode')) localStorage.setItem('meetingTimer.wtMode','60'); }catch(e){}
+  // Presets/klokker
+  markPreset([0,300,600,900,1800].includes(SP_TOTAL)?SP_TOTAL:-1);
+  applyIdleClock(); updatePlayIcon(); drawTimelineSP(); updateTargetBox();
+  // Last inn titteloversettelser og artikkelliste
+  try{
+    await loadTitlesFor(window.currentLang || DEFAULT_LANG);
+    await hydrateOptions();
+  }catch(e){
+    console.warn('hydrate / titles feilet', e);
+    const sel=document.getElementById('weekSel');
+    if(sel){ sel.innerHTML='<option>Ingen data</option>'; }
+  }
+// Deaktiver høyreklikk på alle bilder
+  document.addEventListener('contextmenu', (e)=>{ if(e.target && e.target.closest('img')) { e.preventDefault(); } }, {capture:true});
+  // Legg til tannhjul for å vise/skjule artikkelvalg og info
+  (function(){
+    const card = document.getElementById('wtControlsCard');
+    const title = document.getElementById('articleTitle');
+    if(!card || !title) return;
+    // Pakk tittel og tannhjul i en wrapper
+    let wrapper = document.createElement('div');
+    wrapper.id = 'wtArticleHeader';
+    wrapper.style.maxWidth = getComputedStyle(card).maxWidth || 'var(--content-max)';
+    wrapper.style.margin = '0 auto 6px';
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.justifyContent = 'space-between';
+    // Flytt tittel inn i wrapper
+    title.parentNode.insertBefore(wrapper, title);
+    wrapper.appendChild(title);
+    const btn = document.createElement('button');
+    btn.id = 'wtGearBtn';
+    btn.type = 'button';
+    btn.setAttribute('aria-label','Vis eller skjul artikkelinnstillinger');
+    btn.style.border = '0';
+    btn.style.borderRadius = '999px';
+    btn.style.width = '34px';
+    btn.style.height = '34px';
+    btn.style.marginLeft = '10px';
+    btn.style.display = 'flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.background = 'var(--pill)';
+    btn.style.boxShadow = '0 6px 18px rgba(70,50,30,.12)';
+    btn.style.cursor = 'pointer';
+    btn.style.flex = '0 0 auto';
+    btn.innerHTML = '⚙️';
+    btn.style.fontSize = '1.6rem';
+    wrapper.appendChild(btn);
+    const closeBtn = document.createElement('button');
+    closeBtn.id = 'wtSettingsCloseBtn';
+    closeBtn.className = 'wt-settings-close';
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label','Lukk artikkelinnstillinger');
+    closeBtn.textContent = '×';
+    card.appendChild(closeBtn);
+    function toggleSettingsPanel(){
+      if(card.classList.contains('locked')) return;
+      card.classList.toggle('collapsed');
+    }
+    // Start med artikkelinformasjon skjult
+    card.classList.add('collapsed');
+    btn.addEventListener('click', toggleSettingsPanel);
+    closeBtn.addEventListener('click', toggleSettingsPanel);
+  })();
+})();
+}); // DOMContentLoaded
+</script>
+  <!-- Add-on med trygge UI-tilpasninger -->
+  <script src="./index_addon.js"></script>
+<script>
+(function(){
+  // Utility: parse images array (supports numbers and "12a"/"5b"/"3c")
+  function expandWithOrder(refs){
+    const set = new Set(), ord = new Map();
+    if (!Array.isArray(refs)) return {set, ord};
+    const pri = c => c ? ({a:1,b:2,c:3}[String(c).toLowerCase()]||null) : null;
+    const addRange = (from, to, order)=>{
+      const a = Number(from), b = Number(to);
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return;
+      const lo = Math.min(a,b), hi = Math.max(a,b);
+      for (let i=lo; i<=hi; i++){ set.add(i); if(order!=null) ord.set(i, order); }
+    };
+    for (const v of refs){
+      if (typeof v === 'number'){ set.add(v); continue; }
+      const s = String(v).trim();
+      const range = s.match(/^(\d+)\s*[\-–]\s*(\d+)([abc])?$/i);
+      if (range){ addRange(range[1], range[2], pri(range[3])); continue; }
+      const pair = s.match(/^(\d+)\s*&\s*(\d+)([abc])?$/i);
+      if (pair){ addRange(pair[1], pair[1], pri(pair[3])); addRange(pair[2], pair[2], pri(pair[3])); continue; }
+      const single = s.match(/^(\d+)([abc])?$/i);
+      if (single){ const n=Number(single[1]), o=pri(single[2]); set.add(n); if(o!=null) ord.set(n,o); }
+    }
+    return {set, ord};
+  }
+  // Update counters from globals or current item
+  function updateImagesCount(){
+    const valueEl = document.getElementById('pillImagesValue');
+    if (!valueEl) return;
+    let count = 0;
+    if (window.__VT_IMAGE_SET instanceof Set){
+      count = window.__VT_IMAGE_SET.size;
+    } else {
+      const it = window.currentItem || window.ITEM || null;
+      const {set} = expandWithOrder(it && it.images ? it.images : []);
+      count = set.size;
+    }
+    valueEl.textContent = String(count);
+  }
+  // Add image pins under the timeline slots
+  function applyImagePins(){
+    const tl = document.getElementById('timeline'); if (!tl) return;
+    const slots = tl.querySelectorAll('.para-slot'); if (!slots.length) return;
+    const pinPriority = { read: 1, image: 2, frame: 3 };
+    // Determine images set + order
+    let set = new Set(), ord = new Map();
+    if (window.__VT_IMAGE_SET instanceof Set){
+      set = window.__VT_IMAGE_SET;
+      // order is usually in window.__VT_ORD.image
+      const O = window.__VT_ORD instanceof Map ? window.__VT_ORD : new Map();
+      for (const p of set){
+        const o = O.get(p)||{};
+        if (o.image != null) ord.set(p, o.image);
+      }
+    } else {
+      const it = window.currentItem || window.ITEM || null;
+      const e = expandWithOrder(it && it.images ? it.images : []);
+      set = e.set; ord = e.ord;
+    }
+    const ordMap = window.__VT_ORD instanceof Map ? window.__VT_ORD : new Map();
+    const frameSet = window.__VT_FRAME_SET instanceof Set ? window.__VT_FRAME_SET : new Set();
+    const numericReads = (window.__VT_READ_SET2 instanceof Set) ? window.__VT_READ_SET2 : (window.readSet || new Set());
+    const orderFor = (type, p)=>{
+      if (type === 'image'){
+        if (ord.has(p)) return ord.get(p);
+        const base = ordMap.get(p) || {};
+        if (base.image != null) return base.image;
+        return null;
+      }
+      const base = ordMap.get(p) || {};
+      if (type === 'read' && base.read != null) return base.read;
+      if (type === 'frame' && base.frame != null) return base.frame;
+      return null;
+    };
+    slots.forEach((slot, idx)=>{
+      const p = idx+1;
+      const pins = [];
+      const hasRead = numericReads.has ? numericReads.has(p) : false;
+      const hasFrame = frameSet.has ? frameSet.has(p) : false;
+      const hasImage = set.has ? set.has(p) : false;
+      if (hasRead)  pins.push({type:'read',  order: orderFor('read', p)});
+      if (hasImage) pins.push({type:'image', order: orderFor('image', p)});
+      if (hasFrame) pins.push({type:'frame', order: orderFor('frame', p)});
+      pins.sort((a,b)=>{
+        const pa = pinPriority[a.type] ?? 99;
+        const pb = pinPriority[b.type] ?? 99;
+        if (pa !== pb) return pa - pb;
+        const oa = Number.isFinite(a.order) ? a.order : 99;
+        const ob = Number.isFinite(b.order) ? b.order : 99;
+        return oa - ob;
+      });
+      slot.querySelectorAll('.read-pin,.image-pin,.frame-pin').forEach(n=>n.remove());
+      pins.forEach((pinData, j)=>{
+        const el = document.createElement('i');
+        if (pinData.type === 'read') el.className = 'read-pin';
+        else if (pinData.type === 'image') el.className = 'image-pin';
+        else el.className = 'frame-pin';
+        el.style.bottom = `${-24 - j*12}px`;
+        slot.appendChild(el);
+      });
+    });
+  }
+  function applyAll(){
+    updateImagesCount();
+    applyImagePins();
+  }
+  // Observe timeline changes so pins re-render
+  const tl = document.getElementById('timeline');
+  if (tl){
+    const mo = new MutationObserver(()=> requestAnimationFrame(applyAll));
+    mo.observe(tl, {childList:true, subtree:true});
+  }
+  // Also update when selection changes if select exists
+  const sel = document.getElementById('weekSel');
+  if (sel){ sel.addEventListener('change', ()=> setTimeout(applyAll, 0)); }
+  // Initial run – kjør én gang, ikke både DOMContentLoaded og load
+  document.addEventListener('DOMContentLoaded', applyAll);
+  // Expose manual trigger if needed
+  window.__VT_APPLY_IMAGES = applyAll;
+})();
+// --- Touch/mus-resize for wtNotes nedover ---
+(function(){
+  const ta = document.getElementById('wtNotes');
+  const grip = document.getElementById('wtNotesGrip');
+  if(!ta || !grip) return;
+  let startY = 0, startH = 0, active = false;
+  function px(v){ return Number(String(v).replace('px',''))||0; }
+  const cs = getComputedStyle(ta);
+  const minH = Math.max(72, px(cs.minHeight));
+  function maxH(){
+    // 75vh som øvre grense, men aldri mindre enn nåværende høyde
+    return Math.max(ta.offsetHeight, Math.round(window.innerHeight * 0.75));
+  }
+  function down(e){
+    active = true;
+    startY = (e.touches ? e.touches[0].clientY : e.clientY);
+    startH = ta.offsetHeight;
+    document.addEventListener('mousemove', move, {passive:false});
+    document.addEventListener('touchmove', move, {passive:false});
+    document.addEventListener('mouseup', up, {passive:false});
+    document.addEventListener('touchend', up, {passive:false});
+    e.preventDefault();
+  }
+  function move(e){
+    if(!active) return;
+    const y = (e.touches ? e.touches[0].clientY : e.clientY);
+    const dy = y - startY;
+    let h = Math.min(Math.max(startH + dy, minH), maxH());
+    ta.style.height = h + 'px';
+    e.preventDefault();
+  }
+  function up(e){
+    active = false;
+    document.removeEventListener('mousemove', move);
+    document.removeEventListener('touchmove', move);
+    document.removeEventListener('mouseup', up);
+    document.removeEventListener('touchend', up);
+  }
+  grip.addEventListener('mousedown', down);
+  grip.addEventListener('touchstart', down, {passive:false});
+})();
+</script>
+<script>
+(function(){
+  function setup(sectionId, storageKey, defaultCollapsed){
+    const sec = document.getElementById(sectionId);
+    if(!sec) return;
+    const title = sec.querySelector('.section-title');
+    const body = sec.querySelector('.section-body');
+    if(!title || !body) return;
+    // initial state: localStorage if present, else defaultCollapsed
+    try{
+      const saved = localStorage.getItem(storageKey);
+      if(saved!==null){
+        if(saved==='1') sec.classList.add('collapsed'); else sec.classList.remove('collapsed');
+      }else{
+        if(defaultCollapsed) sec.classList.add('collapsed'); else sec.classList.remove('collapsed');
+      }
+    }catch(e){ if(defaultCollapsed) sec.classList.add('collapsed'); }
+    function syncAria(){
+      const collapsed = sec.classList.contains('collapsed');
+      title.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }
+    syncAria();
+    function toggle(){
+      sec.classList.toggle('collapsed');
+      syncAria();
+      try{ localStorage.setItem(storageKey, sec.classList.contains('collapsed') ? '1' : '0'); }catch(e){}
+    }
+    title.addEventListener('click', toggle);
+    title.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggle(); }
+    });
+  }
+  // WT: default åpen (defaultCollapsed=false)
+  setup('wtSection', 'meetingTimer.section.wt', false);
+  // SP: default kollapset (defaultCollapsed=true)
+  setup('spSection', 'meetingTimer.section.sp', true);
+})();
+</script>
+</body>
+</html>
+}
+</script>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f8f7f5">
+<link rel="icon" href="./img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f7f5; --ink:#2b3432; --muted:#8b827a;
+  --card:#fff; --border:rgba(40,30,20,.10);
+  --green:#6ecf9e; /* Play */
+  --phase-intro:#87b9ff; /* Pause */
+  --phase-review:#ffb766; /* Stop */
+  --phase-outro:#87b9ff; /* blå avslutning (samme som intro) */
+  --press:#cfc7bd; --pill:#fffefb; --radius:16px;
+  --tl-green-1:#e9f3ec; --tl-green-2:#99e0bc;
+  --message-bg:var(--pill);
+  --content-max:min(640px, 94vw);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  color:var(--ink);
+  font-family:"Nunito",ui-rounded,-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  letter-spacing:.01em; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; min-height:100%;
+  background-color:var(--bg);
+  background-image: linear-gradient(rgba(255,255,255,.72), rgba(255,255,255,.72)), url('./img/paper-texture.png');
+  background-size: auto, 300px 300px; background-repeat: repeat, repeat; background-attachment: fixed, fixed;
+  transition:background-color 1s ease;
+}
+.container{flex:1 0 auto;max-width:980px;margin:0 auto;padding:16px 16px 28px;min-width:320px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0 18px;min-height:72px;position:relative}
+.lang-switcher{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  min-width:48px;
+  margin-left:auto;
+  margin-right:calc((100% - var(--content-max))/2);
+}
+.lang-theme-toggle{
+  display:inline-flex;
+  border-radius:999px;
+  overflow:hidden;
+  box-shadow:0 3px 12px rgba(0,0,0,0.18);
+  border:1px solid rgba(0,0,0,0.10);
+  background:#ffffff;
+}
+.lang-btn{
+  border:0;
+  background:transparent;
+  padding:6px 10px 6px 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  border-right:1px solid rgba(0,0,0,0.08);
+}
+.lang-btn:disabled{
+  opacity:.35;
+  filter:grayscale(100%);
+  cursor:default;
+}
+.lang-btn img{width:18px;height:18px;display:block;}
+.lang-btn:hover{background:rgba(0,0,0,0.03);}
+.lang-popover{position:absolute;top:56px;right:0;min-width:220px;border-radius:16px;border:1px solid rgba(0,0,0,0.06);background:rgba(248,247,245,0.94);backdrop-filter:blur(18px);box-shadow:0 18px 45px rgba(0,0,0,0.18);padding:6px 0;z-index:900;display:none;}
+.lang-popover.open{display:block;}
+.lang-popover ul{list-style:none;margin:0;padding:0;}
+.lang-popover li{padding:7px 14px;font-size:.92rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.lang-popover li:hover{background:rgba(0,0,0,0.04);}
+.lang-popover li.active::after{content:'✓';font-size:.9rem;opacity:.9;}
+body.dark .lang-popover{background:rgba(31,35,39,0.96);border-color:rgba(0,0,0,0.6);box-shadow:0 22px 50px rgba(0,0,0,0.7);}
+/* Lighten VT timeline in dark mode */
+.dark #timeline{background:linear-gradient(180deg,#3e5643 0%, #465f4c 100%);}
+.dark #timeline .slot{opacity:.16;}
+body.dark .lang-popover li:hover{background:rgba(255,255,255,0.04);}
+.brand{display:flex;align-items:center;gap:12px;position:relative}
+.brand img{height:160px;width:auto;cursor:pointer;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 8px 24px rgba(70,50,30,.08));transition:transform .25s,filter .25s}
+@media (min-width:768px){ .brand img{height:200px} }
+@media (max-width:400px){ .brand img{height:120px} }
+@keyframes spin2s{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-2px)}40%{transform:translateX(2px)}60%{transform:translateX(-1px)}80%{transform:translateX(1px)}}
+.logo-spin{animation:spin2s 2s linear}
+.logo-shake{animation:shake .4s ease-in-out}
+.card{background:var(--card);background-image:linear-gradient(rgba(255,255,255,.9),rgba(255,255,255,.9)), url('./img/paper-texture.png'); background-size:auto,300px 300px; background-repeat:repeat; border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 12px 40px rgba(70,50,30,.06);padding:14px}
+.h1{font-size:clamp(1.1rem, 2.8vw, 1.38rem);font-weight:900;margin:18px 0 10px;max-width:var(--content-max);text-transform:uppercase;text-align:left}
+.message{--original-bg:var(--message-bg);background:var(--original-bg);border:2px solid var(--border);border-radius:12px;padding:20px 22px;min-height:56px;box-shadow:0 8px 24px rgba(70,50,30,.05);margin:0 auto 20px;max-width:var(--content-max);color:#4a5552;font-size:clamp(1.1rem, 3.2vw, 1.62rem);line-height:1.3;display:flex;align-items:center;font-weight:700}
+@keyframes overtimePulse {
+  0% { background-color: var(--original-bg); }
+  50% { background-color: #FFE4E1; }
+  100% { background-color: var(--original-bg); }
+}
+.overtime-warning{animation:overtimePulse 4s ease-in-out infinite}
+/* Timeline */
+.timeline-wrap{margin-top:22px; margin-bottom:40px; max-width:var(--content-max); margin-inline:auto; position:relative}
+.timeline{position:relative;height:56px;border-radius:14px;overflow:visible;background:linear-gradient(180deg,var(--tl-green-1) 0%,#edf5f0 100%);border:1px solid var(--border)}
+.slot{position:absolute;top:0;height:100%;opacity:.22}
+#introSlot{background:var(--phase-intro)}
+#reviewSlot{background:var(--phase-review)}
+#outroSlot{background:var(--phase-outro)}
+.para-slot{position:absolute;top:0;height:100%;display:flex;align-items:center;justify-content:center;border-left:1px solid rgba(50,35,25,.06);border-right:1px solid rgba(255,255,255,.55);font-weight:900;color:#2f3b34;text-shadow:0 1px 0 rgba(255,255,255,.55);cursor:pointer;box-sizing:border-box;min-width:14px;background:var(--tl-green-1)}
+.para-slot.alt{background:var(--tl-green-2)}
+.para-slot>div{pointer-events:none;white-space:nowrap;overflow:hidden;line-height:1}
+.read-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-2px; width:18px; height:18px; z-index:1; background:url('./img/read-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.image-pin{position:absolute; left:50%; transform:translateX(-50%); bottom:-2px; width:18px; height:18px; z-index:1; background:url('./img/image-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.frame-pin{position:absolute; left:50%; transform:translateX(-50%); bottom: 2px; width:14px; height:14px; z-index:2; background:url('./img/box-icon.png') center/contain no-repeat; pointer-events:none; opacity:0.95}
+.elapsed{position:absolute;top:0;left:0;height:100%;background:rgba(58,111,82,.22);width:0%;transition:width .25s linear;z-index:2;pointer-events:none}
+/* Rød tone for SP sin elapsed */
+#elapsedSP{background:rgba(210,60,60,.28)}
+.cursor{position:absolute;top:-10px;width:2px;height:76px;background:#2f3f49;left:0%;z-index:3}
+/* Minuttstreker for SP */
+#ticksSP{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none}
+.tick{position:absolute;bottom:6px;width:2px;height:8px;background:rgba(30,40,35,.45);transform:translateX(-1px);}
+.tick.major{height:12px;background:rgba(30,40,35,.65);}
+.tick.xmajor{height:16px;background:rgba(30,40,35,.85);}
+.big-clock,.clock{margin-top:16px;font-size:clamp(1.6rem, 9vw, 2.75rem);font-weight:900;color:#2f3b34;max-width:var(--content-max);margin-inline:auto;word-wrap:break-word}
+.clock--with-target{display:flex;align-items:baseline;gap:8px}
+.clock-target{color:var(--muted);font-weight:900;opacity:.9}
+#clockWT{margin-top:40px}
+#clockSP{margin-top:40px}
+.controls{display:flex;gap:12px;margin-top:12px;max-width:var(--content-max);margin-inline:auto;justify-content:flex-start;flex-wrap:wrap}
+.round{width:58px;height:58px;border-radius:999px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;box-shadow:0 10px 24px rgba(70,50,30,.08);transition:box-shadow .15s ease, filter .15s ease, transform .05s ease}
+.round.pressed, .round.pressed:disabled{
+  filter:brightness(.92) saturate(1.05);
+  box-shadow:inset 0 4px 12px rgba(0,0,0,.22),0 6px 18px rgba(70,50,30,.12);
+}
+.play{background:var(--green)}
+.pause{background:var(--phase-intro); color:#ffffff}
+.stop{background:var(--phase-review); color:#ffffff}
+.round:active{transform:translateY(1px); box-shadow:inset 0 4px 10px rgba(0,0,0,.2),0 6px 18px rgba(70,50,30,.1)}
+/* Presets */
+.preset-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;margin-top:22px}
+.preset{border:1px solid var(--border);background:var(--pill);border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 8px 20px rgba(70,50,30,.06);color:#2f3b34;font-size:1.05rem}
+.preset.active{background:#2f3b34;color:#fff}
+.preset:disabled,
+.round.small:disabled{
+  opacity:.55;
+  cursor:default;
+  filter:grayscale(50%);
+}
+/* Taler-timer presets i mørk modus */
+body.dark .preset{
+  color:#fff !important;
+}
+body.dark .preset.active{
+  background:#ffffff !important;
+  color:#000 !important;
+  border-color:#ffffff !important;
+}
+/* Target time adjuster */
+.target-row{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px auto 8px; max-width:var(--content-max)}
+.round.small{width:42px;height:42px;font-size:1.25rem; color:#2b3432; background:#ffffff; border:1px solid var(--border)}
+.target-box{min-width:140px; text-align:center; font-weight:900; border-radius:999px; padding:8px 16px; border:1px solid var(--border);
+  background:linear-gradient(180deg,var(--tl-green-1) 0%, #edf5f0 100%); color:#2f3b34; box-shadow:0 8px 20px rgba(70,50,30,.06)}
+img{-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
 #wtControlsCard{max-width:var(--content-max);margin-inline:auto}
 .select{appearance:none;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--pill);font-weight:900;color:#2f3b4;box-shadow:0 4px 14px rgba(70,50,30,.05);min-width:180px;max-width:100%}
 textarea{resize:vertical;}
